@@ -59,4 +59,15 @@ defmodule Kojin.Id do
         )
     end
   end
+
+  def id(text) when is_binary(text) do
+    cond do
+      is_snake(text) ->
+        text
+
+      true ->
+        words(text)
+        |> Enum.join("_")
+    end
+  end
 end
