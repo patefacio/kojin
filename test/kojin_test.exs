@@ -135,5 +135,23 @@ Post Lore IPSUM
       assert Kojin.Id.is_snake("this_is_snake_case") == true
       assert Kojin.Id.is_snake("this_is_Not_snake_case") == false
     end
+
+    test "id" do
+      assert Kojin.Id.id("thisIsCool") == "this_is_cool"
+    end
+
+    test "field" do
+      a = %Kojin.Rust.Field{name: :bam_bam, type: "goo", access: :rw}
+      assert a == a
+      assert Vex.errors(a) == []
+
+      IO.puts(a.name)
+    end
+
+    test "Field" do
+      alias Kojin.Rust.Field, as: Field
+
+      assert %Field{name: :foo, type: :goo} == %Field{name: :foo, type: :goo}
+    end
   end
 end
