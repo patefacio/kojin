@@ -14,6 +14,10 @@ IO.puts inspect T.type(:str), pretty: true
 IO.puts inspect T.type(:String), pretty: true
 IO.puts inspect T.type(:BamBam), pretty: true
 
-IO.puts F.decl(%F{ name: :f_1, doc: "This is a field", type: :i32})
+IO.puts F.decl(%F{ name: :f_1, doc: "This is a field
+with multiline comment
+
+
+", type: :i32})
 
 IO.puts T.type(:i32).primitive?
