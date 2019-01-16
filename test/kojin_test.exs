@@ -141,7 +141,7 @@ Post Lore IPSUM
     end
 
     test "field" do
-      a = %Kojin.Rust.Field{name: :bam_bam, type: "goo", access: :rw}
+      a = %Kojin.Rust.Field{name: :bam_bam, doc: "This is a field", type: "goo", access: :rw}
       assert a == a
       assert Vex.errors(a) == []
 

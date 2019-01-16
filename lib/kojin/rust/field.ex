@@ -5,6 +5,8 @@ defmodule Kojin.Rust.Field do
 
   use TypedStruct
   use Vex.Struct
+  alias Kojin.Rust.Field
+  alias Kojin.Rust.Utils
 
   @typedoc """
   A *field* of a _struct_.
@@ -16,6 +18,7 @@ defmodule Kojin.Rust.Field do
   """
   typedstruct do
     field(:name, atom, enforce: true)
+    field(:doc, String.t())
     field(:type, String.t(), enforce: true)
     field(:is_by_ref, boolean, default: false)
     field(:access, atom, default: :ro)
@@ -35,5 +38,13 @@ defmodule Kojin.Rust.Field do
   )
 
   def field(opts \\ []) do
+  end
+
+  def decl(field) do
+    if String.length(field.doc) > 0 do
+      Utils.triple_slash_comment(field.doc)
+    else
+      Utils.triple_slash_comment("TODO: document #{field.name}")
+    end <> "#{field.name}: #{field.type}"
   end
 end

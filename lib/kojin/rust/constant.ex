@@ -16,6 +16,7 @@ defmodule Kojin.Rust.Constant do
   """
   typedstruct do
     field(:name, atom, enforce: true)
+    field(:doc, String.t())
     field(:type, String.t(), enforce: true)
     field(:pub, boolean, default: false)
     field(:pub_crate, boolean, default: false)

@@ -15,6 +15,7 @@ defmodule Kojin.Rust.Struct do
   """
   typedstruct do
     field(:name, atom, enforce: true)
+    field(:doc, String.t())
     field(:fields, list(Field.t()), default: [])
   end
 
