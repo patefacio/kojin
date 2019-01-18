@@ -7,6 +7,8 @@ defmodule Kojin.Rust.Field do
   use Vex.Struct
   alias Kojin.Rust.Field
   alias Kojin.Rust.Utils
+  alias Kojin.Rust.Type
+  import Kojin.Rust.Type
 
   @typedoc """
   A *field* of a _struct_.
@@ -37,7 +39,9 @@ defmodule Kojin.Rust.Field do
     by: [function: &Kojin.Rust.Field.valid_name?/1, message: "Field.name must be snake case"]
   )
 
-  def field(opts \\ []) do
+  def field(name, type, doc, opts \\ []) do
+    opts = Keyword.merge([name: name, type: type(type), doc: doc], opts) |> Enum.into(%{})
+    struct(Field, opts)
   end
 
   def decl(field) do

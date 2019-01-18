@@ -33,6 +33,10 @@ Don't panic
 "
   end
 
+  test "indent_block for nil is nil" do
+    assert Utils.indent_block(nil) == nil
+  end
+
   test "indent_block default indent" do
     assert Utils.indent_block("
 This is a test

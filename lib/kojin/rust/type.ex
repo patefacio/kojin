@@ -43,4 +43,10 @@ defmodule Kojin.Rust.Type do
 
     %Type{base: base, qualified: qualified, primitive?: primitive?}
   end
+
+  defimpl String.Chars do
+    def to_string(t) do
+      inspect(t)
+    end
+  end
 end

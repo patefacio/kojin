@@ -26,7 +26,7 @@ defmodule Kojin.Rust.Utils do
   def indent_block(text, _) when text == nil do
     nil
   end
-  
+
   def indent_block(text, options) do
     defaults = [indent: "  "]
     %{indent: indent} = Keyword.merge(defaults, options) |> Enum.into(%{})
@@ -36,5 +36,4 @@ defmodule Kojin.Rust.Utils do
     |> Enum.map(fn line -> "#{indent}#{line}" end)
     |> Enum.join("\n")
   end
-
 end
