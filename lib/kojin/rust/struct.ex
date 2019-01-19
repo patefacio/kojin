@@ -5,6 +5,9 @@ defmodule Kojin.Rust.Struct do
 
   alias Kojin.Rust.Field
   alias Kojin.Rust.Struct
+  alias Kojin.Rust.Utils
+  import Utils
+
   use TypedStruct
   use Vex.Struct
 
@@ -42,8 +45,30 @@ defmodule Kojin.Rust.Struct do
   end
 
   defimpl String.Chars do
-    def to_string(s) do
-      inspect(s)
+    def to_string(struct) do
+      triple_slash_comment(
+        if String.length(struct.doc) > 0 do
+          struct.doc
+        else
+          "TODO: document #{struct.name}"
+        end
+      ) <> Struct.decl(struct)
     end
+  end
+
+  def decl(struct) do
+    import Kojin.Id
+
+    """
+    struct #{cap_camel(struct.name)} {
+    #{
+      indent_block(
+        struct.fields
+        |> Enum.map(&to_string/1)
+        |> Enum.join(",\n")
+      )
+    }
+    }
+    """
   end
 end

@@ -46,7 +46,7 @@ defmodule Kojin.Rust.Type do
 
   defimpl String.Chars do
     def to_string(t) do
-      inspect(t)
+      t.base
     end
   end
 end

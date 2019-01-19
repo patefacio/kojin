@@ -59,6 +59,6 @@ defmodule Kojin.Rust.Field do
   end
 
   def decl(field) do
-    "#{pub_decl(field)}#{field.name}: #{field.type}"
+    "#{pub_decl(field)}#{field.name}: #{to_string(field.type)}"
   end
 end

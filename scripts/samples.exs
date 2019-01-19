@@ -16,21 +16,21 @@ IO.puts inspect T.type(:str), pretty: true
 IO.puts inspect T.type(:String), pretty: true
 IO.puts inspect T.type(:BamBam), pretty: true
 
-IO.puts decl(%Field{ name: :f_1, doc: "This is a field
+IO.puts %Field{ name: :f_1, doc: "This is a field
 with multiline comment
 
 
-", type: :i32})
+", type: :i32}
 
-IO.puts decl(field(:some_field, :i64, "comment for some field", access: :ro))
+IO.puts field(:some_field, :i64, "comment for some field", access: :ro)
 
-IO.puts inspect struct(:some_struct, "comment for some struct",
+IO.puts struct(:some_struct, "comment for some struct",
       [
         [ :foo, :i32, "foo field", [ access: :wo, pub: false ] ],
         [ :bar, :i64, "bar field" ],
         field(:some_field, :i64, "comment for some field", access: :ia),
 #        field(:some_field, "Foo::Bar", "comment for some field", access: :ia),        
       ]
-    ), pretty: true
+    )
 
 IO.puts T.type(:i32).primitive?

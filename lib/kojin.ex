@@ -3,6 +3,21 @@ defmodule Kojin do
 
   @script_delimiters %{open: "# α", close: "# ω"}
 
+  @doc """
+  Split the text by the specified %{ open: ..., close: ... } delimiters
+  returning the list of split entries.
+
+  ## Examples
+
+  iex> Kojin._split("
+  ...> generated prefix text
+  ...> // α <block_name>
+  ...> hand written text to preserve
+  ...> // ω <block_name>
+  ...> generated postfix text
+  ...> ", %{open: "// α", close: "// ω"})
+  %{ "block_name" => "\n // α <block_name>\n hand written text to preserve\n // ω <block_name>" }
+  """
   def _split(text, delimiters) do
     open = delimiters[:open]
 
@@ -33,6 +48,7 @@ defmodule Kojin do
     _split(prior, delimiters)
     |> Enum.reduce(generated, fn {label, contents}, generated ->
       if(!Map.has_key?(matches_without_content, label)) do
+        IO.puts("WARNING: Losing block `#{delimiters.open} <#{label}>`")
         generated
       else
         String.replace(generated, matches_without_content[label], contents)

@@ -1,37 +1,10 @@
 defmodule KojinTest do
   use ExUnit.Case
+  import ExUnit.CaptureIO
+
   doctest Kojin
 
   @delimiters %{open: "// α", close: "// ω"}
-
-  @script_delimiters %{open: "# α", close: "# ω"}
-
-  test "split works if empty" do
-    #    [] = Kojin._split("", @delimiters)
-  end
-
-  test "split returns text if no blocks" do
-    #    [] = Kojin._split("foo", @delimiters)
-  end
-
-  test "split works with one block" do
-    assert Kojin._split(
-             "
-
-Pre Lore ipsum
-
-// α <foo>
-the good stuff
-// ω <foo>
-
-Post Lore ipsum
-",
-             @delimiters
-           ) == %{"foo" => "
-// α <foo>
-the good stuff
-// ω <foo>"}
-  end
 
   test "split works with multiple blocks" do
     assert Kojin._split(
@@ -92,30 +65,35 @@ Post Lore IPSUM
 "
   end
 
+  test "merge missing block" do
+    template = "
+Pre Lore IPSUM
+
+Post Lore IPSUM
+"
+    prior_text = "
+Pre Lore ipsum
+
+// α <foo>
+the good stuff
+// ω <foo>
+
+Post Lore ipsum
+"
+    assert Kojin.merge(template, prior_text) == "
+Pre Lore IPSUM
+
+Post Lore IPSUM
+"
+
+    assert capture_io(fn -> Kojin.merge(template, prior_text) end) ==
+             "WARNING: Losing block `// α <foo>`\n"
+  end
+
   defmodule IdTest do
     use ExUnit.Case
 
     doctest Kojin.Id
-
-    test "camel" do
-      assert Kojin.Id.camel(["this", "is", "a", "test"]) == "thisIsATest"
-    end
-
-    test "camel 2" do
-      assert Kojin.Id.camel(["this", "is", "a", "test"]) == "thisIsATest"
-    end
-
-    test "snake" do
-      assert Kojin.Id.snake(["this", "is", "a", "test"]) == "this_is_a_test"
-    end
-
-    test "shout" do
-      assert Kojin.Id.shout(["this", "is", "a", "test"]) == "THIS_IS_A_TEST"
-    end
-
-    test "emacs" do
-      assert Kojin.Id.emacs(["this", "is", "a", "test"]) == "this-is-a-test"
-    end
 
     test "loop" do
       words = ["wee", "willie", "winkie"]
@@ -144,8 +122,6 @@ Post Lore IPSUM
       a = %Kojin.Rust.Field{name: :bam_bam, doc: "This is a field", type: "goo", access: :rw}
       assert a == a
       assert Vex.errors(a) == []
-
-      IO.puts(a.name)
     end
 
     test "Field" do
