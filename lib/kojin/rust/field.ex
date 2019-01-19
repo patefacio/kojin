@@ -5,10 +5,11 @@ defmodule Kojin.Rust.Field do
 
   use TypedStruct
   use Vex.Struct
+
   alias Kojin.Rust.Field
-  alias Kojin.Rust.Utils
   alias Kojin.Rust.Type
-  import Kojin.Rust.Type
+  alias Kojin.Rust.Utils
+  import Utils
 
   @typedoc """
   A *field* of a _struct_.
@@ -40,17 +41,24 @@ defmodule Kojin.Rust.Field do
   )
 
   def field(name, type, doc, opts \\ []) do
+    import Type
     opts = Keyword.merge([name: name, type: type(type), doc: doc], opts) |> Enum.into(%{})
     struct(Field, opts)
   end
 
+  defimpl String.Chars do
+    def to_string(field) do
+      triple_slash_comment(
+        if String.length(field.doc) > 0 do
+          field.doc
+        else
+          "TODO: document #{field.name}"
+        end
+      ) <> Field.decl(field)
+    end
+  end
+
   def decl(field) do
-    Utils.triple_slash_comment(
-      if String.length(field.doc) > 0 do
-        field.doc
-      else
-        "TODO: document #{field.name}"
-      end
-    ) <> "#{field.name}: #{field.type}"
+    "#{pub_decl(field)}#{field.name}: #{field.type}"
   end
 end

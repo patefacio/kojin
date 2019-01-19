@@ -36,4 +36,12 @@ defmodule Kojin.Rust.Utils do
     |> Enum.map(fn line -> "#{indent}#{line}" end)
     |> Enum.join("\n")
   end
+
+  def pub_decl(obj) do
+    cond do
+      obj.pub -> "pub "
+      obj.pub_crate -> "pub(crate) "
+      true -> ""
+    end
+  end
 end
