@@ -18,6 +18,15 @@ defmodule Kojin.Rust.Type do
     field(:primitive?, boolean, enforce: true)
   end
 
+  @doc """
+  Returns rust type corresponding to type.
+
+  ## Examples
+
+  iex> 2+3
+  2
+
+  """
   def type(type) when is_atom(type) do
     {qualified, base, primitive?} =
       case type do
@@ -27,7 +36,7 @@ defmodule Kojin.Rust.Type do
         :i16 -> {"i16", "i16", true}
         :i32 -> {"i32", "i32", true}
         :i64 -> {"i64", "i64", true}
-        # unsigned ints     
+        # unsigned ints
         :u8 -> {"u8", "u8", true}
         :u16 -> {"u16", "u16", true}
         :u32 -> {"u32", "u32", true}
@@ -37,11 +46,15 @@ defmodule Kojin.Rust.Type do
         :f64 -> {"f64", "f64", true}
         :unit -> {"()", "()", true}
         :str -> {"str", "str", true}
-        :String -> {"std::string::String", "String", true}
-        _ -> {"Unknown", "Unknown", false}
+        s when s in [:string, :String] -> {"std::string::String", "String", true}
+        atom -> {Atom.to_string(atom), Atom.to_string(atom), false}
       end
 
     %Type{base: base, qualified: qualified, primitive?: primitive?}
+  end
+
+  def type(type) when is_binary(type) do
+    type(String.to_atom(type))
   end
 
   defimpl String.Chars do

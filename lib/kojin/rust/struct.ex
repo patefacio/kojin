@@ -15,21 +15,29 @@ defmodule Kojin.Rust.Struct do
   A rust _struct_.
 
   * :name - The field name in _snake case_
+  * :doc - Documentation for struct
+  * :fields - List of struct fields
   """
   typedstruct do
     field(:name, atom, enforce: true)
     field(:doc, String.t())
     field(:fields, list(Field.t()), default: [])
+    field(:derivables, list(atom), default: [])
+    field(:visibility, atom, default: :private)
   end
 
-  @valid_accesses [:ro, :rw, :ia, :wo]
-  validates(:access, inclusion: @valid_accesses)
+  validates(:visibility, inclusion: Kojin.Rust.allowed_visibilities())
 
-  def valid_name(name) do
-    Atom.to_string(name) |> Kojin.Id.is_snake()
-  end
+  validates(:derivables,
+    by: [
+      function: &Kojin.Rust.valid_derivables?/1,
+      message: "Derivables must be in #{inspect(Kojin.Rust.allowed_derivables(), pretty: true)}"
+    ]
+  )
 
-  validates(:name, by: [function: &Struct.valid_name/1, message: "Struct.name must be snake case"])
+  validates(:name,
+    by: [function: &Kojin.Rust.valid_name/1, message: "Struct.name must be snake case"]
+  )
 
   def _make_field(opts) when is_list(opts) do
     IO.puts("MAKING field #{inspect(opts)}\n-----\n")
@@ -40,8 +48,36 @@ defmodule Kojin.Rust.Struct do
     field
   end
 
-  def struct(name, doc, fields) do
-    %Struct{name: name, doc: doc, fields: Enum.map(fields, &Struct._make_field/1)}
+  def struct(name, doc, fields, opts \\ []) do
+    defaults = [visibility: :private, derivables: []]
+
+    opts =
+      Keyword.merge(defaults, opts)
+      |> Enum.into(%{})
+
+    result = %Struct{
+      name: name,
+      doc: doc,
+      fields: Enum.map(fields, &Struct._make_field/1),
+      visibility: opts.visibility,
+      derivables: opts.derivables
+    }
+
+    if(!Vex.valid?(result)) do
+      raise ArgumentError,
+        message: """
+        Invalid `struct` args:
+        name: #{name}
+        doc: #{doc}
+        fields: #{inspect(fields, pretty: true)}
+        visibility: #{opts.visibility}
+        derivables: #{inspect(opts.derivables, pretty: true)}
+        ------- Struct Validations ---
+        #{inspect(Vex.results(result), pretty: true)}
+        """
+    end
+
+    result
   end
 
   defimpl String.Chars do
@@ -57,10 +93,15 @@ defmodule Kojin.Rust.Struct do
   end
 
   def decl(struct) do
+    import Kojin.Rust
     import Kojin.Id
 
+    visibility = visibility_decl(struct.visibility)
+    derivables_decl = derivables_decl(struct.derivables)
+
     """
-    struct #{cap_camel(struct.name)} {
+    #{String.trim(triple_slash_comment(struct.doc))}
+    #{derivables_decl}#{visibility}struct #{cap_camel(struct.name)} {
     #{
       indent_block(
         struct.fields

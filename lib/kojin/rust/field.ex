@@ -15,9 +15,9 @@ defmodule Kojin.Rust.Field do
   A *field* of a _struct_.
 
   * :name - The field name in _snake case_
+  * :doc - Documentation for the field
   * :type - The rust type of the field
-  * :pub - Specifies field should be `pub`
-  * :pub_crate - Specifies field should be `pub(crate)`
+  * :visibility - The visibility for the field (eg :pub, :pub(crate), etc)
   """
   typedstruct do
     field(:name, atom, enforce: true)
@@ -25,12 +25,13 @@ defmodule Kojin.Rust.Field do
     field(:type, String.t(), enforce: true)
     field(:is_by_ref, boolean, default: false)
     field(:access, atom, default: :ro)
-    field(:pub, boolean, default: false)
-    field(:pub_crate, boolean, default: false)
+    field(:visibility, atom, default: :private)
   end
 
   @valid_accesses [:ro, :rw, :ia, :wo]
   validates(:access, inclusion: @valid_accesses)
+
+  validates(:visibility, inclusion: Kojin.Rust.allowed_visibilities())
 
   def valid_name?(name) do
     Atom.to_string(name) |> Kojin.Id.is_snake()
@@ -59,6 +60,6 @@ defmodule Kojin.Rust.Field do
   end
 
   def decl(field) do
-    "#{pub_decl(field)}#{field.name}: #{to_string(field.type)}"
+    "#{Kojin.Rust.visibility_decl(field.visibility)}#{field.name}: #{to_string(field.type)}"
   end
 end

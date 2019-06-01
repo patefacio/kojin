@@ -3,6 +3,7 @@ defmodule KojinTest do
   import ExUnit.CaptureIO
 
   doctest Kojin
+  doctest Kojin.Rust
 
   @delimiters %{open: "// α", close: "// ω"}
 

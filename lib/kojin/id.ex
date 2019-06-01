@@ -1,4 +1,8 @@
 defmodule Kojin.Id do
+  @moduledoc """
+  Functions for dealing consistently wtih the casing of identifiers.
+  """
+
   # String dividers for snake and emacs case
   @word_divider_re ~r/[_-]/
 

@@ -1,4 +1,9 @@
 defmodule Kojin do
+  @moduledoc """
+  A module for general code generation as well as support
+  for generating `rust` code.
+  """
+
   @delimiters %{open: "// α", close: "// ω"}
 
   @script_delimiters %{open: "# α", close: "# ω"}
@@ -54,5 +59,12 @@ defmodule Kojin do
         String.replace(generated, matches_without_content[label], contents)
       end
     end)
+  end
+
+  def require_snake(name) when is_atom(name) do
+    if !(Atom.to_string(name)
+         |> Kojin.Id.is_snake()) do
+      throw("Name must be snake: `#{name}`")
+    end
   end
 end
