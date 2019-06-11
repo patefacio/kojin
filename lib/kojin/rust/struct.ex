@@ -51,27 +51,21 @@ defmodule Kojin.Rust.Struct do
   def struct(name, doc, fields, opts \\ []) do
     defaults = [visibility: :private, derivables: []]
 
-    opts =
-      Keyword.merge(defaults, opts)
-      |> Enum.into(%{})
+    opts = Keyword.merge(defaults, opts)
 
     result = %Struct{
       name: name,
       doc: doc,
       fields: Enum.map(fields, &Struct._make_field/1),
-      visibility: opts.visibility,
-      derivables: opts.derivables
+      visibility: opts[:visibility],
+      derivables: opts[:derivables]
     }
 
     if(!Vex.valid?(result)) do
       raise ArgumentError,
         message: """
-        Invalid `struct` args:
-        name: #{name}
-        doc: #{doc}
-        fields: #{inspect(fields, pretty: true)}
-        visibility: #{opts.visibility}
-        derivables: #{inspect(opts.derivables, pretty: true)}
+        Invalid `struct`:
+        #{inspect(result, pretty: true)}
         ------- Struct Validations ---
         #{inspect(Vex.results(result), pretty: true)}
         """

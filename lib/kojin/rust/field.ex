@@ -42,9 +42,17 @@ defmodule Kojin.Rust.Field do
   )
 
   def field(name, type, doc, opts \\ []) do
-    import Type
-    opts = Keyword.merge([name: name, type: type(type), doc: doc], opts) |> Enum.into(%{})
-    struct(Field, opts)
+    alias Kojin.Rust.Type
+    opts = Keyword.merge([access: :ro, visibility: :private], opts)
+
+    %Field{
+      name: name,
+      doc: doc,
+      type: Type.type(type),
+      is_by_ref: opts[:is_by_ref],
+      access: opts[:access],
+      visibility: opts[:visibility]
+    }
   end
 
   defimpl String.Chars do

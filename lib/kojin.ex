@@ -67,4 +67,28 @@ defmodule Kojin do
       throw("Name must be snake: `#{name}`")
     end
   end
+
+
+  def check_args(defaults, passed) do
+    unexpected = Keyword.keys(passed) -- Keyword.keys(defaults)
+    if(!Enum.empty?(unexpected)) do
+      raise ArgumentError,
+        message: "Unexpected args: #{inspect unexpected} when allowed #{inspect Keyword.keys(defaults)}"
+    end
+    Keyword.merge(defaults, passed)
+  end
+
+  def listify(l) when is_list(l) do
+    l
+  end
+
+  def listify(l) do
+    [l]
+  end
+
+  def dark_matter(t) when is_binary(t), do: String.replace(t, ~r/\s*/, "")
+
+  def dark_matter(t), do: dark_matter("#{t}")
+
+
 end
