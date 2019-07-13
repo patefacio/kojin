@@ -7,7 +7,7 @@ defmodule Kojin.Rust.SimpleEnum do
 
   alias Kojin.Rust.SimpleEnum
   alias Kojin.Rust.UnitVariant
-  alias Kojin.Rust.Utils
+  alias Kojin.Utils
   import Utils
 
   use TypedStruct

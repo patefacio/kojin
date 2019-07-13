@@ -17,7 +17,7 @@ defmodule FnTest do
   import Kojin.Rust.Fn
   import Kojin.Rust.Generic
   import Kojin.Rust.Parm
-  import Kojin.Rust.Utils
+  import Kojin.Utils
 
   test "fn with no args" do
     assert dark_matter(

@@ -41,7 +41,7 @@ defmodule Kojin.Rust.TypeParm do
   end
 
   def bounds_decl(type_parm) do
-    bounds = Kojin.Rust.Utils.indent_block("#{type_parm.bounds}")
+    bounds = Kojin.Utils.indent_block("#{type_parm.bounds}")
     "#{type_parm.name}: #{bounds}"
   end
 

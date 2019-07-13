@@ -8,7 +8,7 @@ defmodule Kojin.Rust.Field do
 
   alias Kojin.Rust.Field
   alias Kojin.Rust.Type
-  alias Kojin.Rust.Utils
+  alias Kojin.Utils
   import Utils
 
   @typedoc """

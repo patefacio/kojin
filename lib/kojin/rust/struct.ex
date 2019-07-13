@@ -5,7 +5,7 @@ defmodule Kojin.Rust.Struct do
 
   alias Kojin.Rust.Field
   alias Kojin.Rust.Struct
-  alias Kojin.Rust.Utils
+  alias Kojin.Utils
   import Utils
 
   use TypedStruct

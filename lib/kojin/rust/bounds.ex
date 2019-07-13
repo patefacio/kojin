@@ -19,6 +19,9 @@ defmodule Kojin.Rust.Bounds do
     Map.put(current, :traits, [bound | traits])
   end
 
+  @doc """
+  Validates lifetime, ensuring it consists only of word characters
+  """
   defp lifetime(lt) when is_atom(lt) do
     true = Regex.match?(~r/^\w+$/, "#{lt}")
     lt
@@ -28,7 +31,10 @@ defmodule Kojin.Rust.Bounds do
 
   @doc """
   When specifying a list of bounds, use atoms for the lifetimes
-  and strings for the trait bounds
+  and strings for the trait bounds.
+
+  When specifying as hash {lifetimes:..., traits:...}
+  atoms or strings work.
   """
   def bounds(bounds) when is_list(bounds) do
     opts =
@@ -43,10 +49,6 @@ defmodule Kojin.Rust.Bounds do
     })
   end
 
-  @doc """
-  When specifying as hash {lifetimes:..., traits:...}
-  atoms or strings work.
-  """
   def bounds(bounds) when is_map(bounds) do
     lifetimes =
       bounds

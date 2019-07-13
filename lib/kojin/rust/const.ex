@@ -8,7 +8,7 @@ defmodule Kojin.Rust.Const do
   import Kojin.Id
   import Kojin.Rust
   alias Kojin.Rust.Type
-  import Kojin.Rust.Utils
+  import Kojin.Utils
 
   alias Kojin.Rust.Const
   #  alias Kojin.Rust.Utils

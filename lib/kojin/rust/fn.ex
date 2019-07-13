@@ -61,7 +61,7 @@ defmodule Kojin.Rust.Fn do
   import Kojin.Rust.Type
   alias Kojin.Rust.Generic
   import Kojin.Id
-  import Kojin.Rust.Utils
+  import Kojin.Utils
   alias Kojin.Rust.Fn
   alias Kojin.Rust.Parm
 
