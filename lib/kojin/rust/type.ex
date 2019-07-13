@@ -47,7 +47,6 @@ defmodule Kojin.Rust.Type do
 
   def type(:char), do: %Type{base: "char", primitive?: true}
 
-
   @doc """
   Returns rust type corresponding to type.
   """
@@ -55,9 +54,11 @@ defmodule Kojin.Rust.Type do
   def type(%Type{} = type), do: type
   def type(type) when is_binary(type), do: type(String.to_atom(type))
 
-  def ref(t, lifetime \\ nil), do: %Type{ primitive?: false, referrent: type(t), ref: true, lifetime: lifetime }
+  def ref(t, lifetime \\ nil),
+    do: %Type{primitive?: false, referrent: type(t), ref: true, lifetime: lifetime}
 
-  def mref(t, lifetime \\ nil), do: %Type{ primitive?: false, referrent: type(t), mref: true, lifetime: lifetime }
+  def mref(t, lifetime \\ nil),
+    do: %Type{primitive?: false, referrent: type(t), mref: true, lifetime: lifetime}
 
   defp lifetime(t) do
     cond do
@@ -67,16 +68,18 @@ defmodule Kojin.Rust.Type do
   end
 
   def code(t, with_lifetimes \\ true) do
-    lifetime = if with_lifetimes do
-      lifetime(t)
-    else
-      ""
-    end
+    lifetime =
+      if with_lifetimes do
+        lifetime(t)
+      else
+        ""
+      end
+
     cond do
-      (t.base != nil) -> t.base
+      t.base != nil -> t.base
       t.mref -> "&#{lifetime} mut #{code(t.referrent, with_lifetimes)}"
       t.ref -> "&#{lifetime} #{code(t.referrent, with_lifetimes)}"
-      true -> raise "A type must be a named {type, mref, or ref} -> #{inspect t}"
+      true -> raise "A type must be a named {type, mref, or ref} -> #{inspect(t)}"
     end
   end
 
@@ -85,5 +88,4 @@ defmodule Kojin.Rust.Type do
       Type.code(t)
     end
   end
-
 end

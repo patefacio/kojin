@@ -68,13 +68,15 @@ defmodule Kojin do
     end
   end
 
-
   def check_args(defaults, passed) do
     unexpected = Keyword.keys(passed) -- Keyword.keys(defaults)
+
     if(!Enum.empty?(unexpected)) do
       raise ArgumentError,
-        message: "Unexpected args: #{inspect unexpected} when allowed #{inspect Keyword.keys(defaults)}"
+        message:
+          "Unexpected args: #{inspect(unexpected)} when allowed #{inspect(Keyword.keys(defaults))}"
     end
+
     Keyword.merge(defaults, passed)
   end
 
@@ -89,6 +91,4 @@ defmodule Kojin do
   def dark_matter(t) when is_binary(t), do: String.replace(t, ~r/\s*/, "")
 
   def dark_matter(t), do: dark_matter("#{t}")
-
-
 end

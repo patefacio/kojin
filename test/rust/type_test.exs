@@ -2,17 +2,25 @@ defmodule TypeTest do
   use ExUnit.Case
   import Kojin.Rust.Type
   alias Kojin.Rust.Type
-  #import ExUnit.CaptureIO
+  # import ExUnit.CaptureIO
 
   test "s" do
-
     import Type
 
     [
-      :i8, :i16, :i32, :i64,
-      :u8, :u16, :u32, :u64,
-      :f32, :f64, :str, :String,
-      :char,
+      :i8,
+      :i16,
+      :i32,
+      :i64,
+      :u8,
+      :u16,
+      :u32,
+      :u64,
+      :f32,
+      :f64,
+      :str,
+      :String,
+      :char
     ]
     |> Enum.each(fn t_atom ->
       t = type(t_atom)
@@ -38,7 +46,8 @@ defmodule TypeTest do
     end)
 
     [
-      :Result, "Result<T>"
+      :Result,
+      "Result<T>"
     ]
     |> Enum.each(fn type_literal ->
       t = type(type_literal)
@@ -50,7 +59,6 @@ defmodule TypeTest do
       assert code(mref(type_literal)) == "& mut #{t_code}"
       assert code(ref(type_literal, :b)) == "& 'b #{t_code}"
       assert code(mref(type_literal, :b)) == "& 'b mut #{t_code}"
-
     end)
   end
 end

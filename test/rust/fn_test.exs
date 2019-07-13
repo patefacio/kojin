@@ -64,7 +64,7 @@ defmodule FnTest do
                "Foo does your basic `foo` stuff.",
                [
                  parm(:a, :A, doc: "Your basic A"),
-                 parm(:b, :B, mutable?: true, doc: "The `b` to foo"),
+                 parm(:b, :B, mut: true, doc: "The `b` to foo"),
                  parm(:c, :C, doc: "Required")
                ],
                return: :i32,
@@ -85,21 +85,24 @@ defmodule FnTest do
 
   test "fn with generic" do
     IO.puts(
-             fun(
-               :do_it,
-               nil,
-               [
-                 parm(:a, ref(:A), doc: "Your basic A"),
-                 parm(:b, :B, mutable?: true, doc: "The `b` to foo"),
-                 parm(:c, :C, doc: "Required")
-               ],
-               generic: [[ :T1, [:T3,  [bounds: [ :Infinite, :Collapsible, :Responsible ]]]], [lifetimes: [:a, :b]]],
-               return: :i32,
-               inline: true
-             )
-             |> Fn.code)
+      fun(
+        :do_it,
+        "Magic do it function",
+        [
+          parm(:a, ref(:A, :a), doc: "Your basic A"),
+          parm(:b, mref(:B, :b), mut: true, doc: "The `b` to foo"),
+          parm(:c, :C, doc: "Required")
+        ],
+        generic: [
+          [:T1, [:T3, bounds: [:a, :b, "Infinite", "Collapsible", "Responsible"]]],
+          lifetimes: [:a, :b]
+        ],
+        return: :i32,
+        inline: true
+      )
+      |> String.Chars.to_string()
+    )
   end
-
 
   test "struct play" do
     a = %X{name: :dan, weight: 75.0, age: 23}
@@ -111,7 +114,7 @@ defmodule FnTest do
     IO.puts(a < b)
     IO.puts(a > b)
 
-    IO.puts(a<c)
-    IO.puts(c<a)
+    IO.puts(a < c)
+    IO.puts(c < a)
   end
 end

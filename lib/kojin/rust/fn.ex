@@ -14,12 +14,12 @@ defmodule Kojin.Rust.Parm do
     field(:name, atom, enforce: true)
     field(:type, Type.t(), enforce: true, default: :double)
     field(:doc, String.t())
-    field(:mutable?, boolean(), default: false)
+    field(:mut, boolean(), default: false)
   end
 
   def code(parm) do
     mutable =
-      if(parm.mutable?) do
+      if(parm.mut) do
         "mut "
       else
         ""
@@ -29,14 +29,14 @@ defmodule Kojin.Rust.Parm do
   end
 
   def parm(name, type, opts \\ []) do
-    defaults = [mutable?: false, doc: "TODO: Comment #{name}"]
+    defaults = [mut: false, doc: "TODO: Comment #{name}"]
     opts = Keyword.merge(defaults, opts)
 
     result = %Parm{
       name: name,
       type: Type.type(type),
       doc: opts[:doc],
-      mutable?: opts[:mutable?]
+      mut: opts[:mut]
     }
 
     result
@@ -89,11 +89,12 @@ defmodule Kojin.Rust.Fn do
       parms: parms,
       return: type(opts[:return]),
       inline: opts[:inline],
-      generic: if(opts[:generic] != nil) do
-        apply(Generic, :generic, opts[:generic])
-      else
-        nil
-      end,
+      generic:
+        if(opts[:generic] != nil) do
+          Generic.generic(opts[:generic])
+        else
+          nil
+        end,
       consts: opts[:consts]
     }
   end
@@ -119,11 +120,11 @@ defmodule Kojin.Rust.Fn do
       end
 
     {generic, bounds_decl} =
-    if(fun.generic) do
-      { Generic.code(fun.generic), Generic.bounds_decl(fun.generic) }
-    else
-      {"", ""}
-    end
+      if(fun.generic) do
+        {Generic.code(fun.generic), Generic.bounds_decl(fun.generic)}
+      else
+        {"", ""}
+      end
 
     """
     #{inline}fn#{generic} #{snake(fun.name)}(#{parms})#{rt}#{bounds_decl} {
