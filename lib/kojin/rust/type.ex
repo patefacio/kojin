@@ -1,6 +1,12 @@
 defmodule Kojin.Rust.Type do
   @moduledoc """
   Rust _type_.
+
+  Lifetimes are not part of the type. However, when specifying types
+  in the context of a function signature or any reference type in a
+  struct definition, lifetimes may _annotate_ the reference or type.
+
+  So as a convenience, the type allows for a lifetime association.
   """
 
   alias Kojin.Rust.Type
@@ -18,52 +24,58 @@ defmodule Kojin.Rust.Type do
     field(:referrent, Type.t())
     field(:mref, boolean, default: false)
     field(:ref, boolean, default: false)
+    field(:lifetime, atom, default: nil)
   end
+
+  def type(nil), do: nil
+  def type(:i8), do: %Type{base: "i8", primitive?: true}
+  def type(:i16), do: %Type{base: "i16", primitive?: true}
+  def type(:i32), do: %Type{base: "i32", primitive?: true}
+  def type(:i64), do: %Type{base: "i64", primitive?: true}
+
+  def type(:u8), do: %Type{base: "u8", primitive?: true}
+  def type(:u16), do: %Type{base: "u16", primitive?: true}
+  def type(:u32), do: %Type{base: "u32", primitive?: true}
+  def type(:u64), do: %Type{base: "u64", primitive?: true}
+
+  def type(:f32), do: %Type{base: "f32", primitive?: true}
+  def type(:f64), do: %Type{base: "f64", primitive?: true}
+  def type(:unit), do: %Type{base: "()", primitive?: true}
+  def type(:str), do: %Type{base: "str", primitive?: true}
+  def type(:string), do: %Type{base: "String", primitive?: true}
+  def type(:String), do: type(:string)
+
+  def type(:char), do: %Type{base: "char", primitive?: true}
+
 
   @doc """
   Returns rust type corresponding to type.
   """
-  def type(type) when is_atom(type) do
-    if type == nil do
-      nil
-    else
-      {base, primitive?} =
-        case type do
-          :char -> {"char", "char", true}
-          # signed ints
-          :i8 -> {"i8", true}
-          :i16 -> {"i16", true}
-          :i32 -> {"i32", true}
-          :i64 -> {"i64", true}
-          # unsigned ints
-          :u8 -> {"u8", true}
-          :u16 -> {"u16", true}
-          :u32 -> {"u32", true}
-          :u64 -> {"u64", true}
-          # floats
-          :f32 -> {"f32", true}
-          :f64 -> {"f64", true}
-          :unit -> {"()", true}
-          :str -> {"str", true}
-          s when s in [:string, :String] -> {"String", true}
-          atom -> {Atom.to_string(atom), false}
-        end
-
-      %Type{base: base, primitive?: primitive?}
-    end
-  end
-
+  def type(type) when is_atom(type), do: %Type{base: Atom.to_string(type), primitive?: false}
   def type(%Type{} = type), do: type
   def type(type) when is_binary(type), do: type(String.to_atom(type))
 
-  def ref(t), do: %Type{ primitive?: false, referrent: type(t), ref: true }
-  def mref(t), do: %Type{ primitive?: false, referrent: type(t), mref: true }
+  def ref(t, lifetime \\ nil), do: %Type{ primitive?: false, referrent: type(t), ref: true, lifetime: lifetime }
 
-  def code(t) do
+  def mref(t, lifetime \\ nil), do: %Type{ primitive?: false, referrent: type(t), mref: true, lifetime: lifetime }
+
+  defp lifetime(t) do
+    cond do
+      t.lifetime == nil -> ""
+      true -> " '#{t.lifetime}"
+    end
+  end
+
+  def code(t, with_lifetimes \\ true) do
+    lifetime = if with_lifetimes do
+      lifetime(t)
+    else
+      ""
+    end
     cond do
       (t.base != nil) -> t.base
-      t.mref -> "& mut #{code(t.referrent)}"
-      t.ref -> "& #{code(t.referrent)}"
+      t.mref -> "&#{lifetime} mut #{code(t.referrent, with_lifetimes)}"
+      t.ref -> "&#{lifetime} #{code(t.referrent, with_lifetimes)}"
       true -> raise "A type must be a named {type, mref, or ref} -> #{inspect t}"
     end
   end

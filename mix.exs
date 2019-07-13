@@ -25,7 +25,8 @@ defmodule Kojin.MixProject do
       {:vex, "~> 0.8.0"},
       {:ex_doc, "~> 0.19.2"},
       {:jason, "~> 1.1"},
-      {:dialyxir, "~> 0.5", only: [:dev], runtime: false}
+      {:dialyxir, "~> 0.5", only: [:dev], runtime: false},
+      {:nimble_parsec, "~> 0.5.0" }
       # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"},
     ]
   end

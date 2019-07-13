@@ -72,11 +72,11 @@ defmodule Kojin.Rust.Fn do
     field(:name, atom, enforce: true)
     field(:doc, String.t())
     field(:parms, list())
-    field(:return, Type.t())
+    field(:return, Kojin.Rust.Type.t())
     field(:return_doc, String.t())
     field(:inline, boolean(), default: false)
     field(:generic, Generic.t(), default: nil)
-    field(:consts, Const.t())
+    field(:consts, Kojin.Rust.Const.t())
   end
 
   def fun(name, doc, parms, opts \\ []) do
