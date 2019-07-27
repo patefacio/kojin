@@ -40,14 +40,14 @@ defmodule Kojin.Rust.Struct do
   )
 
   def _make_field(opts) when is_list(opts) do
-    IO.puts("MAKING field #{inspect(opts)}\n-----\n")
-    apply(Field, :field, opts)
+    Field.field(opts)
   end
 
   def _make_field(field = %Field{}) do
     field
   end
 
+  @spec struct(String.t() | atom, String.t(), list(Field.t()), keyword) :: Kojin.Rust.Struct.t()
   def struct(name, doc, fields, opts \\ []) do
     defaults = [visibility: :private, derivables: []]
 
@@ -76,13 +76,7 @@ defmodule Kojin.Rust.Struct do
 
   defimpl String.Chars do
     def to_string(struct) do
-      triple_slash_comment(
-        if String.length(struct.doc) > 0 do
-          struct.doc
-        else
-          "TODO: document #{struct.name}"
-        end
-      ) <> Struct.decl(struct)
+      Struct.decl(struct)
     end
   end
 

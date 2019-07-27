@@ -23,7 +23,7 @@ defmodule Kojin.Rust.Field do
     field(:name, atom, enforce: true)
     field(:doc, String.t())
     field(:type, String.t(), enforce: true)
-    field(:is_by_ref, boolean, default: false)
+    field(:by_ref?, boolean, default: false)
     field(:access, atom, default: :ro)
     field(:visibility, atom, default: :private)
   end
@@ -41,7 +41,8 @@ defmodule Kojin.Rust.Field do
     by: [function: &Kojin.Rust.Field.valid_name?/1, message: "Field.name must be snake case"]
   )
 
-  def field(name, type, doc, opts \\ []) do
+  def field(name, type, doc, opts \\ [])
+      when (is_binary(name) or is_atom(name)) and is_binary(doc) do
     alias Kojin.Rust.Type
     opts = Keyword.merge([access: :ro, visibility: :private], opts)
 
@@ -49,10 +50,14 @@ defmodule Kojin.Rust.Field do
       name: name,
       doc: doc,
       type: Type.type(type),
-      is_by_ref: opts[:is_by_ref],
+      by_ref?: opts[:by_ref?],
       access: opts[:access],
       visibility: opts[:visibility]
     }
+  end
+
+  def field([name, type, doc]) do
+    Field.field(name, type, doc)
   end
 
   defimpl String.Chars do

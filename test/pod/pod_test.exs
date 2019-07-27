@@ -25,7 +25,7 @@ defmodule PodTest do
           doc: "bam",
           fields: [
             pod_field(:foo, "doc string", type: :Int32),
-            pod_field(:foo_bar_oo, "Bam", type: :Int64, is_optional: true)
+            pod_field(:foo_bar_oo, "Bam", type: :Int64, optional?: true)
           ]
         },
         pretty: true
@@ -47,7 +47,7 @@ defmodule PodTest do
   end
 
   test "pod field" do
-    pf = pod_field(:foo_bar, "sample foo bar field", is_optional: true)
+    pf = pod_field(:foo_bar, "sample foo bar field", optional?: true)
     IO.puts(pf)
   end
 end

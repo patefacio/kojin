@@ -22,8 +22,8 @@ defmodule Kojin.Rust.Type do
     field(:base, String.t())
     field(:primitive?, boolean, default: false)
     field(:referrent, Type.t())
-    field(:mref, boolean, default: false)
-    field(:ref, boolean, default: false)
+    field(:mref?, boolean, default: false)
+    field(:ref?, boolean, default: false)
     field(:lifetime, atom, default: nil)
   end
 
@@ -55,10 +55,13 @@ defmodule Kojin.Rust.Type do
   def type(type) when is_binary(type), do: type(String.to_atom(type))
 
   def ref(t, lifetime \\ nil),
-    do: %Type{primitive?: false, referrent: type(t), ref: true, lifetime: lifetime}
+    do: %Type{primitive?: false, referrent: type(t), ref?: true, lifetime: lifetime}
 
+  @doc """
+  Create type that is *mutable reference* to `t` with specified `lifetime`
+  """
   def mref(t, lifetime \\ nil),
-    do: %Type{primitive?: false, referrent: type(t), mref: true, lifetime: lifetime}
+    do: %Type{primitive?: false, referrent: type(t), mref?: true, lifetime: lifetime}
 
   defp lifetime(t) do
     cond do
@@ -77,8 +80,8 @@ defmodule Kojin.Rust.Type do
 
     cond do
       t.base != nil -> t.base
-      t.mref -> "&#{lifetime} mut #{code(t.referrent, with_lifetimes)}"
-      t.ref -> "&#{lifetime} #{code(t.referrent, with_lifetimes)}"
+      t.mref? -> "&#{lifetime} mut #{code(t.referrent, with_lifetimes)}"
+      t.ref? -> "&#{lifetime} #{code(t.referrent, with_lifetimes)}"
       true -> raise "A type must be a named {type, mref, or ref} -> #{inspect(t)}"
     end
   end

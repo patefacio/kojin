@@ -26,22 +26,22 @@ defmodule TypeTest do
       t = type(t_atom)
       t_code = code(t)
       assert t_code == t_code
-      assert %Type{base: t_code, primitive?: true, ref: false, mref: false} = t
+      assert %Type{base: t_code, primitive?: true, ref?: false, mref?: false} = t
 
       ref = ref(t_atom)
-      assert %Type{referrent: t, primitive?: false, ref: true, mref: false} = ref
+      assert %Type{referrent: t, primitive?: false, ref?: true, mref?: false} = ref
       assert code(ref) == "& #{t}"
 
       ref = ref(t_atom, :a)
-      assert %Type{referrent: t, primitive?: false, ref: true, mref: false, lifetime: :a} = ref
+      assert %Type{referrent: t, primitive?: false, ref?: true, mref?: false, lifetime: :a} = ref
       assert code(ref) == "& 'a #{t}"
 
       mref = mref(t_atom)
-      assert %Type{referrent: t, primitive?: false, ref: false, mref: true} = mref
+      assert %Type{referrent: t, primitive?: false, ref?: false, mref?: true} = mref
       assert code(mref) == "& mut #{t_code}"
 
       mref = mref(t_atom, :a)
-      assert %Type{referrent: t, primitive?: false, ref: false, mref: true, lifetime: :a} = mref
+      assert %Type{referrent: t, primitive?: false, ref?: false, mref?: true, lifetime: :a} = mref
       assert code(mref) == "& 'a mut #{t_code}"
     end)
 
@@ -53,7 +53,7 @@ defmodule TypeTest do
       t = type(type_literal)
       t_code = code(t)
       assert t_code == t_code
-      assert %Type{primitive?: false, base: t_code, ref: false, mref: false} = t
+      assert %Type{primitive?: false, base: t_code, ref?: false, mref?: false} = t
 
       assert code(ref(type_literal)) == "& #{t_code}"
       assert code(mref(type_literal)) == "& mut #{t_code}"

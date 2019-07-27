@@ -56,8 +56,6 @@ defmodule Kojin.Rust.Fn do
 
   use TypedStruct
   use Vex.Struct
-  import Kojin
-  import Kojin.Rust.Const
   import Kojin.Rust.Type
   alias Kojin.Rust.Generic
   import Kojin.Id

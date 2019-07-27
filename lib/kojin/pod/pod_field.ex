@@ -8,7 +8,7 @@ defmodule Kojin.PodField do
   alias Kojin.PodField
   # use Vex.Struct
 
-  @derive {Encoder, only: [:name, :doc, :type, :is_optional, :default_value]}
+  @derive {Encoder, only: [:name, :doc, :type, :optional?, :default_value]}
 
   @typedoc """
   A plain old data object.
@@ -17,7 +17,7 @@ defmodule Kojin.PodField do
     field(:name, atom, enforce: true)
     field(:doc, String.t())
     field(:type, atom | String.t(), enforce: true)
-    field(:is_optional, boolean(), default: false)
+    field(:optional?, boolean(), default: false)
     field(:default_value, any())
   end
 
