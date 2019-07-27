@@ -28,6 +28,9 @@ defmodule Kojin.Rust.Parm do
     "#{mutable}#{snake(parm.name)}: #{Type.code(parm.type)}"
   end
 
+  def parm(%Parm{} = parm), do: parm
+  def parm([name, type | opts]), do: parm(name, type, opts)
+
   def parm(name, type, opts \\ []) do
     defaults = [mut: false, doc: "TODO: Comment #{name}"]
     opts = Keyword.merge(defaults, opts)
@@ -77,15 +80,27 @@ defmodule Kojin.Rust.Fn do
     field(:consts, Kojin.Rust.Const.t())
   end
 
+  defp return({t, doc}), do: {type(t), doc}
+  defp return(t), do: return({t, nil})
+
   def fun(name, doc, parms, opts \\ []) do
     defaults = [return: nil, return_doc: "", inline: false, generic: nil, consts: []]
     opts = Keyword.merge(defaults, opts)
+    {return, return_doc} = return(opts[:return])
+
+    return_doc =
+      if(!return_doc) do
+        opts[:return_doc]
+      else
+        return_doc
+      end
 
     %Fn{
       name: name,
       doc: doc,
-      parms: parms,
-      return: type(opts[:return]),
+      parms: Enum.map(parms, fn parm -> Parm.parm(parm) end),
+      return: return,
+      return_doc: return_doc,
       inline: opts[:inline],
       generic:
         if(opts[:generic] != nil) do
@@ -131,9 +146,24 @@ defmodule Kojin.Rust.Fn do
   end
 
   def doc(fun) do
-    parmDocs =
-      fun.parms
-      |> Enum.map(fn parm -> " * `#{parm.name}` #{parm.doc}" end)
+    return_doc =
+      if fun.return do
+        if fun.return_doc && fun.return_doc != "" do
+          " * _return_ - #{fun.return_doc}\n"
+        else
+          " * _return_ - TODO: document return\n"
+        end
+      else
+        ""
+      end
+
+    signature_docs =
+      [
+        fun.parms
+        |> Enum.map(fn parm -> " * `#{parm.name}` #{parm.doc}" end),
+        return_doc
+      ]
+      |> List.flatten()
       |> Enum.join("\n")
 
     triple_slash_comment(
@@ -142,7 +172,7 @@ defmodule Kojin.Rust.Fn do
       else
         "TODO: document #{fun.name}"
       end <>
-        parmDocs
+        signature_docs
     )
   end
 

@@ -88,6 +88,10 @@ defmodule Kojin do
     [l]
   end
 
+  @doc "
+  Returns string wtih all white space removed `binary`
+  "
+  @spec dark_matter(binary) :: binary
   def dark_matter(t) when is_binary(t), do: String.replace(t, ~r/\s*/, "")
 
   def dark_matter(t), do: dark_matter("#{t}")
