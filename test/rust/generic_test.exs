@@ -1,7 +1,6 @@
 defmodule GenericTest do
   use ExUnit.Case
   import Kojin
-  import ExUnit.CaptureIO
   alias Kojin.Rust.Generic
   alias Kojin.Rust.TypeParm
   import Generic

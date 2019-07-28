@@ -2,7 +2,6 @@ defmodule TypeTest do
   use ExUnit.Case
   import Kojin.Rust.Type
   alias Kojin.Rust.Type
-  # import ExUnit.CaptureIO
 
   test "s" do
     import Type

@@ -1,6 +1,5 @@
 defmodule ConstTest do
   use ExUnit.Case
-  import ExUnit.CaptureIO
   import Kojin.Rust.Const
 
   test "const decl test" do

@@ -1,13 +1,9 @@
 defmodule FnTest do
   use ExUnit.Case
-  import ExUnit.CaptureIO
   import Kojin
   import Kojin.Rust.Type
-  alias Kojin.Rust.Fn
   import Kojin.Rust.Fn
-  import Kojin.Rust.Generic
   import Kojin.Rust.Parm
-  import Kojin.Utils
   import TestHelper
 
   test "fn with no args" do
@@ -41,7 +37,7 @@ defmodule FnTest do
              dark_matter("""
              ///  Foo with no return.
              ///
-             ///   * `a` Your basic A
+             ///   * `a` - Your basic A
              #[inline]
              fn do_it(a: A) {
              }
@@ -64,9 +60,9 @@ defmodule FnTest do
       """
       ///  Foo does your basic `foo` stuff.
       ///
-      ///   * `a` Your basic A
-      ///   * `b` The `b` to foo
-      ///   * `c` Required
+      ///   * `a` - Your basic A
+      ///   * `b` - The `b` to foo
+      ///   * `c` - Required
       ///   * _return_ - TODO: document return
       #[inline]
       fn do_it(a: A, mut b: B, c: C) -> i32 {
@@ -110,10 +106,10 @@ defmodule FnTest do
     dark_compare(f, """
     ///  Magic do it function
     ///
-    ///   * `a` Your basic A
-    ///   * `b` The `b` to foo
-    ///   * `c` Required
-    ///   * `d` TODO: Comment d
+    ///   * `a` - Your basic A
+    ///   * `b` - The `b` to foo
+    ///   * `c` - Required
+    ///   * `d` - TODO: Comment d
     ///   * _return_ - Foo
     #[inline]
     fn<'a, 'b, T1, T3> do_it(a: & 'a A, mut b: & 'b mut B, c: C, d: i32) -> i32
@@ -121,29 +117,5 @@ defmodule FnTest do
     T3:   'a + 'b + Infinite + Collapsible + Responsible {
     }
     """)
-  end
-
-  defmodule X do
-    use TypedStruct
-
-    typedstruct enforce: true do
-      field(:name, String.t())
-      field(:age, integer())
-      field(:weight, number())
-    end
-  end
-
-  test "struct play" do
-    a = %X{name: :dan, weight: 75.0, age: 23}
-    b = %X{weight: 75.0, name: :dan, age: 23}
-    c = %X{weight: 75.0, name: :adam, age: :two}
-    IO.puts(inspect(a))
-    IO.puts(inspect(c))
-    IO.puts(a == b)
-    IO.puts(a < b)
-    IO.puts(a > b)
-
-    IO.puts(a < c)
-    IO.puts(c < a)
   end
 end

@@ -41,7 +41,7 @@ defmodule Kojin.Rust.Field do
     by: [function: &Kojin.Rust.Field.valid_name?/1, message: "Field.name must be snake case"]
   )
 
-  def field(name, type, doc, opts \\ [])
+  def field(name, type, doc \\ "TODO: Comment field", opts \\ [])
       when (is_binary(name) or is_atom(name)) and is_binary(doc) do
     alias Kojin.Rust.Type
     opts = Keyword.merge([access: :ro, visibility: :private], opts)
@@ -56,9 +56,8 @@ defmodule Kojin.Rust.Field do
     }
   end
 
-  def field([name, type, doc]) do
-    Field.field(name, type, doc)
-  end
+  def field([name, type, doc]), do: Field.field(name, type, doc)
+  def field([name, type]), do: Field.field(name, type)
 
   defimpl String.Chars do
     def to_string(field) do

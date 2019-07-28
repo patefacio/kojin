@@ -26,7 +26,7 @@ defmodule Kojin.Rust.TypeParm do
   def type_parm(name, opts) when is_binary(name), do: type_parm(String.to_atom(name), opts)
 
   def type_parm(name, opts) when is_atom(name) do
-    Logger.info("type parm name -> #{name} opts -> #{inspect(opts)}")
+    Logger.debug("type parm name -> #{name} opts -> #{inspect(opts)}")
     opts = check_args([default_type: nil, bounds: []], opts)
 
     %TypeParm{
@@ -90,7 +90,7 @@ defmodule Kojin.Rust.Generic do
   Creates generic when given type parms plus additional options
   """
   def generic(type_parms, opts \\ []) when is_list(type_parms) do
-    Logger.info("Generic Opts #{inspect(type_parms)} -> #{inspect(opts)}")
+    Logger.debug("Generic Opts #{inspect(type_parms)} -> #{inspect(opts)}")
     opts = check_args([lifetimes: []], opts)
 
     %Generic{

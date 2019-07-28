@@ -1,6 +1,5 @@
 defmodule EnumTest do
   use ExUnit.Case
-  import ExUnit.CaptureIO
 
   import Kojin.Rust.SimpleEnum
   import Kojin.Rust.TupleVariant

@@ -160,7 +160,7 @@ defmodule Kojin.Rust.Fn do
     signature_docs =
       [
         fun.parms
-        |> Enum.map(fn parm -> " * `#{parm.name}` #{parm.doc}" end),
+        |> Enum.map(fn parm -> " * `#{parm.name}` - #{parm.doc}" end),
         return_doc
       ]
       |> List.flatten()
