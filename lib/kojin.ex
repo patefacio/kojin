@@ -61,6 +61,28 @@ defmodule Kojin do
     end)
   end
 
+  @doc """
+  Merge `generated` content into contents of `file_path` using
+  protection `delimiters`.
+
+  Will print `No change {file_path}` if no change or
+  `Wrote {file_path}` if file was updated.
+  """
+  @spec merge_generated_with_file(String.t(), String.t(), keyword) :: nil
+  def merge_generated_with_file(generated, file_path, delimiters \\ []) do
+    prior = File.read!(file_path)
+    merged_content = Kojin.merge(generated, prior, delimiters)
+
+    if(prior != merged_content) do
+      File.write!(file_path, merged_content)
+      IO.puts("Wrote #{file_path}")
+    else
+      IO.puts("No change #{file_path}")
+    end
+
+    nil
+  end
+
   def require_snake(name) when is_atom(name) do
     if !(Atom.to_string(name)
          |> Kojin.Id.is_snake()) do

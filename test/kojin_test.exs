@@ -130,5 +130,22 @@ Post Lore IPSUM
 
       assert %Field{name: :foo, type: :goo} == %Field{name: :foo, type: :goo}
     end
+
+    test "merge file" do
+      assert capture_io(fn ->
+               Kojin.merge_generated_with_file(
+                 """
+                 fn foo_bar() {
+                   this_is_sample_data = 1;
+
+                   // α <sample_identifier>
+                   // ω <sample_identifier>
+                 }
+                 """,
+                 "test/rust/test_data_files/sample_generated_file.txt"
+               )
+             end) ==
+               "No change test/rust/test_data_files/sample_generated_file.txt\n"
+    end
   end
 end
