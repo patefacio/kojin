@@ -70,7 +70,14 @@ defmodule Kojin do
   """
   @spec merge_generated_with_file(String.t(), String.t(), keyword) :: nil
   def merge_generated_with_file(generated, file_path, delimiters \\ []) do
-    prior = File.read!(file_path)
+    prior =
+      if File.exists?(file_path) do
+        File.read!(file_path)
+      else
+        File.mkdir_p!(Path.dirname(file_path))
+        ""
+      end
+
     merged_content = Kojin.merge(generated, prior, delimiters)
 
     if(prior != merged_content) do

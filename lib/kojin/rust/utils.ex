@@ -5,8 +5,8 @@ defmodule Kojin.Rust.Utils do
 
   def pub_decl(obj) do
     case(obj) do
-      %{ pub: true } -> "pub "
-      %{ pub_crate: true } -> "pub(crate) "
+      %{pub: true} -> "pub "
+      %{pub_crate: true} -> "pub(crate) "
       _ -> ""
     end
   end

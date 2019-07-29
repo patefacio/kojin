@@ -21,7 +21,6 @@ defmodule Kojin.Utils do
     comment(text, "#  ")
   end
 
-
   def indent_block(text, options \\ [])
 
   def indent_block(text, _) when text == nil do
@@ -37,5 +36,4 @@ defmodule Kojin.Utils do
     |> Enum.map(fn line -> "#{indent}#{line}" end)
     |> Enum.join("\n")
   end
-
 end
