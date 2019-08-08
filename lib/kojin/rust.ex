@@ -41,16 +41,13 @@ defmodule Kojin.Rust do
   """
   def allowed_derivables(), do: @allowed_derivables
 
+  # Common derivables for generated structs
   @common_derivables [
     :clone,
-    :copy,
     :debug,
+    :default,
     :deserialize,
-    :eq,
-    :hash,
-    :ord,
     :partial_eq,
-    :partial_ord,
     :serialize
   ]
 

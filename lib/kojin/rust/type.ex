@@ -44,6 +44,7 @@ defmodule Kojin.Rust.Type do
   def type(:str), do: %Type{base: "str", primitive?: true}
   def type(:string), do: %Type{base: "String", primitive?: true}
   def type(:String), do: type(:string)
+  def type(:bool), do: %Type{base: "bool", primitive?: true}
 
   def type(:char), do: %Type{base: "char", primitive?: true}
 
