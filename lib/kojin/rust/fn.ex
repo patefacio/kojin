@@ -31,7 +31,10 @@ defmodule Kojin.Rust.Parm do
   def parm(%Parm{} = parm), do: parm
   def parm([name, type | opts]), do: parm(name, type, opts)
 
-  def parm(name, type, opts \\ []) do
+  def parm(name, type, opts \\ [])
+  def parm(name, type, doc) when is_binary(doc), do: parm(name, type, doc: doc)
+
+  def parm(name, type, opts) do
     defaults = [mut: false, doc: "TODO: Comment #{name}"]
     opts = Keyword.merge(defaults, opts)
 
@@ -83,7 +86,15 @@ defmodule Kojin.Rust.Fn do
   defp return({t, doc}), do: {type(t), doc}
   defp return(t), do: return({t, nil})
 
-  def fun(name, doc, parms, opts \\ []) do
+  def fun(name, doc, parms, opts \\ [])
+
+  def fun(name, doc, parms, rest) when is_binary(name),
+    do: fun(String.to_atom(name), doc, parms, rest)
+
+  def fun(name, doc, parms, return) when not is_list(return),
+    do: fun(name, doc, parms, return: return)
+
+  def fun(name, doc, parms, opts) when is_list(opts) do
     defaults = [return: nil, return_doc: "", inline: false, generic: nil, consts: []]
     opts = Keyword.merge(defaults, opts)
     {return, return_doc} = return(opts[:return])
@@ -111,6 +122,9 @@ defmodule Kojin.Rust.Fn do
       consts: opts[:consts]
     }
   end
+
+  def fun(name, doc, parms, return, return_doc),
+    do: fun(name, doc, parms, return: return, return_doc: return_doc)
 
   def code(fun) do
     rt =

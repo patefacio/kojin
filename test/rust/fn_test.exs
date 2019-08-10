@@ -3,8 +3,30 @@ defmodule FnTest do
   import Kojin
   import Kojin.Rust.Type
   import Kojin.Rust.Fn
+  alias Kojin.Rust.Fn
   import Kojin.Rust.Parm
   import TestHelper
+
+  test "fn sigs" do
+    doc = "A simple function"
+
+    f = fun("f", doc, [])
+    assert f.name == :f
+    assert f.doc == doc
+    parm1 = parm(:a, :A, "An a")
+
+    f = fun(:f, doc, [parm1], :i32)
+    assert Enum.at(f.parms, 0) == parm1
+    assert f.return == type(:i32)
+    assert f.return_doc == ""
+
+    f = fun(:f, doc, [parm1], :i32, "calculated f")
+    assert f.return_doc == "calculated f"
+
+    mparm1 = parm(:a, :A, doc: "An a", mut: true)
+    f = fun(:f, doc, [mparm1])
+    assert String.contains?(Fn.code(f), "f(mut a: A)")
+  end
 
   test "fn with no args" do
     assert dark_matter(
