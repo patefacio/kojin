@@ -1,10 +1,8 @@
 defmodule FnTest do
   use ExUnit.Case
   import Kojin
-  import Kojin.Rust.Type
-  import Kojin.Rust.Fn
+  import Kojin.Rust.{Type, Fn, Parm, ToCode}
   alias Kojin.Rust.Fn
-  import Kojin.Rust.Parm
   import TestHelper
 
   test "fn sigs" do
@@ -26,6 +24,8 @@ defmodule FnTest do
     mparm1 = parm(:a, :A, doc: "An a", mut: true)
     f = fun(:f, doc, [mparm1])
     assert String.contains?(Fn.code(f), "f(mut a: A)")
+
+    assert to_code(f) == "#{f}"
   end
 
   test "fn with no args" do

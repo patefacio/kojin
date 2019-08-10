@@ -4,8 +4,8 @@ defmodule Kojin.Rust.Parm do
 
   import Kojin.Rust.Type
   import Kojin.Id
-  alias Kojin.Rust.Type
-  alias Kojin.Rust.Parm
+  alias Kojin.Rust.{Type, Parm}
+  alias Kojin.Rust.ToCode
 
   @typedoc """
   A rust function parm.
@@ -62,12 +62,8 @@ defmodule Kojin.Rust.Fn do
 
   use TypedStruct
   use Vex.Struct
-  import Kojin.Rust.Type
-  alias Kojin.Rust.Generic
-  import Kojin.Id
-  import Kojin.Utils
-  alias Kojin.Rust.Fn
-  alias Kojin.Rust.Parm
+  import Kojin.{Id, Utils, Rust.Type}
+  alias Kojin.Rust.{Fn, Generic, Parm, ToCode}
 
   @typedoc """
   A rust function.
@@ -190,9 +186,6 @@ defmodule Kojin.Rust.Fn do
     )
   end
 
-  defimpl String.Chars do
-    def to_string(fun) do
-      "#{Fn.doc(fun)}#{Fn.code(fun)}"
-    end
-  end
+  defimpl(String.Chars, do: def(to_string(fun), do: "#{Fn.doc(fun)}#{Fn.code(fun)}"))
+  defimpl(ToCode, do: def(to_code(fun), do: "#{fun}"))
 end

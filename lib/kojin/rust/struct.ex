@@ -75,9 +75,11 @@ defmodule Kojin.Rust.Struct do
   end
 
   defimpl String.Chars do
-    def to_string(struct) do
-      Struct.decl(struct)
-    end
+    def to_string(struct), do: Struct.decl(struct)
+  end
+
+  defimpl Kojin.Rust.ToCode do
+    def to_code(struct), do: Struct.decl(struct)
   end
 
   def decl(struct) do
