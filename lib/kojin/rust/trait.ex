@@ -3,8 +3,8 @@ defmodule Kojin.Rust.Trait do
   Rust _trait_ definition.
   """
 
-  alias Kojin.Rust.Trait
-  alias Kojin.Rust.Fn
+  alias Kojin.Rust.{Fn, Trait, ToCode}
+  import Kojin.{Id, Utils}
   use TypedStruct
   use Vex.Struct
 
@@ -23,12 +23,32 @@ defmodule Kojin.Rust.Trait do
     do: trait(String.to_atom(name), doc, functions)
 
   def trait(name, doc, functions) do
-    IO.puts("Got name #{inspect(name)}")
-
     %Trait{
       name: name,
       doc: doc,
       functions: functions
     }
   end
+
+  def trait_name(trait), do: trait.name |> cap_camel
+
+  def code(trait) do
+    [
+      [
+        triple_slash_comment(trait.doc),
+        "trait #{trait_name(trait)} {"
+      ]
+      |> Enum.join(),
+      trait.functions
+      |> Enum.map(fn fun -> "#{Fn.commented_signature(fun)};" end)
+      |> Enum.join("\n")
+      |> indent_block,
+      "}"
+    ]
+    |> List.flatten()
+    |> Enum.join("\n")
+  end
+
+  defimpl(String.Chars, do: def(to_string(trait), do: Trait.code(trait)))
+  defimpl(ToCode, do: def(to_code(trait), do: "#{trait}"))
 end
