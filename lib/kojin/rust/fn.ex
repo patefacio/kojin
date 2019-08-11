@@ -4,8 +4,7 @@ defmodule Kojin.Rust.Parm do
 
   import Kojin.Rust.Type
   import Kojin.Id
-  alias Kojin.Rust.{Type, Parm}
-  alias Kojin.Rust.ToCode
+  alias Kojin.Rust.{Type, Parm, ToCode}
 
   @typedoc """
   A rust function parm.
@@ -82,7 +81,8 @@ defmodule Kojin.Rust.Fn do
   defp return({t, doc}), do: {type(t), doc}
   defp return(t), do: return({t, nil})
 
-  def fun(name, doc, parms, opts \\ [])
+  def fun(%Fn{} = f), do: f
+  def fun(name, doc, parms \\ [], opts \\ [])
 
   def fun(name, doc, parms, rest) when is_binary(name),
     do: fun(String.to_atom(name), doc, parms, rest)
@@ -122,7 +122,21 @@ defmodule Kojin.Rust.Fn do
   def fun(name, doc, parms, return, return_doc),
     do: fun(name, doc, parms, return: return, return_doc: return_doc)
 
+  def fun([name, doc, parms, return, return_doc]), do: fun(name, doc, parms, return, return_doc)
+
+  def fun([name, doc, parms, opts]) when is_list(opts), do: fun(name, doc, parms, opts)
+
+  def fun([name, doc, parms, return]), do: fun(name, doc, parms, return)
+
   def code(fun) do
+    """
+    #{signature(fun)} {
+
+    }
+    """
+  end
+
+  def signature(fun) do
     rt =
       if(fun.return != nil) do
         " -> #{type(fun.return)}"
@@ -149,11 +163,12 @@ defmodule Kojin.Rust.Fn do
         {"", ""}
       end
 
-    """
-    #{inline}fn#{generic} #{snake(fun.name)}(#{parms})#{rt}#{bounds_decl} {
-    }
-    """
+    "#{inline}fn#{generic} #{snake(fun.name)}(#{parms})#{rt}#{bounds_decl}"
   end
+
+  def commented_signature(fun), do: "#{Fn.doc(fun)}#{Fn.signature(fun)}"
+
+  def trait_signature(fun), do: "#{commented_signature(fun)};"
 
   def doc(fun) do
     return_doc =
