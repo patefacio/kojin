@@ -82,6 +82,13 @@ defmodule Kojin.Rust.Fn do
   defp return(t), do: return({t, nil})
 
   def fun(%Fn{} = f), do: f
+
+  def fun([name, doc, parms, return, return_doc]), do: fun(name, doc, parms, return, return_doc)
+
+  def fun([name, doc, parms, opts]) when is_list(opts), do: fun(name, doc, parms, opts)
+
+  def fun([name, doc, parms, return]), do: fun(name, doc, parms, return)
+
   def fun(name, doc, parms \\ [], opts \\ [])
 
   def fun(name, doc, parms, rest) when is_binary(name),
@@ -122,12 +129,6 @@ defmodule Kojin.Rust.Fn do
   def fun(name, doc, parms, return, return_doc),
     do: fun(name, doc, parms, return: return, return_doc: return_doc)
 
-  def fun([name, doc, parms, return, return_doc]), do: fun(name, doc, parms, return, return_doc)
-
-  def fun([name, doc, parms, opts]) when is_list(opts), do: fun(name, doc, parms, opts)
-
-  def fun([name, doc, parms, return]), do: fun(name, doc, parms, return)
-
   def code(fun) do
     """
     #{signature(fun)} {
@@ -166,7 +167,7 @@ defmodule Kojin.Rust.Fn do
     "#{inline}fn#{generic} #{snake(fun.name)}(#{parms})#{rt}#{bounds_decl}"
   end
 
-  def commented_signature(fun), do: "#{Fn.doc(fun)}#{Fn.signature(fun)}"
+  def commented_signature(fun), do: "#{Fn.doc(fun)}\n#{Fn.signature(fun)}"
 
   def trait_signature(fun), do: "#{commented_signature(fun)};"
 

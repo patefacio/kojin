@@ -15,8 +15,7 @@ Don't panic
 ") == "///  " <> "
 ///  This is a test
 ///  Of the Emergency Broadcast System.
-///  Don't panic
-"
+///  Don't panic"
   end
 
   test "script_comment with cleaned trailing whitespace" do
@@ -29,8 +28,7 @@ Don't panic
 ") == "#  " <> "
 #  This is a test
 #  Of the Emergency Broadcast System.
-#  Don't panic
-"
+#  Don't panic"
   end
 
   test "indent_block for nil is nil" do

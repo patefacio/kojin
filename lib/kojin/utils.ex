@@ -10,7 +10,7 @@ defmodule Kojin.Utils do
       |> String.split("\n")
       |> Enum.join("\n#{opener}")
 
-    "#{opener}#{result}\n"
+    "#{opener}#{result}"
   end
 
   def triple_slash_comment(text) do

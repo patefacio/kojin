@@ -34,11 +34,8 @@ defmodule Kojin.Rust.Trait do
 
   def code(trait) do
     [
-      [
-        triple_slash_comment(trait.doc),
-        "trait #{trait_name(trait)} {"
-      ]
-      |> Enum.join(),
+      triple_slash_comment(trait.doc),
+      "trait #{trait_name(trait)} {",
       trait.functions
       |> Enum.map(fn fun -> "#{Fn.commented_signature(fun)};" end)
       |> Enum.join("\n")
