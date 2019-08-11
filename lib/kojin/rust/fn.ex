@@ -16,6 +16,15 @@ defmodule Kojin.Rust.Parm do
     field(:mut, boolean(), default: false)
   end
 
+  @doc """
+  Returns the code associated with the parameter.
+
+  ## Examples
+
+      iex> import Kojin.Rust.Parm
+      ...> code(parm(:result, "Result<i32, Err>", doc: "The first result parameter", mut: true))
+      "mut result: Result<i32, Err>"
+  """
   def code(parm) do
     mutable =
       if(parm.mut) do
@@ -57,6 +66,8 @@ end
 defmodule Kojin.Rust.Fn do
   @moduledoc """
   Rust _fn_ definition.
+
+  Provides support for _modeling_ functions.
   """
 
   use TypedStruct
@@ -66,11 +77,18 @@ defmodule Kojin.Rust.Fn do
 
   @typedoc """
   A rust function.
+
+    - `name`: Name of the function (snake case atom)
+    - `doc`: Comment associated with function (string)
+    - `parms`: List of parameters
+    - `return`: Return type of function (Kojin.Rust.Type.t())
+    - `return_doc`: Comment associated with return value
+    - `generic`: Details of generic for function
   """
   typedstruct do
     field(:name, atom, enforce: true)
     field(:doc, String.t())
-    field(:parms, list())
+    field(:parms, list(Parm.t()))
     field(:return, Kojin.Rust.Type.t())
     field(:return_doc, String.t())
     field(:inline, boolean(), default: false)
@@ -81,6 +99,9 @@ defmodule Kojin.Rust.Fn do
   defp return({t, doc}), do: {type(t), doc}
   defp return(t), do: return({t, nil})
 
+  @doc ~s{
+    Returns `f` if it is a `Fn`
+  }
   def fun(%Fn{} = f), do: f
 
   def fun([name, doc, parms, return, return_doc]), do: fun(name, doc, parms, return, return_doc)
@@ -89,6 +110,26 @@ defmodule Kojin.Rust.Fn do
 
   def fun([name, doc, parms, return]), do: fun(name, doc, parms, return)
 
+  @doc ~s"""
+  Create `Fn` instance.
+
+  - `name`: Name of function (snake case)
+  - `doc`: Documentation of function
+  - `parms`: List of function parameters
+  - `opts`: Additional options for funciton
+    - `return`: Type returned by function
+    - `return_doc`: Documentation of value returned
+    - `inline`: If true annotates function as inline
+    - `generic`: Details of generics of function
+    - `consts`: List of constants of the function
+
+  ## Examples
+
+      iex> import Kojin.Rust.Fn
+      ...> signature(fun(:f, "Simple function", [], return: :i32, return_doc: "Latest value of f"))
+      "fn f() -> i32"
+
+  """
   def fun(name, doc, parms \\ [], opts \\ [])
 
   def fun(name, doc, parms, rest) when is_binary(name),
@@ -126,9 +167,16 @@ defmodule Kojin.Rust.Fn do
     }
   end
 
+  @doc ~s{
+    Converts *return* and `return_doc` into options and calls fun/4.
+  }
+  @spec fun(any, any, any, any, any) :: Kojin.Rust.Fn.t()
   def fun(name, doc, parms, return, return_doc),
     do: fun(name, doc, parms, return: return, return_doc: return_doc)
 
+  @doc """
+  Returns the code definition of the function, including the signature.
+  """
   def code(fun) do
     """
     #{signature(fun)} {
@@ -137,6 +185,17 @@ defmodule Kojin.Rust.Fn do
     """
   end
 
+  @doc ~s"""
+  Returns signature of function.
+
+  ## Examples
+
+      iex> import Kojin.Rust.Fn
+      ...> signature(fun(:f, "Simple function", [], return: :i32, return_doc: "Latest value of f"))
+      "fn f() -> i32"
+
+  """
+  @spec signature(Fn.type()) :: binary
   def signature(fun) do
     rt =
       if(fun.return != nil) do
@@ -167,10 +226,39 @@ defmodule Kojin.Rust.Fn do
     "#{inline}fn#{generic} #{snake(fun.name)}(#{parms})#{rt}#{bounds_decl}"
   end
 
+  @doc ~s"""
+  Return doc comment and signature of function.
+
+  ## Examples
+
+      iex> import Kojin.Rust.Fn
+      ...> commented_signature(fun(:f, "This is an f", []))
+      "///  This is an f\\nfn f()"
+
+  """
   def commented_signature(fun), do: "#{Fn.doc(fun)}\n#{Fn.signature(fun)}"
 
+  @doc ~s"""
+  Return the function as would appear in a trait, with comment and trailing semicolon.
+
+  ## Examples
+
+      iex> import Kojin.Rust.Fn
+      ...> trait_signature(fun(:f, "This is an f", []))
+      "///  This is an f\\nfn f();"
+
+  """
   def trait_signature(fun), do: "#{commented_signature(fun)};"
 
+  @doc ~s"""
+  Returns the block comment of `doc` associated with function.
+
+  ## Examples
+
+      iex> import Kojin.Rust.Fn
+      ...> doc(fun(:f, "A basic function"))
+      "///  A basic function"
+  """
   def doc(fun) do
     return_doc =
       if fun.return do

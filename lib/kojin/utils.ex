@@ -1,8 +1,18 @@
 defmodule Kojin.Utils do
   @moduledoc """
-  Support for general code generation.
+  Utility functions for general code generation.
   """
 
+  @doc ~s"""
+  Split lines of `text`, prepend `opener` text to each line and return the joined comment text.
+
+  ## Examples
+
+      iex> Kojin.Utils.comment("this is a test", "// ")
+      "// this is a test"
+
+  """
+  @spec comment(binary, binary) :: binary
   def comment(text, opener) do
     result =
       text
@@ -13,14 +23,42 @@ defmodule Kojin.Utils do
     "#{opener}#{result}"
   end
 
+  @doc ~s"""
+  Wrap `text` in triple slash comment.
+
+  ## Examples
+
+      iex> Kojin.Utils.triple_slash_comment("this is a comment")
+      "///  this is a comment"
+
+      iex> Kojin.Utils.triple_slash_comment("Multi-line\\n\\t-1 first\\n\\t-2 second")
+      "///  Multi-line\\n///  \\t-1 first\\n///  \\t-2 second"
+  """
+  @spec triple_slash_comment(binary) :: binary
   def triple_slash_comment(text) do
     comment(text, "///  ")
   end
 
+  @doc ~s"""
+  Wrap `text` in script-like comment.
+
+  ## Examples
+
+      iex> Kojin.Utils.script_comment("this is a comment")
+      "#  this is a comment"
+
+      iex> Kojin.Utils.script_comment("Multi-line\\n\\t-1 first\\n\\t-2 second")
+      "#  Multi-line\\n#  \\t-1 first\\n#  \\t-2 second"
+  """
+  @spec script_comment(binary) :: binary
   def script_comment(text) do
     comment(text, "#  ")
   end
 
+  @doc """
+  Indent `text` with text `options.indent` (default "  ").
+  If `text` is nil, returns nil.
+  """
   def indent_block(text, options \\ [])
 
   def indent_block(text, _) when text == nil do

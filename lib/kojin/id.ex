@@ -42,14 +42,14 @@ defmodule Kojin.Id do
 
   ## Examples
 
-  iex> Kojin.Id.camel(:foo_bar_goo)
-  "fooBarGoo"
+      iex> Kojin.Id.camel(:foo_bar_goo)
+      "fooBarGoo"
 
-  iex> Kojin.Id.camel("FooBarGoo")
-  "fooBarGoo"
+      iex> Kojin.Id.camel("FooBarGoo")
+      "fooBarGoo"
 
-  iex> Kojin.Id.camel("fooBarGoo")
-  "fooBarGoo"
+      iex> Kojin.Id.camel("fooBarGoo")
+      "fooBarGoo"
 
   """
   def camel(words) when is_list(words) do
@@ -73,14 +73,14 @@ defmodule Kojin.Id do
 
   ## Examples
 
-  iex> Kojin.Id.cap_camel(:foo_bar_goo)
-  "FooBarGoo"
+      iex> Kojin.Id.cap_camel(:foo_bar_goo)
+      "FooBarGoo"
 
-  iex> Kojin.Id.cap_camel("FooBarGoo")
-  "FooBarGoo"
+      iex> Kojin.Id.cap_camel("FooBarGoo")
+      "FooBarGoo"
 
-  iex> Kojin.Id.cap_camel("fooBarGoo")
-  "FooBarGoo"
+      iex> Kojin.Id.cap_camel("fooBarGoo")
+      "FooBarGoo"
 
   """
   def cap_camel(words) when is_list(words) do
@@ -98,14 +98,14 @@ defmodule Kojin.Id do
 
   ## Examples
 
-  iex> Kojin.Id.snake(:foo_bar_goo)
-  "foo_bar_goo"
+      iex> Kojin.Id.snake(:foo_bar_goo)
+      "foo_bar_goo"
 
-  iex> Kojin.Id.snake("FooBarGoo")
-  "foo_bar_goo"
+      iex> Kojin.Id.snake("FooBarGoo")
+      "foo_bar_goo"
 
-  iex> Kojin.Id.snake("fooBarGoo")
-  "foo_bar_goo"
+      iex> Kojin.Id.snake("fooBarGoo")
+      "foo_bar_goo"
 
   """
   def snake(words) when is_list(words) do
@@ -123,14 +123,14 @@ defmodule Kojin.Id do
 
   ## Examples
 
-  iex> Kojin.Id.shout(:foo_bar_goo)
-  "FOO_BAR_GOO"
+      iex> Kojin.Id.shout(:foo_bar_goo)
+      "FOO_BAR_GOO"
 
-  iex> Kojin.Id.shout("FooBarGoo")
-  "FOO_BAR_GOO"
+      iex> Kojin.Id.shout("FooBarGoo")
+      "FOO_BAR_GOO"
 
-  iex> Kojin.Id.shout("fooBarGoo")
-  "FOO_BAR_GOO"
+      iex> Kojin.Id.shout("fooBarGoo")
+      "FOO_BAR_GOO"
 
   """
   def shout(words) when is_list(words) do
@@ -148,14 +148,14 @@ defmodule Kojin.Id do
 
   ## Examples
 
-  iex> Kojin.Id.emacs(:foo_bar_goo)
-  "foo-bar-goo"
+      iex> Kojin.Id.emacs(:foo_bar_goo)
+      "foo-bar-goo"
 
-  iex> Kojin.Id.emacs("FooBarGoo")
-  "foo-bar-goo"
+      iex> Kojin.Id.emacs("FooBarGoo")
+      "foo-bar-goo"
 
-  iex> Kojin.Id.emacs("fooBarGoo")
-  "foo-bar-goo"
+      iex> Kojin.Id.emacs("fooBarGoo")
+      "foo-bar-goo"
 
   """
   def emacs(words) when is_list(words) do
@@ -173,14 +173,14 @@ defmodule Kojin.Id do
 
   ## Examples
 
-  iex> Kojin.Id.is_snake("foo_bar_goo")
-  true
+      iex> Kojin.Id.is_snake("foo_bar_goo")
+      true
 
-  iex> Kojin.Id.is_snake("FooBarGoo")
-  false
+      iex> Kojin.Id.is_snake("FooBarGoo")
+      false
 
-  iex> Kojin.Id.is_snake("foo Bar Goo")
-  false
+      iex> Kojin.Id.is_snake("foo Bar Goo")
+      false
 
   """
   def is_snake(text) when is_binary(text) do
@@ -188,18 +188,24 @@ defmodule Kojin.Id do
   end
 
   @doc """
-  Returns id (snake case) of text
+  Returns id (snake case) of text.
 
   ## Examples
 
-  iex> Kojin.Id.id("foo_bar_goo")
-  "foo_bar_goo"
+  From snake case
 
-  iex> Kojin.Id.id("FooBarGoo")
-  "foo_bar_goo"
+      iex> Kojin.Id.id("foo_bar_goo")
+      "foo_bar_goo"
 
-  iex> Kojin.Id.id("fooBarGoo")
-  "foo_bar_goo"
+  From cap camel case
+
+      iex> Kojin.Id.id("FooBarGoo")
+      "foo_bar_goo"
+
+  From camel case
+
+      iex> Kojin.Id.id("fooBarGoo")
+      "foo_bar_goo"
 
   """
   def id(text) when is_binary(text) do

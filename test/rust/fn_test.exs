@@ -1,5 +1,8 @@
 defmodule FnTest do
   use ExUnit.Case
+  doctest Kojin.Rust.Parm
+  doctest Kojin.Rust.Fn
+
   import Kojin
   import Kojin.Rust.{Type, Fn, Parm, ToCode}
   alias Kojin.Rust.Fn
