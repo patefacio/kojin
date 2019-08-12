@@ -8,20 +8,60 @@ defmodule Kojin do
 
   @script_delimiters %{open: "# α", close: "# ω"}
 
-  @doc """
-  Split the text by the specified %{ open: ..., close: ... } delimiters
+  @placeholder "<TAG>"
+
+  @script_block_template """
+  #{@script_delimiters.open} #{@placeholder}
+  #{@script_delimiters.close} #{@placeholder}
+  """
+
+  @c_block_template """
+  #{@delimiters.open} #{@placeholder}
+  #{@delimiters.close} #{@placeholder}
+  """
+
+  @doc ~s"""
+  Returns a protection block for script style languages with `#` comment
+  delimiter.
+
+  ## Examples
+
+      iex> Kojin.script_block("sample_block")
+      "# α <sample_block>\\n# ω <sample_block>\\n"
+      
+  """
+  def script_block(tag) do
+    String.replace(@script_block_template, "TAG", tag)
+  end
+
+  @doc ~s"""
+  Returns a protection block for c style languages with `//` comment
+  delimiter.
+
+  ## Examples
+
+      iex> Kojin.c_block("sample_block")
+      "// α <sample_block>\\n// ω <sample_block>\\n"
+      
+  """
+  def c_block(tag) do
+    String.replace(@c_block_template, "TAG", tag)
+  end
+
+  @doc ~s"""
+  Split the text by the specified `%{ open: ..., close: ... }` delimiters
   returning the list of split entries.
 
   ## Examples
 
-  iex> Kojin._split("
-  ...> generated prefix text
-  ...> // α <block_name>
-  ...> hand written text to preserve
-  ...> // ω <block_name>
-  ...> generated postfix text
-  ...> ", %{open: "// α", close: "// ω"})
-  %{ "block_name" => "\n // α <block_name>\n hand written text to preserve\n // ω <block_name>" }
+      iex> Kojin._split("
+      ...> generated prefix text
+      ...> // α <block_name>
+      ...> hand written text to preserve
+      ...> // ω <block_name>
+      ...> generated postfix text
+      ...> ", %{open: "// α", close: "// ω"})
+      %{ "block_name" => "\\n // α <block_name>\\n hand written text to preserve\\n // ω <block_name>" }
   """
   def _split(text, delimiters) do
     open = delimiters[:open]
@@ -90,6 +130,9 @@ defmodule Kojin do
     nil
   end
 
+  @doc """
+  Ensures the name is snake case, throws exception if not.
+  """
   def require_snake(name) when is_atom(name) do
     if !(Atom.to_string(name)
          |> Kojin.Id.is_snake()) do
@@ -117,9 +160,16 @@ defmodule Kojin do
     [l]
   end
 
-  @doc "
-  Returns string wtih all white space removed `binary`
-  "
+  @doc """
+  Returns string with all white space removed, useful for testing if whitespace
+  is insignificant.
+
+  ## Examples
+
+      iex> import Kojin
+      ...> dark_matter("\\tthis is text\\n\\twith white space\\n\\n")
+      "thisistextwithwhitespace"
+  """
   @spec dark_matter(binary) :: binary
   def dark_matter(t) when is_binary(t), do: String.replace(t, ~r/\s*/, "")
 
