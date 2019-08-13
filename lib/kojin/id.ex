@@ -64,9 +64,8 @@ defmodule Kojin.Id do
     |> Enum.join("")
   end
 
-  def camel(text) do
-    camel(words(text))
-  end
+  def camel(text) when is_binary(text), do: camel(words(text))
+  def camel(text) when is_atom(text), do: camel(Atom.to_string(text))
 
   @doc """
   Convert to cap camel case.
@@ -89,9 +88,8 @@ defmodule Kojin.Id do
     |> Enum.join("")
   end
 
-  def cap_camel(text) do
-    cap_camel(words(text))
-  end
+  def cap_camel(text) when is_binary(text), do: cap_camel(words(text))
+  def cap_camel(text) when is_atom(text), do: cap_camel(Atom.to_string(text))
 
   @doc """
   Convert to snake case.
@@ -114,9 +112,8 @@ defmodule Kojin.Id do
     |> Enum.join("_")
   end
 
-  def snake(text) do
-    snake(words(text))
-  end
+  def snake(text) when is_binary(text), do: snake(words(text))
+  def snake(text) when is_atom(text), do: snake(Atom.to_string(text))
 
   @doc """
   Convert to shout case.
