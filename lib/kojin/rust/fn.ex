@@ -72,6 +72,7 @@ defmodule Kojin.Rust.Fn do
 
   use TypedStruct
   use Vex.Struct
+  import Kojin
   import Kojin.{Id, Utils, Rust.Type}
   alias Kojin.Rust.{Fn, Generic, Parm, ToCode}
 
@@ -178,9 +179,13 @@ defmodule Kojin.Rust.Fn do
   Returns the code definition of the function, including the signature.
   """
   def code(fun) do
+    block =
+      c_block("fn #{snake(fun.name)}")
+      |> indent_block
+
     """
     #{signature(fun)} {
-
+    #{block}
     }
     """
   end
@@ -286,7 +291,7 @@ defmodule Kojin.Rust.Fn do
       else
         "TODO: document #{fun.name}"
       end <>
-        signature_docs
+        "#{signature_docs}\n"
     )
   end
 

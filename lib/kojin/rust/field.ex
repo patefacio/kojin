@@ -63,11 +63,11 @@ defmodule Kojin.Rust.Field do
     def to_string(field) do
       triple_slash_comment(
         if String.length(field.doc) > 0 do
-          field.doc
+          "#{field.doc}"
         else
           "TODO: document #{field.name}"
         end
-      ) <> Field.decl(field)
+      ) <> "\n" <> Field.decl(field)
     end
   end
 

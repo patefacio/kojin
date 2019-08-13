@@ -44,6 +44,8 @@ defmodule FnTest do
              ///  Foo with no return.
              #[inline]
              fn do_it() {
+              // α <fn do_it>
+              // ω <fn do_it>
              }
              """)
   end
@@ -65,6 +67,8 @@ defmodule FnTest do
              ///   * `a` - Your basic A
              #[inline]
              fn do_it(a: A) {
+              // α <fn do_it>
+              // ω <fn do_it>
              }
              """)
   end
@@ -91,6 +95,8 @@ defmodule FnTest do
       ///   * _return_ - TODO: document return
       #[inline]
       fn do_it(a: A, mut b: B, c: C) -> i32 {
+        // α <fn do_it>
+        // ω <fn do_it>
       }
       """
     )
@@ -104,6 +110,8 @@ defmodule FnTest do
       ///
       ///   * _return_ - Badabing
       fn f() -> i32 {
+        // α <fn f>
+        // ω <fn f>
       }
       "
     )
@@ -140,6 +148,8 @@ defmodule FnTest do
     fn<'a, 'b, T1, T3> do_it(a: & 'a A, mut b: & 'b mut B, c: C, d: i32) -> i32
     where
     T3:   'a + 'b + Infinite + Collapsible + Responsible {
+      // α <fn do_it>
+      // ω <fn do_it>
     }
     """)
   end
