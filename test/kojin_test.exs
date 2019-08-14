@@ -6,17 +6,19 @@ defmodule KojinTest do
   doctest Kojin.Rust
 
   test "script block creates protection block for common script languages" do
-    assert Kojin.script_block("test block") == """
-           # α <test block>
-           # ω <test block>
-           """
+    assert Kojin.script_block("test block") ==
+             """
+             # α <test block>
+             # ω <test block>
+             """
   end
 
   test "c block creates protection block for c style commented languages" do
-    assert Kojin.c_block("test block") == """
-           // α <test block>
-           // ω <test block>
-           """
+    assert Kojin.c_block("test block") ==
+             """
+             // α <test block>
+             // ω <test block>
+             """
   end
 
   @delimiters %{open: "// α", close: "// ω"}

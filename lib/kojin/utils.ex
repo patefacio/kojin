@@ -74,4 +74,20 @@ defmodule Kojin.Utils do
     |> Enum.map(fn line -> "#{indent}#{line}" end)
     |> Enum.join("\n")
   end
+
+  @doc ~s{
+  Join elements of `content` with `separator`,
+  filtering out any empty strings or nil.
+
+  ## Examples
+
+      iex> Kojin.Utils.join_content(["a", "", "c", nil])
+      "a\\nc"
+  }
+  def join_content(content, separator \\ "\n") do
+    content
+    |> Enum.reject(&is_nil/1)
+    |> Enum.reject(&(&1 == ""))
+    |> Enum.join(separator)
+  end
 end

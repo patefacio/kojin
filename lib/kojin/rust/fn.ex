@@ -178,16 +178,15 @@ defmodule Kojin.Rust.Fn do
   @doc """
   Returns the code definition of the function, including the signature.
   """
-  def code(fun) do
-    block =
-      c_block("fn #{snake(fun.name)}")
-      |> indent_block
+  def code(fun, prefix \\ "") do
+    block = c_block("fn #{prefix}#{snake(fun.name)}") |> indent_block |> String.trim_trailing()
 
-    """
-    #{signature(fun)} {
-    #{block}
-    }
-    """
+    [
+      "#{signature(fun)} {",
+      block,
+      "}"
+    ]
+    |> join_content("\n")
   end
 
   @doc ~s"""
@@ -241,7 +240,7 @@ defmodule Kojin.Rust.Fn do
       "///  This is an f\\nfn f()"
 
   """
-  def commented_signature(fun), do: "#{Fn.doc(fun)}\n#{Fn.signature(fun)}"
+  def commented_signature(fun), do: join_content([Fn.doc(fun), Fn.signature(fun)])
 
   @doc ~s"""
   Return the function as would appear in a trait, with comment and trailing semicolon.
@@ -268,9 +267,9 @@ defmodule Kojin.Rust.Fn do
     return_doc =
       if fun.return do
         if fun.return_doc && fun.return_doc != "" do
-          " * _return_ - #{fun.return_doc}\n"
+          "* _return_ - #{fun.return_doc}\n"
         else
-          " * _return_ - TODO: document return\n"
+          "* _return_ - TODO: document return\n"
         end
       else
         ""
@@ -279,7 +278,7 @@ defmodule Kojin.Rust.Fn do
     signature_docs =
       [
         fun.parms
-        |> Enum.map(fn parm -> " * `#{parm.name}` - #{parm.doc}" end),
+        |> Enum.map(fn parm -> "* `#{parm.name}` - #{parm.doc}" end),
         return_doc
       ]
       |> List.flatten()
@@ -287,14 +286,14 @@ defmodule Kojin.Rust.Fn do
 
     triple_slash_comment(
       if String.length(fun.doc) > 0 do
-        "#{fun.doc}\n\n"
+        "#{fun.doc}"
       else
         "TODO: document #{fun.name}"
       end <>
-        "#{signature_docs}\n"
+        "\n\n#{signature_docs}"
     )
   end
 
-  defimpl(String.Chars, do: def(to_string(fun), do: "#{Fn.doc(fun)}#{Fn.code(fun)}"))
+  defimpl(String.Chars, do: def(to_string(fun), do: join_content([Fn.doc(fun), Fn.code(fun)])))
   defimpl(ToCode, do: def(to_code(fun), do: "#{fun}"))
 end
