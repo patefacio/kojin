@@ -75,19 +75,28 @@ defmodule Kojin.Utils do
     |> Enum.join("\n")
   end
 
-  @doc ~s{
-  Join elements of `content` with `separator`,
+  @doc ~s"""
+  Convert elements of `content` to strings and join with `separator`,
   filtering out any empty strings or nil.
 
   ## Examples
 
+    Empty strings and nil filtered: 
+
       iex> Kojin.Utils.join_content(["a", "", "c", nil])
       "a\\nc"
-  }
-  def join_content(content, separator \\ "\n") do
+
+    To string conversions on elements:
+
+      iex> Kojin.Utils.join_content([1, :two, "three"], ", ")
+      "1, two, three"
+
+  """
+  def join_content(content, separator \\ "\n") when is_list(content) do
     content
     |> Enum.reject(&is_nil/1)
     |> Enum.reject(&(&1 == ""))
+    |> Enum.map(&String.Chars.to_string/1)
     |> Enum.join(separator)
   end
 end
