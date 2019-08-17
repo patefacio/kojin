@@ -73,7 +73,8 @@ defmodule Kojin.Rust.Fn do
   use TypedStruct
   use Vex.Struct
   import Kojin
-  import Kojin.{Id, Utils, Rust.Type}
+  import Kojin.{CodeBlock, Id, Utils, Rust.Type}
+  alias Kojin.CodeBlock
   alias Kojin.Rust.{Fn, Generic, Parm, ToCode}
 
   @typedoc """
@@ -95,6 +96,7 @@ defmodule Kojin.Rust.Fn do
     field(:inline, boolean(), default: false)
     field(:generic, Generic.t(), default: nil)
     field(:consts, Kojin.Rust.Const.t())
+    field(:code_block, Kojin.CodeBlock.t())
   end
 
   defp return({t, doc}), do: {type(t), doc}
@@ -123,6 +125,7 @@ defmodule Kojin.Rust.Fn do
     - `inline`: If true annotates function as inline
     - `generic`: Details of generics of function
     - `consts`: List of constants of the function
+    - `code_block_prefix`: Prepended to function name in code block tag
 
   ## Examples
 
@@ -140,9 +143,19 @@ defmodule Kojin.Rust.Fn do
     do: fun(name, doc, parms, return: return)
 
   def fun(name, doc, parms, opts) when is_list(opts) do
-    defaults = [return: nil, return_doc: "", inline: false, generic: nil, consts: []]
+    defaults = [
+      return: nil,
+      return_doc: "",
+      inline: false,
+      generic: nil,
+      consts: [],
+      code_block_prefix: ""
+    ]
+
     opts = Keyword.merge(defaults, opts)
     {return, return_doc} = return(opts[:return])
+
+    code_block = CodeBlock.code_block("fn #{opts[:code_block_prefix]}#{snake(name)}")
 
     return_doc =
       if(!return_doc) do
@@ -164,7 +177,8 @@ defmodule Kojin.Rust.Fn do
         else
           nil
         end,
-      consts: opts[:consts]
+      consts: opts[:consts],
+      code_block: code_block
     }
   end
 
@@ -179,11 +193,9 @@ defmodule Kojin.Rust.Fn do
   Returns the code definition of the function, including the signature.
   """
   def code(fun, prefix \\ "") do
-    block = c_block("fn #{prefix}#{snake(fun.name)}") |> indent_block |> String.trim_trailing()
-
     [
       "#{signature(fun)} {",
-      block,
+      indent_block(text(fun.code_block)),
       "}"
     ]
     |> join_content("\n")

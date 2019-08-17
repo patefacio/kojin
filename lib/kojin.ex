@@ -6,48 +6,6 @@ defmodule Kojin do
 
   @delimiters %{open: "// α", close: "// ω"}
 
-  @script_delimiters %{open: "# α", close: "# ω"}
-
-  @placeholder "<TAG>"
-
-  @script_block_template """
-  #{@script_delimiters.open} #{@placeholder}
-  #{@script_delimiters.close} #{@placeholder}
-  """
-
-  @c_block_template """
-  #{@delimiters.open} #{@placeholder}
-  #{@delimiters.close} #{@placeholder}
-  """
-
-  @doc ~s"""
-  Returns a protection block for script style languages with `#` comment
-  delimiter.
-
-  ## Examples
-
-      iex> Kojin.script_block("sample_block")
-      "# α <sample_block>\\n# ω <sample_block>\\n"
-      
-  """
-  def script_block(tag) do
-    String.replace(@script_block_template, "TAG", tag)
-  end
-
-  @doc ~s"""
-  Returns a protection block for c style languages with `//` comment
-  delimiter.
-
-  ## Examples
-
-      iex> Kojin.c_block("sample_block")
-      "// α <sample_block>\\n// ω <sample_block>\\n"
-      
-  """
-  def c_block(tag) do
-    String.replace(@c_block_template, "TAG", tag)
-  end
-
   @doc ~s"""
   Split the text by the specified `%{ open: ..., close: ... }` delimiters
   returning the list of split entries.

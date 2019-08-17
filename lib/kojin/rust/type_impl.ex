@@ -1,25 +1,28 @@
 defmodule Kojin.Rust.TypeImpl do
   use TypedStruct
   import Kojin
-  import Kojin.{Id, Utils}
+  import Kojin.{Id, Utils, CodeBlock}
 
   alias Kojin.Rust.{Type, ToCode, TypeImpl, Fn}
 
   typedstruct do
     field(:type, Type.t(), enforce: true)
     field(:functions, list(Fn.t()), default: [])
+    field(:code_block, Kojin.CodeBlock.t())
   end
 
   def type_impl(type, functions \\ []) do
+    code_block = code_block("impl #{cap_camel(type)}")
+
     %TypeImpl{
       type: Type.type(type),
-      functions: functions |> Enum.map(fn f -> Fn.fun(f) end)
+      functions: functions |> Enum.map(fn f -> Fn.fun(f) end),
+      code_block: code_block
     }
   end
 
   def code(impl) do
     tname = impl.type.base |> cap_camel
-    impl_block = c_block("impl #{tname}") |> indent_block |> String.trim_trailing()
 
     functions =
       impl.functions
@@ -30,7 +33,7 @@ defmodule Kojin.Rust.TypeImpl do
 
     [
       "impl #{tname} {",
-      impl_block,
+      indent_block(text(impl.code_block)),
       functions,
       "}"
     ]

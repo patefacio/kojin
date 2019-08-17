@@ -61,9 +61,7 @@ defmodule Kojin.Utils do
   """
   def indent_block(text, options \\ [])
 
-  def indent_block(text, _) when text == nil do
-    nil
-  end
+  def indent_block(text, _) when text == nil, do: nil
 
   def indent_block(text, options) do
     defaults = [indent: "  "]

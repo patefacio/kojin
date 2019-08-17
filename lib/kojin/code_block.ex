@@ -47,6 +47,18 @@ defmodule Kojin.CodeBlock do
     }
   end
 
+  @doc ~s"""
+  Creates a code block using script style comment.
+
+  ## Examples
+
+      iex> import Kojin.CodeBlock
+      ...> text(script_block(:sample_tag))
+      "# α <sample_tag>\\n# ω <sample_tag>\\n"
+  """
+  def script_block(tag, opts \\ []),
+    do: code_block(tag, Keyword.merge([delimiters: @script_delimiters], opts))
+
   def _block(delimiters, tag) do
     """
     #{delimiters.open} <#{tag}>
