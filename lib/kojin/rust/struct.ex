@@ -3,8 +3,7 @@ defmodule Kojin.Rust.Struct do
   Rust _struct_ definition.
   """
 
-  alias Kojin.Rust.Field
-  alias Kojin.Rust.Struct
+  alias Kojin.Rust.{Field, Struct, TypeImpl}
   alias Kojin.Utils
   import Utils
 
@@ -24,6 +23,7 @@ defmodule Kojin.Rust.Struct do
     field(:fields, list(Field.t()), default: [])
     field(:derivables, list(atom), default: [])
     field(:visibility, atom, default: :private)
+    field(:impl, TypeImpl.t() | nil, default: nil)
   end
 
   validates(:visibility, inclusion: Kojin.Rust.allowed_visibilities())
@@ -49,16 +49,28 @@ defmodule Kojin.Rust.Struct do
 
   @spec struct(String.t() | atom, String.t(), list(Field.t()), keyword) :: Kojin.Rust.Struct.t()
   def struct(name, doc, fields, opts \\ []) do
-    defaults = [visibility: :private, derivables: []]
+    defaults = [visibility: :private, derivables: [], impl: nil]
 
     opts = Keyword.merge(defaults, opts)
+
+    impl =
+      if(opts[:impl]) do
+        TypeImpl.type_impl(opts[:impl])
+      else
+        if(!opts[:impl] && Keyword.get(opts, :impl?)) do
+          TypeImpl.type_impl(name)
+        else
+          nil
+        end
+      end
 
     result = %Struct{
       name: name,
       doc: doc,
       fields: Enum.map(fields, &Struct._make_field/1),
       visibility: opts[:visibility],
-      derivables: opts[:derivables]
+      derivables: opts[:derivables],
+      impl: impl
     }
 
     if(!Vex.valid?(result)) do
@@ -89,17 +101,28 @@ defmodule Kojin.Rust.Struct do
     visibility = visibility_decl(struct.visibility)
     derivables_decl = derivables_decl(struct.derivables)
 
-    """
-    #{String.trim(triple_slash_comment(struct.doc))}
-    #{derivables_decl}#{visibility}struct #{cap_camel(struct.name)} {
-    #{
-      indent_block(
-        struct.fields
-        |> Enum.map(&to_string/1)
-        |> Enum.join(",\n")
-      )
-    }
-    }
-    """
+    impl =
+      if(struct.impl) do
+        "#{struct.impl}"
+      else
+        ""
+      end
+
+    join_content(
+      [
+        join_content([
+          String.trim(triple_slash_comment(struct.doc)),
+          "#{derivables_decl}#{visibility}struct #{cap_camel(struct.name)} {",
+          indent_block(
+            struct.fields
+            |> Enum.map(&to_string/1)
+            |> Enum.join(",\n")
+          ),
+          "}"
+        ]),
+        impl
+      ],
+      "\n\n"
+    )
   end
 end

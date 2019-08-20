@@ -44,8 +44,10 @@ defmodule TypeTest do
       assert code(mref) == "& 'a mut #{t_code}"
     end)
 
+    assert code(type(:some_class)) == "SomeClass"
+
     [
-      :Result,
+      :result,
       "Result<T>"
     ]
     |> Enum.each(fn type_literal ->

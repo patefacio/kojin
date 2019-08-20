@@ -51,9 +51,12 @@ defmodule Kojin.Rust.Type do
   @doc """
   Returns rust type corresponding to type.
   """
-  def type(type) when is_atom(type), do: %Type{base: Atom.to_string(type), primitive?: false}
+  def type(type) when is_binary(type),
+    do: %Type{base: type, primitive?: false}
+
   def type(%Type{} = type), do: type
-  def type(type) when is_binary(type), do: type(String.to_atom(type))
+
+  def type(type) when is_atom(type), do: type(Kojin.Id.cap_camel(Atom.to_string(type)))
 
   def ref(t, lifetime \\ nil),
     do: %Type{primitive?: false, referrent: type(t), ref?: true, lifetime: lifetime}
