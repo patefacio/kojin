@@ -36,9 +36,75 @@ defmodule Kojin.Rust.Parm do
     "#{mutable}#{snake(parm.name)}: #{Type.code(parm.type)}"
   end
 
+  @doc ~s"""
+
+  If passed `Type`, it is returned.
+
+  ## Example
+
+      iex> import Kojin.Rust.Parm
+      ...> String.Chars.to_string(parm(parm(parm(:a, :i32))))
+      "a: i32"  
+
+  Special `self` parameters.
+
+  ## Example
+
+      iex> import Kojin.Rust.Parm
+      ...> String.Chars.to_string(parm(:self))
+      "self: Self"
+
+      iex> import Kojin.Rust.Parm
+      ...> String.Chars.to_string(parm(:self_ref))
+      "self: & Self"
+
+      iex> import Kojin.Rust.Parm
+      ...> String.Chars.to_string(parm(:self_mref))
+      "self: & mut Self"      
+
+  To associate lifetimes to `self` use `parm(:self, ref(:self, :a))`
+  or `parm(:self, ref(:self, :b))`
+
+  ## Example
+
+      iex> import Kojin.Rust.{Parm, Type}
+      ...> String.Chars.to_string(parm(:self, ref(:self, :a)))
+      "self: & 'a Self"
+
+      iex> import Kojin.Rust.{Parm, Type}
+      ...> String.Chars.to_string(parm(:self, mref(:self, :b)))
+      "self: & 'b mut Self"      
+
+  """
   def parm(%Parm{} = parm), do: parm
+
+  def parm(:self), do: parm(:self, :self)
+
+  def parm(:self_ref), do: parm(:self, Type.ref(:self))
+
+  def parm(:self_mref), do: parm(:self, Type.mref(:self))
   def parm([name, type | opts]), do: parm(name, type, opts)
 
+  @doc ~s"""
+
+  Creates parameter with `name` and `type` specified.
+
+  Options:
+
+  - `doc`: Documentation for parameter
+  - `mut`: If set parameter is _mutable_ (default `false`)
+
+  ## Example
+
+      iex> import Kojin.Rust.Parm
+      ...> String.Chars.to_string(parm(:size, :i32, doc: "Size in bytes"))
+      "size: i32"    
+
+      iex> import Kojin.Rust.Parm
+      ...> String.Chars.to_string(parm(:size, :i32, mut: true))
+      "mut size: i32"  
+
+  """
   def parm(name, type, opts \\ [])
   def parm(name, type, doc) when is_binary(doc), do: parm(name, type, doc: doc)
 
