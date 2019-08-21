@@ -67,7 +67,7 @@ defmodule Kojin.CodeBlock do
   end
 
   @doc ~s"""
-  The contents of the code block.
+  The contents of the code block, with an optional `prefix` for the name.
 
   As text the code block is comprised of:
 
@@ -82,6 +82,10 @@ defmodule Kojin.CodeBlock do
         "// α <sample_tag>\\n// ω <sample_tag>\\n"
 
         iex> import Kojin.CodeBlock
+        ...> text(code_block(:sample_tag), "Nested::")
+        "// α <Nested::sample_tag>\\n// ω <Nested::sample_tag>\\n"
+
+        iex> import Kojin.CodeBlock
         ...> text(code_block(:sample_tag, header: "A header"))
         "A header\\n// α <sample_tag>\\n// ω <sample_tag>\\n"
 
@@ -93,12 +97,14 @@ defmodule Kojin.CodeBlock do
         ...> text(code_block(nil, header: "A header", footer: "A footer"))
         "A header\\nA footer\\n"
   """
-  def text(code_block) do
+  def text(code_block, prefix \\ "") do
     result =
       [
         code_block.header,
         if(code_block.tag) do
-          String.trim_trailing(CodeBlock._block(code_block.delimiters, code_block.tag))
+          String.trim_trailing(
+            CodeBlock._block(code_block.delimiters, "#{prefix}#{code_block.tag}")
+          )
         else
           nil
         end,

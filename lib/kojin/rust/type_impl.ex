@@ -44,8 +44,8 @@ defmodule Kojin.Rust.TypeImpl do
         // ω <impl MyStruct>
         
         fn f() {
-          // α <fn f>
-          // ω <fn f>
+          // α <MyStruct::fn f>
+          // ω <MyStruct::fn f>
         }
         
       }
