@@ -23,13 +23,8 @@ defmodule Kojin.Rust.Field do
     field(:name, atom, enforce: true)
     field(:doc, String.t())
     field(:type, String.t(), enforce: true)
-    field(:by_ref?, boolean, default: false)
-    field(:access, atom, default: :ro)
     field(:visibility, atom, default: :private)
   end
-
-  @valid_accesses [:ro, :rw, :ia, :wo]
-  validates(:access, inclusion: @valid_accesses)
 
   validates(:visibility, inclusion: Kojin.Rust.allowed_visibilities())
 
@@ -44,18 +39,43 @@ defmodule Kojin.Rust.Field do
   def field(name, type, doc \\ "TODO: Comment field", opts \\ [])
       when (is_binary(name) or is_atom(name)) and is_binary(doc) do
     alias Kojin.Rust.Type
-    opts = Keyword.merge([access: :ro, visibility: :private], opts)
+    opts = Keyword.merge([visibility: :private], opts)
 
     %Field{
       name: name,
       doc: doc,
       type: Type.type(type),
-      by_ref?: opts[:by_ref?],
-      access: opts[:access],
       visibility: opts[:visibility]
     }
   end
 
+  @doc ~s"""
+  Given a list of arguments, passes arguments to `field/4`
+
+  ## Examples
+
+      iex> import Kojin.Rust.Field
+      ...> field([:age, :i32, "Age"]) |> String.Chars.to_string
+      ~s{
+      ///  Age
+      age: i32
+      } |> String.trim
+
+      iex> import Kojin.Rust.Field
+      ...> field([:age, :i32, "Age", [visibility: :pub_crate]]) |> String.Chars.to_string
+      ~s{
+      ///  Age
+      pub(crate) age: i32
+      } |> String.trim      
+
+      iex> import Kojin.Rust.Field
+      ...> field([:age, :i32, "Age", [access: :ro]]) |> String.Chars.to_string
+      ~s{
+      ///  Age
+      pub(crate) age: i32
+      } |> String.trim          
+  """
+  def field([name, type, doc, opts]), do: Field.field(name, type, doc, opts)
   def field([name, type, doc]), do: Field.field(name, type, doc)
   def field([name, type]), do: Field.field(name, type)
 

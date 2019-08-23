@@ -141,7 +141,7 @@ defmodule Kojin.Id do
   end
 
   @doc """
-  Convert to shout case.
+  Convert to emacs case.
 
   ## Examples
 

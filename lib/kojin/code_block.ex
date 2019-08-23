@@ -79,23 +79,41 @@ defmodule Kojin.CodeBlock do
 
         iex> import Kojin.CodeBlock
         ...> text(code_block(:sample_tag))
-        "// α <sample_tag>\\n// ω <sample_tag>\\n"
+        ~s{
+        // α <sample_tag>
+        // ω <sample_tag>
+        } |> String.trim_leading 
 
         iex> import Kojin.CodeBlock
         ...> text(code_block(:sample_tag), "Nested::")
-        "// α <Nested::sample_tag>\\n// ω <Nested::sample_tag>\\n"
+        ~s{
+        // α <Nested::sample_tag>
+        // ω <Nested::sample_tag>
+        } |> String.trim_leading
 
         iex> import Kojin.CodeBlock
         ...> text(code_block(:sample_tag, header: "A header"))
-        "A header\\n// α <sample_tag>\\n// ω <sample_tag>\\n"
+        ~s{
+        A header
+        // α <sample_tag>
+        // ω <sample_tag>
+        } |> String.trim_leading
 
         iex> import Kojin.CodeBlock
         ...> text(code_block(:sample_tag, header: "A header", footer: "A footer"))
-        "A header\\n// α <sample_tag>\\n// ω <sample_tag>\\nA footer\\n"
+        ~s{
+        A header
+        // α <sample_tag>
+        // ω <sample_tag>
+        A footer
+        } |> String.trim_leading
 
         iex> import Kojin.CodeBlock
         ...> text(code_block(nil, header: "A header", footer: "A footer"))
-        "A header\\nA footer\\n"
+        ~s{
+        A header
+        A footer
+        } |> String.trim_leading
   """
   def text(code_block, prefix \\ "") do
     result =

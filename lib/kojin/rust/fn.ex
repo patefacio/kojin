@@ -255,13 +255,33 @@ defmodule Kojin.Rust.Fn do
   def fun(name, doc, parms, return, return_doc),
     do: fun(name, doc, parms, return: return, return_doc: return_doc)
 
-  @doc """
+  @doc ~s"""
   Returns the code definition of the function, including the signature.
+
+  ## Examples
+
+      iex> alias Kojin.Rust.Fn
+      ...> Fn.code(Fn.fun(:f, "Comment")) |> Kojin.dark_matter
+      ~s[
+      fn f() {
+        // α <fn f>
+        // ω <fn f>
+      }
+      ] |> Kojin.dark_matter
+
+      iex> alias Kojin.Rust.Fn
+      ...> Fn.code(Fn.fun(:f, "Comment"), "Prefix::") |> Kojin.dark_matter
+      ~s[
+      fn f() {
+        // α <Prefix::fn f>
+        // ω <Prefix::fn f>
+      }
+      ] |> Kojin.dark_matter
   """
   def code(fun, prefix \\ "") do
     [
       "#{signature(fun)} {",
-      indent_block(text(fun.code_block)),
+      indent_block(text(fun.code_block, prefix)),
       "}"
     ]
     |> join_content("\n")
