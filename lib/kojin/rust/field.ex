@@ -6,8 +6,7 @@ defmodule Kojin.Rust.Field do
   use TypedStruct
   use Vex.Struct
 
-  alias Kojin.Rust.Field
-  alias Kojin.Rust.Type
+  alias Kojin.Rust.{Field, Type}
   alias Kojin.Utils
   import Utils
 
@@ -28,6 +27,9 @@ defmodule Kojin.Rust.Field do
 
   validates(:visibility, inclusion: Kojin.Rust.allowed_visibilities())
 
+  @doc """
+  Ensures the name is snake case.
+  """
   def valid_name?(name) do
     Atom.to_string(name) |> Kojin.Id.is_snake()
   end
@@ -108,6 +110,16 @@ defmodule Kojin.Rust.Field do
     end
   end
 
+  @doc ~s"""
+  Returns the declaration of the field without the doc comment.
+
+  ## Example
+
+      iex> import Kojin.Rust.Field
+      ...> decl(field(:age, :i32, "Age of customer"))
+      "age: i32"
+
+  """
   def decl(field) do
     "#{Kojin.Rust.visibility_decl(field.visibility)}#{field.name}: #{to_string(field.type)}"
   end

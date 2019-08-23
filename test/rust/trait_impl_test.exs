@@ -3,6 +3,7 @@ defmodule TraitImplTest do
   import Kojin.Rust.TraitImpl
 
   test "trait impl test" do
-    IO.puts("Trait test")
+    "Trait test"
+    # TODO: Trait test asserts
   end
 end

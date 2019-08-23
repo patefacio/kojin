@@ -5,10 +5,9 @@ defmodule EnumTest do
   import Kojin.Rust.TupleVariant
 
   test "enum test" do
-    IO.puts(inspect(enum(:color, "The color choices", [:red, :green, :blue])))
+    # TODO assert s
+    inspect(enum(:color, "The color choices", [:red, :green, :blue]))
 
     tv(:color, 3)
-
-    IO.puts("TESTING ENUM" <> "goo")
   end
 end

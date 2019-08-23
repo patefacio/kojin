@@ -5,6 +5,6 @@ defmodule TypeImplTest do
 
   test "type impl test" do
     t = type_impl("FooStruct", [fun(:f1, "Function 1")])
-    IO.puts("#{t}")
+    # TODO: add asserts and move to doctest
   end
 end

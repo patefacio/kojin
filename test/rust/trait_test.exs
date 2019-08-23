@@ -30,6 +30,6 @@ defmodule TraitTest do
         )
       ])
 
-    IO.puts("#{t}")
+    # TODO: add asserts and move to doctest
   end
 end

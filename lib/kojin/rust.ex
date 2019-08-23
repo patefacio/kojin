@@ -67,26 +67,26 @@ defmodule Kojin.Rust do
   """
   def common_derivables(), do: @common_derivables
 
-  @doc """
+  @doc ~s"""
   Returns true if supplied `derivables` are all valid.
 
   ## Examples
 
-  iex> Kojin.Rust.valid_derivables?([:copy, :eq])
-  true
+      iex> Kojin.Rust.valid_derivables?([:copy, :eq])
+      true
 
   """
   def valid_derivables?(derivables) do
     Enum.empty?(derivables -- @allowed_derivables)
   end
 
-  @doc """
+  @doc ~s"""
   Given list of derivables returns the corresponding rust `decl`.
 
   ## Examples
 
-  iex> Kojin.Rust.derivables_decl([:copy])
-  "#[derive(Copy)]\n"
+      iex> Kojin.Rust.derivables_decl([:copy])
+      "#[derive(Copy)]\\n"
   """
   def derivables_decl(derivables) do
     if(!Enum.empty?(derivables)) do
@@ -138,6 +138,20 @@ defmodule Kojin.Rust do
   Returns true if name is valid.
 
   Requires the name to be snake case.
+
+  ## Examples
+
+      iex> Kojin.Rust.valid_name(:FooBar)
+      false
+
+      iex> Kojin.Rust.valid_name(:foo_bar)
+      true
+      
+      iex> Kojin.Rust.valid_name("FooBar")
+      false
+
+      iex> Kojin.Rust.valid_name("foo_bar")
+      true          
   """
   def valid_name(name) when is_atom(name) do
     Atom.to_string(name) |> valid_name

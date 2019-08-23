@@ -36,8 +36,6 @@ defmodule Kojin.PodField do
   end
 
   def from_json(json) do
-    IO.puts("BAMer")
-
     struct(
       PodField,
       Jason.decode!(json)
