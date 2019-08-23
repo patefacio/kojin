@@ -1,7 +1,6 @@
 defmodule RustUtilsTest do
   use ExUnit.Case
 
-  doctest Kojin.Rust.Utils
   import Kojin.Rust.Utils
 
   test "pub_decl" do

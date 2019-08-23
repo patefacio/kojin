@@ -1,9 +1,6 @@
 defmodule UtilsTest do
   use ExUnit.Case
 
-  doctest Kojin.Utils
-  doctest Kojin.CodeBlock
-
   alias Kojin.Utils
 
   test "triple_slash_comment with cleaned trailing whitespace" do

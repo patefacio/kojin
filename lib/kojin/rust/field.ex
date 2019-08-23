@@ -36,6 +36,29 @@ defmodule Kojin.Rust.Field do
     by: [function: &Kojin.Rust.Field.valid_name?/1, message: "Field.name must be snake case"]
   )
 
+  @doc ~s"""
+  Create a field with `name`, `type`, `doc` and the following
+  `options`:
+
+  - `visibility`: One of `:private`, `:pub`, `:pub_crate`, `:pub_self`
+
+  ## Examples
+
+      iex> import Kojin.Rust.Field
+      ...> field(:age, :i32, "Age") |> String.Chars.to_string
+      ~s{
+      ///  Age
+      age: i32
+      } |> String.trim
+
+      iex> import Kojin.Rust.Field
+      ...> field(:age, :i32, "Age", [visibility: :pub_crate]) |> String.Chars.to_string
+      ~s{
+      ///  Age
+      pub(crate) age: i32
+      } |> String.trim      
+    
+  """
   def field(name, type, doc \\ "TODO: Comment field", opts \\ [])
       when (is_binary(name) or is_atom(name)) and is_binary(doc) do
     alias Kojin.Rust.Type
@@ -67,13 +90,7 @@ defmodule Kojin.Rust.Field do
       ///  Age
       pub(crate) age: i32
       } |> String.trim      
-
-      iex> import Kojin.Rust.Field
-      ...> field([:age, :i32, "Age", [access: :ro]]) |> String.Chars.to_string
-      ~s{
-      ///  Age
-      pub(crate) age: i32
-      } |> String.trim          
+    
   """
   def field([name, type, doc, opts]), do: Field.field(name, type, doc, opts)
   def field([name, type, doc]), do: Field.field(name, type, doc)

@@ -1,6 +1,5 @@
 defmodule TypeImplTest do
   use ExUnit.Case
-  doctest Kojin.Rust.TypeImpl
 
   import Kojin.Rust.{TypeImpl, Fn}
 

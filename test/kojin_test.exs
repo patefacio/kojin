@@ -3,7 +3,15 @@ defmodule KojinTest do
   import ExUnit.CaptureIO
 
   doctest Kojin
+  doctest Kojin.CodeBlock
+  doctest Kojin.Id
   doctest Kojin.Rust
+  doctest Kojin.Rust.Field
+  doctest Kojin.Rust.Fn
+  doctest Kojin.Rust.Parm
+  doctest Kojin.Rust.TypeImpl
+  doctest Kojin.Rust.Utils
+  doctest Kojin.Utils
 
   @delimiters %{open: "// α", close: "// ω"}
 
@@ -93,8 +101,6 @@ Post Lore IPSUM
 
   defmodule IdTest do
     use ExUnit.Case
-
-    doctest Kojin.Id
 
     test "loop" do
       words = ["wee", "willie", "winkie"]
