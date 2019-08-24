@@ -9,10 +9,11 @@ defmodule PodTest do
 
     # assert (p1 == p2)
 
-    z = %{p1 => "p1", p2 => "p2"}
+    %{p1 => "p1", p2 => "p2"}
   end
 
   test "pod field" do
-    pf = pod_field(:foo_bar, "sample foo bar field", optional?: true)
+    pod_field(:foo_bar, "sample foo bar field", optional?: true)
+    # TOD Assert pod_field
   end
 end

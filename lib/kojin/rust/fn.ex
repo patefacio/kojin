@@ -83,6 +83,7 @@ defmodule Kojin.Rust.Parm do
   def parm(:self_ref), do: parm(:self, Type.ref(:self))
 
   def parm(:self_mref), do: parm(:self, Type.mref(:self))
+  def parm([name, type, doc]) when is_binary(doc), do: parm(name, type, doc: doc)
   def parm([name, type | opts]), do: parm(name, type, opts)
 
   @doc ~s"""
@@ -101,11 +102,16 @@ defmodule Kojin.Rust.Parm do
       "size: i32"    
 
       iex> import Kojin.Rust.Parm
+      ...> String.Chars.to_string(parm(:size, :i32, "Size in bytes"))
+      "size: i32"    
+
+      iex> import Kojin.Rust.Parm
       ...> String.Chars.to_string(parm(:size, :i32, mut: true))
       "mut size: i32"  
 
   """
   def parm(name, type, opts \\ [])
+
   def parm(name, type, doc) when is_binary(doc), do: parm(name, type, doc: doc)
 
   def parm(name, type, opts) do
@@ -273,8 +279,8 @@ defmodule Kojin.Rust.Fn do
       ...> Fn.code(Fn.fun(:f, "Comment"), "Prefix::") |> Kojin.dark_matter
       ~s[
       fn f() {
-        // α <Prefix::fn f>
-        // ω <Prefix::fn f>
+        // α <Prefix::(fn f)>
+        // ω <Prefix::(fn f)>
       }
       ] |> Kojin.dark_matter
   """

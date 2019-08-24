@@ -87,8 +87,8 @@ defmodule Kojin.CodeBlock do
         iex> import Kojin.CodeBlock
         ...> text(code_block(:sample_tag), "Nested::")
         ~s{
-        // α <Nested::sample_tag>
-        // ω <Nested::sample_tag>
+        // α <Nested::(sample_tag)>
+        // ω <Nested::(sample_tag)>
         } |> String.trim_leading
 
         iex> import Kojin.CodeBlock
@@ -116,13 +116,18 @@ defmodule Kojin.CodeBlock do
         } |> String.trim_leading
   """
   def text(code_block, prefix \\ "") do
+    tag =
+      if("" != prefix) do
+        "#{prefix}(#{code_block.tag})"
+      else
+        "#{code_block.tag}"
+      end
+
     result =
       [
         code_block.header,
         if(code_block.tag) do
-          String.trim_trailing(
-            CodeBlock._block(code_block.delimiters, "#{prefix}#{code_block.tag}")
-          )
+          String.trim_trailing(CodeBlock._block(code_block.delimiters, tag))
         else
           nil
         end,

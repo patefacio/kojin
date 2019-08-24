@@ -2,7 +2,6 @@ defmodule ConstTest do
   use ExUnit.Case
   import Kojin
   import Kojin.Rust.Const
-  import Kojin.Utils
 
   test "const decl test" do
     c = const(:foo, "This is a foo", :i32, 234)

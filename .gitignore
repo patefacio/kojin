@@ -23,3 +23,5 @@ erl_crash.dump
 kojin-*.tar
 
 .elixir_ls/
+.idea/
+kojin.iml
