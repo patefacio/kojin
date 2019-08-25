@@ -168,17 +168,47 @@ defmodule Kojin.Rust.Fn do
     field(:inline, boolean(), default: false)
     field(:generic, Generic.t(), default: nil)
     field(:consts, Kojin.Rust.Const.t())
-    field(:code_block, Kojin.CodeBlock.t())
+    field(:code_block, Kojin.CodeBlock.t(), default: nil)
+    field(:tag_prefix, String.t(), default: nil)
   end
 
   defp return({t, doc}), do: {type(t), doc}
   defp return(t), do: return({t, nil})
 
   @doc ~s{
-    Returns `f` if it is a `Fn`
+    Returns `f` if it is already a `Fn`
+
+    ## Examples
+
+        iex> import Kojin.Rust.Fn
+        ...> fun(fun(:f, "This is function f", []))
+        import Kojin.Rust.Fn; fun(:f, "This is function f", [])
   }
   def fun(%Fn{} = f), do: f
 
+  @doc ~s"""
+  Support passing list of arguments to fun/4.
+
+  ## Examples
+
+    If five args provided the last two assumed `return` and `return_doc`
+
+      iex> import Kojin.Rust.Fn
+      ...> fun([:foo, "foo docs", [], :i32, "returns age"])
+      import Kojin.Rust.Fn; fun(:foo, "foo docs", [], :i32, "returns age")
+
+    If four args and fourth is `Keyword` list, it is assumed `options`
+
+      iex> import Kojin.Rust.Fn
+      ...> fun([:foo, "foo docs", [], [return: :i64]])
+      import Kojin.Rust.Fn; fun(:foo, "foo docs", [], [return: :i64])
+
+    Otherwise, if four args, assume last is `return`
+
+      iex> import Kojin.Rust.Fn
+      ...> fun([:foo, "foo docs", [[:parm1, :i32]], :i64])
+      import Kojin.Rust.Fn; fun(:foo, "foo docs", [[:parm1, :i32]], :i64)
+  """
   def fun([name, doc, parms, return, return_doc]), do: fun(name, doc, parms, return, return_doc)
 
   def fun([name, doc, parms, opts]) when is_list(opts), do: fun(name, doc, parms, opts)
@@ -221,13 +251,14 @@ defmodule Kojin.Rust.Fn do
       inline: false,
       generic: nil,
       consts: [],
-      code_block_prefix: ""
+      tag_prefix: nil
     ]
 
     opts = Keyword.merge(defaults, opts)
     {return, return_doc} = return(opts[:return])
 
-    code_block = CodeBlock.code_block("fn #{opts[:code_block_prefix]}#{snake(name)}")
+    code_block =
+      CodeBlock.code_block("fn #{snake(name)}", tag_prefix: Keyword.get(opts, :tag_prefix))
 
     return_doc =
       if(!return_doc) do
@@ -250,19 +281,39 @@ defmodule Kojin.Rust.Fn do
           nil
         end,
       consts: opts[:consts],
-      code_block: code_block
+      code_block: code_block,
+      tag_prefix: opts[:tag_prefix]
     }
   end
 
-  @doc ~s{
-    Converts *return* and `return_doc` into options and calls fun/4.
-  }
+  @doc ~s"""
+    Converts `return` and `return_doc` into options and calls fun/4.
+  """
   @spec fun(any, any, any, any, any) :: Kojin.Rust.Fn.t()
   def fun(name, doc, parms, return, return_doc),
     do: fun(name, doc, parms, return: return, return_doc: return_doc)
 
   @doc ~s"""
-  Returns the code definition of the function, including the signature.
+  Return new `Kojin.Rust.Fn` with specified `tag_prefix`.
+
+  ## Examples
+
+      iex> import Kojin.Rust.Fn
+      ...> fun_with_tag_prefix(fun(:f, "f doc", [], tag_prefix: "goo"), "foo").tag_prefix
+      "foo"
+  """
+  def fun_with_tag_prefix(%Fn{} = f, tag_prefix) do
+    Fn.fun(
+      f.name,
+      f.doc,
+      f.parms,
+      Keyword.put(Keyword.drop(Map.to_list(f), [:name, :doc, :parms]), :tag_prefix, tag_prefix)
+    )
+  end
+
+  @doc ~s"""
+  Returns the code definition of the function, including the `signature`
+  but excluding the `doc`.
 
   ## Examples
 
@@ -276,7 +327,7 @@ defmodule Kojin.Rust.Fn do
       ] |> Kojin.dark_matter
 
       iex> alias Kojin.Rust.Fn
-      ...> Fn.code(Fn.fun(:f, "Comment"), "Prefix::") |> Kojin.dark_matter
+      ...> Fn.code(Fn.fun(:f, "Comment", [], tag_prefix: "Prefix::")) |> Kojin.dark_matter
       ~s[
       fn f() {
         // α <Prefix::(fn f)>
@@ -284,10 +335,10 @@ defmodule Kojin.Rust.Fn do
       }
       ] |> Kojin.dark_matter
   """
-  def code(fun, prefix \\ "") do
+  def code(fun) do
     [
       "#{signature(fun)} {",
-      indent_block(text(fun.code_block, prefix)),
+      indent_block(text(fun.code_block)),
       "}"
     ]
     |> join_content("\n")

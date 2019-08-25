@@ -6,16 +6,19 @@ defmodule Kojin.CodeBlock do
   @delimiters %{open: "// α", close: "// ω"}
   @script_delimiters %{open: "# α", close: "# ω"}
 
-  @typedoc """
+  @typedoc ~S"""
   A place holder for a block in code.
 
   * :tag - An identifer for the block that must be unique within a generated file
+  * :tag_prefix - A secondary identifier to help ensure uniqueness within target file
+  *               If set will prefix tag like `#{tag_prefix}(#{tag})`
   * :delimiters - The open/close delimiters of the protected section
   * :header - The text preceding the protected section
   * :footer - The text following the protected section
   """
   typedstruct do
     field(:tag, String.t())
+    field(:tag_prefix, String.t(), default: nil)
     field(:delimiters, String.t(), default: @delimiters)
     field(:header, String.t(), default: nil)
     field(:footer, String.t(), default: nil)
@@ -37,10 +40,12 @@ defmodule Kojin.CodeBlock do
     do: code_block(Atom.to_string(tag), opts)
 
   def code_block(tag, opts) do
-    opts = Keyword.merge([delimiters: @delimiters, header: nil, footer: nil], opts)
+    opts =
+      Keyword.merge([tag_prefix: nil, delimiters: @delimiters, header: nil, footer: nil], opts)
 
     %Kojin.CodeBlock{
       tag: tag,
+      tag_prefix: Keyword.get(opts, :tag_prefix),
       delimiters: Keyword.get(opts, :delimiters),
       header: Keyword.get(opts, :header),
       footer: Keyword.get(opts, :footer)
@@ -67,7 +72,7 @@ defmodule Kojin.CodeBlock do
   end
 
   @doc ~s"""
-  The contents of the code block, with an optional `prefix` for the name.
+  The contents of the code block.
 
   As text the code block is comprised of:
 
@@ -85,7 +90,7 @@ defmodule Kojin.CodeBlock do
         } |> String.trim_leading 
 
         iex> import Kojin.CodeBlock
-        ...> text(code_block(:sample_tag), "Nested::")
+        ...> text(code_block(:sample_tag, tag_prefix: "Nested::"))
         ~s{
         // α <Nested::(sample_tag)>
         // ω <Nested::(sample_tag)>
@@ -115,10 +120,10 @@ defmodule Kojin.CodeBlock do
         A footer
         } |> String.trim_leading
   """
-  def text(code_block, prefix \\ "") do
+  def text(code_block) do
     tag =
-      if("" != prefix) do
-        "#{prefix}(#{code_block.tag})"
+      if(code_block.tag_prefix) do
+        "#{code_block.tag_prefix}(#{code_block.tag})"
       else
         "#{code_block.tag}"
       end
