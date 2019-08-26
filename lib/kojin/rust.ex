@@ -86,7 +86,7 @@ defmodule Kojin.Rust do
   ## Examples
 
       iex> Kojin.Rust.derivables_decl([:copy])
-      "#[derive(Copy)]\\n"
+      "#[derive(Copy)]"
   """
   def derivables_decl(derivables) do
     if(!Enum.empty?(derivables)) do
@@ -108,7 +108,7 @@ defmodule Kojin.Rust do
         |> Enum.map(fn v -> cap_camel(v) end)
         |> Enum.join(", ")
 
-      "#[derive(#{values})]\n"
+      "#[derive(#{values})]"
     else
       ""
     end

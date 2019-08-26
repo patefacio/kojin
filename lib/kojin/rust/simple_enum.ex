@@ -78,28 +78,34 @@ defmodule Kojin.Rust.SimpleEnum do
 
     values =
       enum.values
-      |> Enum.map(fn {e, doc} -> "#{triple_slash_comment(doc)}#{String.upcase(e)}" end)
+      |> Enum.map(fn {e, doc} ->
+        Kojin.Utils.join_content([triple_slash_comment(doc), String.upcase(e)])
+      end)
       |> Enum.join(",\n")
 
     derivables_decl = derivables_decl(enum.derivables)
     visibility_decl = visibility_decl(enum.visibility)
 
-    """
-    #{derivables_decl}#{visibility_decl}enum #{cap_camel(enum.name)} {
-    #{indent_block(values)}
-    }
-    """
+    Kojin.Utils.join_content([
+      derivables_decl,
+      "#{visibility_decl}enum #{cap_camel(enum.name)} {",
+      indent_block(values),
+      "}"
+    ])
   end
 
   defimpl String.Chars do
     def to_string(enum) do
-      triple_slash_comment(
-        if String.length(enum.doc) > 0 do
-          enum.doc
-        else
-          "TODO: document #{enum.name}"
-        end
-      ) <> SimpleEnum.decl(enum)
+      Kojin.Utils.join_content([
+        triple_slash_comment(
+          if String.length(enum.doc) > 0 do
+            enum.doc
+          else
+            "TODO: document #{enum.name}"
+          end
+        ),
+        SimpleEnum.decl(enum)
+      ])
     end
   end
 end

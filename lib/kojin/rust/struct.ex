@@ -111,7 +111,8 @@ defmodule Kojin.Rust.Struct do
       [
         join_content([
           String.trim(triple_slash_comment(struct.doc)),
-          "#{derivables_decl}#{visibility}struct #{cap_camel(struct.name)} {",
+          derivables_decl,
+          "#{visibility}struct #{cap_camel(struct.name)} {",
           indent_block(
             struct.fields
             |> Enum.map(&to_string/1)
