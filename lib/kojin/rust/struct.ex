@@ -49,9 +49,9 @@ defmodule Kojin.Rust.Struct do
 
   @spec struct(String.t() | atom, String.t(), list(Field.t()), keyword) :: Kojin.Rust.Struct.t()
   def struct(name, doc, fields, opts \\ []) do
-    defaults = [visibility: :private, derivables: [], impl: nil]
+    defaults = [visibility: :private, derivables: [], impl: nil, impl?: false]
 
-    opts = Keyword.merge(defaults, opts)
+    opts = Kojin.check_args(defaults, opts)
 
     impl =
       if(opts[:impl]) do
@@ -95,11 +95,10 @@ defmodule Kojin.Rust.Struct do
   end
 
   def decl(struct) do
-    import Kojin.Rust
     import Kojin.Id
 
-    visibility = visibility_decl(struct.visibility)
-    derivables_decl = derivables_decl(struct.derivables)
+    visibility = Kojin.Rust.visibility_decl(struct.visibility)
+    derivables_decl = Kojin.Rust.derivables_decl(struct.derivables)
 
     impl =
       if(struct.impl) do

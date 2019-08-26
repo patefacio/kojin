@@ -116,7 +116,7 @@ defmodule Kojin.Rust.Parm do
 
   def parm(name, type, opts) do
     defaults = [mut: false, doc: "TODO: Comment #{name}"]
-    opts = Keyword.merge(defaults, opts)
+    opts = Kojin.check_args(defaults, opts)
 
     result = %Parm{
       name: name,
@@ -127,6 +127,39 @@ defmodule Kojin.Rust.Parm do
 
     result
   end
+
+  @doc ~s"""
+  Returns param with `type` that corresponds to name.
+
+  ## Examples
+
+      iex> import Kojin.Rust.Parm
+      ...> id_parm(:some_type, doc: "Some type", mut: true)
+      import Kojin.Rust.{Parm, Type}; parm(:some_type, :some_type, doc: "Some type", mut: true)
+  """
+  def id_parm(name, rest), do: parm(name, name |> Kojin.Id.cap_camel(), rest)
+
+  @doc ~s"""
+  Returns param with `type` that is a ref to corresponding name.
+
+  ## Examples
+
+      iex> import Kojin.Rust.Type
+      ...> ref_parm(:some_type, doc: "Reference to some type", mut: false)
+      import Kojin.Rust.{Parm, Type}; parm(:some_type, ref(:some_type), doc: "Reference to some type", mut: false)
+  """
+  def ref_parm(name, rest), do: parm(name, ref(name |> Kojin.Id.cap_camel()), rest)
+
+  @doc ~s"""
+  Returns param with `type` that is a mref to corresponding name.
+
+  ## Examples
+
+      iex> import Kojin.Rust.Type
+      ...> mref_parm(:some_type, "Reference to some type")
+      import Kojin.Rust.{Parm, Type}; parm(:some_type, mref(:some_type), "Reference to some type")
+  """
+  def mref_parm(name, rest), do: parm(name, mref(name |> Kojin.Id.cap_camel()), rest)
 
   defimpl String.Chars do
     def to_string(parm) do
@@ -170,7 +203,10 @@ defmodule Kojin.Rust.Fn do
     field(:consts, Kojin.Rust.Const.t())
     field(:code_block, Kojin.CodeBlock.t(), default: nil)
     field(:tag_prefix, String.t(), default: nil)
+    field(:visibility, Atom.t())
   end
+
+  validates(:visibility, inclusion: Kojin.Rust.allowed_visibilities())
 
   defp return({t, doc}), do: {type(t), doc}
   defp return(t), do: return({t, nil})
@@ -246,15 +282,18 @@ defmodule Kojin.Rust.Fn do
 
   def fun(name, doc, parms, opts) when is_list(opts) do
     defaults = [
+      __struct__: nil,
       return: nil,
       return_doc: "",
       inline: false,
       generic: nil,
       consts: [],
-      tag_prefix: nil
+      tag_prefix: nil,
+      code_block: nil,
+      visibility: :private
     ]
 
-    opts = Keyword.merge(defaults, opts)
+    opts = Kojin.check_args(defaults, opts)
     {return, return_doc} = return(opts[:return])
 
     code_block =
@@ -267,7 +306,7 @@ defmodule Kojin.Rust.Fn do
         return_doc
       end
 
-    %Fn{
+    result = %Fn{
       name: name,
       doc: doc,
       parms: Enum.map(parms, fn parm -> Parm.parm(parm) end),
@@ -282,8 +321,21 @@ defmodule Kojin.Rust.Fn do
         end,
       consts: opts[:consts],
       code_block: code_block,
-      tag_prefix: opts[:tag_prefix]
+      tag_prefix: opts[:tag_prefix],
+      visibility: opts[:visibility]
     }
+
+    if(!Vex.valid?(result)) do
+      raise ArgumentError,
+        message: """
+        Invalid `fn`:
+        #{inspect(result, pretty: true)}
+        ------- Fn Validations ---
+        #{inspect(Vex.results(result), pretty: true)}
+        """
+    end
+
+    result
   end
 
   @doc ~s"""
@@ -375,6 +427,8 @@ defmodule Kojin.Rust.Fn do
         ""
       end
 
+    visibility = Kojin.Rust.visibility_decl(fun.visibility)
+
     {generic, bounds_decl} =
       if(fun.generic) do
         {Generic.code(fun.generic), Generic.bounds_decl(fun.generic)}
@@ -382,7 +436,7 @@ defmodule Kojin.Rust.Fn do
         {"", ""}
       end
 
-    "#{inline}fn#{generic} #{snake(fun.name)}(#{parms})#{rt}#{bounds_decl}"
+    "#{inline}#{visibility}fn#{generic} #{snake(fun.name)}(#{parms})#{rt}#{bounds_decl}"
   end
 
   @doc ~s"""
@@ -433,20 +487,25 @@ defmodule Kojin.Rust.Fn do
     signature_docs =
       [
         fun.parms
+        |> Enum.filter(fn parm -> parm.name not in [:self, :self_ref, :self_mref] end)
         |> Enum.map(fn parm -> "* `#{parm.name}` - #{parm.doc}" end),
         return_doc
       ]
       |> List.flatten()
       |> Enum.join("\n")
 
-    triple_slash_comment(
-      if String.length(fun.doc) > 0 do
-        "#{fun.doc}"
-      else
-        "TODO: document #{fun.name}"
-      end <>
-        "\n\n#{signature_docs}"
+    join_content(
+      [
+        if String.length(fun.doc) > 0 do
+          "#{fun.doc}" |> String.trim_trailing()
+        else
+          "TODO: document #{fun.name}"
+        end,
+        signature_docs
+      ],
+      "\n\n"
     )
+    |> triple_slash_comment()
   end
 
   defimpl(String.Chars, do: def(to_string(fun), do: join_content([Fn.doc(fun), Fn.code(fun)])))

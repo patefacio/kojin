@@ -3,7 +3,7 @@ defmodule ParmTest do
   import Kojin.Rust.Parm
 
   test "mutable test" do
-    parm(:foo, "Result<T,Err>", mutable?: true)
+    parm(:foo, "Result<T,Err>", mut: true)
     # TODO assert
   end
 end
