@@ -37,6 +37,7 @@ defmodule Kojin.Rust.Type do
   def type(:u16), do: %Type{base: "u16", primitive?: true}
   def type(:u32), do: %Type{base: "u32", primitive?: true}
   def type(:u64), do: %Type{base: "u64", primitive?: true}
+  def type(:usize), do: %Type{base: "usize", primitive?: true}
 
   def type(:f32), do: %Type{base: "f32", primitive?: true}
   def type(:f64), do: %Type{base: "f64", primitive?: true}
