@@ -6,6 +6,9 @@ defmodule Kojin do
 
   @delimiters %{open: "// α", close: "// ω"}
 
+  @doc "Returns default delimiters - with `//` style comments"
+  def delimiters(), do: @delimiters
+
   @doc ~s"""
   Split the text by the specified `%{ open: ..., close: ... }` delimiters
   returning the list of split entries.
@@ -38,14 +41,8 @@ defmodule Kojin do
   @doc """
   Merge generated content with code blocks with prior contents.
   """
-  @spec merge(String.t(), String.t(), keyword) :: String.t()
-  def merge(generated, prior, delimiters \\ []) do
-    delimiters =
-      Enum.into(
-        delimiters,
-        if(Keyword.get(delimiters, :scriptlike), do: @script_delimiters, else: @delimiters)
-      )
-
+  @spec merge(String.t(), String.t(), Map.t()) :: String.t()
+  def merge(generated, prior, delimiters \\ @delimiters) do
     matches_without_content = _split(generated, delimiters)
 
     _split(prior, delimiters)
@@ -63,11 +60,20 @@ defmodule Kojin do
   Merge `generated` content into contents of `file_path` using
   protection `delimiters`.
 
-  Will print `No change {file_path}` if no change or
+  By default will print message `No change {file_path}` if no change or
   `Wrote {file_path}` if file was updated.
+
+  To not print message pass `announce: false`.
+
   """
-  @spec merge_generated_with_file(String.t(), String.t(), keyword) :: nil
-  def merge_generated_with_file(generated, file_path, delimiters \\ []) do
+  @spec merge_generated_with_file(String.t(), String.t(), Map.t(), announce: boolean) :: nil
+  def merge_generated_with_file(
+        generated,
+        file_path,
+        delimiters \\ @delimiters,
+        opts \\ [announce: true]
+      )
+      when is_map(delimiters) do
     prior =
       if File.exists?(file_path) do
         File.read!(file_path)
@@ -80,24 +86,38 @@ defmodule Kojin do
 
     if(prior != merged_content) do
       File.write!(file_path, merged_content)
-      IO.puts("Wrote #{file_path}")
+
+      if(opts[:announce]) do
+        IO.puts("Wrote #{file_path}")
+      end
     else
-      IO.puts("No change #{file_path}")
+      if(opts[:announce]) do
+        IO.puts("No change #{file_path}")
+      end
     end
 
     nil
   end
 
-  @doc """
-  Ensures the name is snake case, throws exception if not.
+  @doc ~s"""
+  Ensures the name is snake case, raises `ArgumentError` if not.
+
+  ## Examples
+
+      iex> assert_raise(ArgumentError, "Name must be snake: `FooBar`", fn -> Kojin.require_snake(:FooBar) end)
+      %ArgumentError{message: "Name must be snake: `FooBar`"}
+
+      iex> Kojin.require_snake(:foo_bar)
+      nil
   """
   def require_snake(name) when is_atom(name) do
     if !(Atom.to_string(name)
          |> Kojin.Id.is_snake()) do
-      throw("Name must be snake: `#{name}`")
+      raise ArgumentError, "Name must be snake: `#{name}`"
     end
   end
 
+  @spec check_args(keyword, keyword) :: keyword
   def check_args(defaults, passed) do
     unexpected = Keyword.keys(passed) -- Keyword.keys(defaults)
 
@@ -110,13 +130,9 @@ defmodule Kojin do
     Keyword.merge(defaults, passed)
   end
 
-  def listify(l) when is_list(l) do
-    l
-  end
+  def listify(l) when is_list(l), do: l
 
-  def listify(l) do
-    [l]
-  end
+  def listify(l), do: [l]
 
   @doc """
   Returns string with all white space removed, useful for testing if whitespace

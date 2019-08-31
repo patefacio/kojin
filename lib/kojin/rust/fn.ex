@@ -190,7 +190,13 @@ defmodule Kojin.Rust.Fn do
     - `parms`: List of parameters
     - `return`: Return type of function (Kojin.Rust.Type.t())
     - `return_doc`: Comment associated with return value
+    - `inline`: Indicates function is `#[inline]`
     - `generic`: Details of generic for function
+    - `consts`: TODO
+    - `code_block`: The protection block for the function
+    - `tag_prefix`: A prefix for the code block tag to ensure unique in generated context
+    - `visibility`: One of the visibility designations (`Kojin.Rust.allowed_visibilities`)
+    - `body`: The body of the function
   """
   typedstruct do
     field(:name, atom, enforce: true)
@@ -204,6 +210,7 @@ defmodule Kojin.Rust.Fn do
     field(:code_block, Kojin.CodeBlock.t(), default: nil)
     field(:tag_prefix, String.t(), default: nil)
     field(:visibility, Atom.t())
+    field(:body, String.t())
   end
 
   validates(:visibility, inclusion: Kojin.Rust.allowed_visibilities())
@@ -290,6 +297,7 @@ defmodule Kojin.Rust.Fn do
       consts: [],
       tag_prefix: nil,
       code_block: nil,
+      body: nil,
       visibility: :private
     ]
 
@@ -297,7 +305,11 @@ defmodule Kojin.Rust.Fn do
     {return, return_doc} = return(opts[:return])
 
     code_block =
-      CodeBlock.code_block("fn #{snake(name)}", tag_prefix: Keyword.get(opts, :tag_prefix))
+      if(opts[:body]) do
+        nil
+      else
+        CodeBlock.code_block("fn #{snake(name)}", tag_prefix: opts[:tag_prefix])
+      end
 
     return_doc =
       if(!return_doc) do
@@ -322,7 +334,8 @@ defmodule Kojin.Rust.Fn do
       consts: opts[:consts],
       code_block: code_block,
       tag_prefix: opts[:tag_prefix],
-      visibility: opts[:visibility]
+      visibility: opts[:visibility],
+      body: opts[:body]
     }
 
     if(!Vex.valid?(result)) do
@@ -386,11 +399,26 @@ defmodule Kojin.Rust.Fn do
         // ω <Prefix::(fn f)>
       }
       ] |> Kojin.dark_matter
+
+    With body instead of protect block:
+
+      iex> alias Kojin.Rust.Fn
+      ...> Fn.code(Fn.fun(:f, "Comment", [], body: "42", return: :i32)) |> Kojin.dark_matter
+      ~s[
+      fn f() -> i32 {
+        42
+      }
+      ] |> Kojin.dark_matter
   """
   def code(fun) do
     [
       "#{signature(fun)} {",
-      indent_block(text(fun.code_block)),
+      if(fun.body) do
+        indent_block(fun.body)
+      else
+        indent_block(text(fun.code_block))
+      end
+      |> String.trim_trailing(),
       "}"
     ]
     |> join_content("\n")
