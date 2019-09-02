@@ -41,7 +41,7 @@ defmodule Kojin do
   @doc """
   Merge generated content with code blocks with prior contents.
   """
-  @spec merge(String.t(), String.t(), Map.t()) :: String.t()
+  @spec merge(String.t(), String.t(), map) :: String.t()
   def merge(generated, prior, delimiters \\ @delimiters) do
     matches_without_content = _split(generated, delimiters)
 
@@ -66,7 +66,7 @@ defmodule Kojin do
   To not print message pass `announce: false`.
 
   """
-  @spec merge_generated_with_file(String.t(), String.t(), Map.t(), announce: boolean) :: nil
+  @spec merge_generated_with_file(String.t(), String.t(), map, announce: boolean) :: nil
   def merge_generated_with_file(
         generated,
         file_path,

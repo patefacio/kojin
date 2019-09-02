@@ -88,5 +88,9 @@ defmodule Kojin.Rust.TypeImpl do
   end
 
   defimpl(String.Chars, do: def(to_string(impl), do: "#{TypeImpl.code(impl)}"))
-  defimpl(ToCode, do: def(to_code(impl), do: "#{impl}"))
+
+  defimpl ToCode do
+    @spec to_code(TypeImpl.t()) :: binary
+    def to_code(impl), do: "#{impl}"
+  end
 end

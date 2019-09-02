@@ -14,13 +14,17 @@ defmodule Kojin.Utils do
   """
   @spec comment(binary, binary) :: binary
   def comment(text, opener) do
-    result =
+    if text == nil do
       text
-      |> String.replace(~r/(?:\r|\n)+$/, "")
-      |> String.split("\n")
-      |> Enum.join("\n#{opener}")
+    else
+      result =
+        text
+        |> String.replace(~r/(?:\r|\n)+$/, "")
+        |> String.split("\n")
+        |> Enum.join("\n#{opener}")
 
-    "#{opener}#{result}"
+      "#{opener}#{result}"
+    end
   end
 
   @doc ~s"""

@@ -63,7 +63,7 @@ defmodule Kojin.Rust.SimpleEnum do
         name: #{name}
         doc: #{doc}
         values: #{values}
-        visibility: #{opts.visibility}
+        visibility: #{opts[:visibility]}
         ------- Struct Validations ---
         #{inspect(Vex.results(result), pretty: true)}
         """

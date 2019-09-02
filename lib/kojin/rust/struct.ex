@@ -91,6 +91,7 @@ defmodule Kojin.Rust.Struct do
   end
 
   defimpl Kojin.Rust.ToCode do
+    @spec to_code(Struct.t()) :: binary
     def to_code(struct), do: Struct.decl(struct)
   end
 

@@ -177,7 +177,6 @@ defmodule Kojin.Rust.Fn do
 
   use TypedStruct
   use Vex.Struct
-  import Kojin
   import Kojin.{CodeBlock, Id, Utils, Rust.Type}
   alias Kojin.CodeBlock
   alias Kojin.Rust.{Fn, Generic, Parm, ToCode}
@@ -204,12 +203,12 @@ defmodule Kojin.Rust.Fn do
     field(:parms, list(Parm.t()))
     field(:return, Kojin.Rust.Type.t())
     field(:return_doc, String.t())
-    field(:inline, boolean(), default: false)
+    field(:inline, boolean, default: false)
     field(:generic, Generic.t(), default: nil)
     field(:consts, Kojin.Rust.Const.t())
     field(:code_block, Kojin.CodeBlock.t(), default: nil)
     field(:tag_prefix, String.t(), default: nil)
-    field(:visibility, Atom.t())
+    field(:visibility, atom)
     field(:body, String.t())
   end
 
@@ -227,6 +226,7 @@ defmodule Kojin.Rust.Fn do
         ...> fun(fun(:f, "This is function f", []))
         import Kojin.Rust.Fn; fun(:f, "This is function f", [])
   }
+  @spec fun(Fn.t()) :: Fn.t()
   def fun(%Fn{} = f), do: f
 
   @doc ~s"""
@@ -252,6 +252,7 @@ defmodule Kojin.Rust.Fn do
       ...> fun([:foo, "foo docs", [[:parm1, :i32]], :i64])
       import Kojin.Rust.Fn; fun(:foo, "foo docs", [[:parm1, :i32]], :i64)
   """
+  @spec fun(list) :: Fn.t()
   def fun([name, doc, parms, return, return_doc]), do: fun(name, doc, parms, return, return_doc)
 
   def fun([name, doc, parms, opts]) when is_list(opts), do: fun(name, doc, parms, opts)
@@ -280,6 +281,8 @@ defmodule Kojin.Rust.Fn do
 
   """
   def fun(name, doc, parms \\ [], opts \\ [])
+
+  @spec fun(binary | atom, binary, list(Parm.t()), list) :: Fn.t()
 
   def fun(name, doc, parms, rest) when is_binary(name),
     do: fun(String.to_atom(name), doc, parms, rest)
@@ -354,7 +357,7 @@ defmodule Kojin.Rust.Fn do
   @doc ~s"""
     Converts `return` and `return_doc` into options and calls fun/4.
   """
-  @spec fun(any, any, any, any, any) :: Kojin.Rust.Fn.t()
+  @spec fun(binary | atom, binary, list, any, binary) :: Kojin.Rust.Fn.t()
   def fun(name, doc, parms, return, return_doc),
     do: fun(name, doc, parms, return: return, return_doc: return_doc)
 
@@ -434,7 +437,7 @@ defmodule Kojin.Rust.Fn do
       "fn f() -> i32"
 
   """
-  @spec signature(Fn.type()) :: binary
+  @spec signature(Fn.t()) :: binary
   def signature(fun) do
     rt =
       if(fun.return != nil) do
@@ -537,5 +540,9 @@ defmodule Kojin.Rust.Fn do
   end
 
   defimpl(String.Chars, do: def(to_string(fun), do: join_content([Fn.doc(fun), Fn.code(fun)])))
-  defimpl(ToCode, do: def(to_code(fun), do: "#{fun}"))
+
+  defimpl ToCode do
+    @spec to_code(Fn.t()) :: binary
+    def to_code(fun), do: "#{fun}"
+  end
 end

@@ -47,5 +47,11 @@ defmodule Kojin.Rust.Trait do
   end
 
   defimpl(String.Chars, do: def(to_string(trait), do: Trait.code(trait)))
-  defimpl(ToCode, do: def(to_code(trait), do: "#{trait}"))
+
+  defimpl ToCode do
+    @spec to_code(Trait.t()) :: binary
+    def to_code(trait) do
+      "#{trait}"
+    end
+  end
 end
