@@ -6,6 +6,11 @@ defmodule Kojin.CodeBlock do
   @delimiters %{open: "// α", close: "// ω"}
   @script_delimiters %{open: "# α", close: "# ω"}
 
+  @doc """
+  Return the common delimiters for script languages (`# α\\n   ...   \\n# ω`) 
+  """
+  def script_delimiters(), do: @script_delimiters
+
   @typedoc ~S"""
   A place holder for a block in code.
 

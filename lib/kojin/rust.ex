@@ -187,4 +187,17 @@ defmodule Kojin.Rust do
           """
     end
   end
+
+  @doc ~s"""
+  Return tust style doc comment for documenting
+  internal to a construct (e.g. for module documemntation)
+
+  ## Example
+
+      iex> Kojin.Rust.doc_comment("A basic module")
+      "//! A basic module"
+  """
+  def doc_comment(text) do
+    Kojin.Utils.comment(text, "//! ")
+  end
 end

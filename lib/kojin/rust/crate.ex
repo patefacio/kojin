@@ -1,10 +1,45 @@
+defmodule Kojin.Rust.CargoToml do
+  use TypedStruct
+  use Vex.Struct
+
+  typedstruct do
+    field(:name, atom, enforce: true)
+    field(:description, String.t(), enforce: true)
+    field(:version, String.t(), default: "0.0.1")
+    field(:authors, list(String.t()), default: [])
+    field(:homepage, String.t(), default: nil)
+    field(:license, String.t(), default: "MIT")
+  end
+
+  def generate(cargo_toml, path) do
+    toml = ~s"""
+    [package]
+    name = "#{cargo_toml.name}"
+    version = "#{cargo_toml.version}"
+    authors = [#{cargo_toml.authors |> Enum.join()}]
+    description = \"\"\"#{cargo_toml.description}\"\"\"
+    keywords = []
+    license = "#{cargo_toml.license}"
+
+    [dependencies]
+    itertools = "^0.7.6"
+    serde = "^1.0.27"
+    serde_derive = "^1.0.27"
+    #{Kojin.CodeBlock.script_block("dependencies")}
+    """
+
+    Kojin.merge_generated_with_file(toml, path, Kojin.CodeBlock.script_delimiters())
+  end
+end
+
 defmodule Kojin.Rust.Crate do
   import Kojin
   import Kojin.{Id, Utils}
   alias Kojin.Rust
-  alias Rust.{Crate, Module}
+  alias Rust.{Crate, Module, GeneratedRustModule, CargoToml}
   use TypedStruct
   use Vex.Struct
+  require Logger
 
   @typedoc """
   A rust _module_.
@@ -13,10 +48,7 @@ defmodule Kojin.Rust.Crate do
     field(:name, atom, enforce: true)
     field(:doc, String.t())
     field(:modules, list(Module.t()), default: [])
-    field(:version, String.t(), default: "0.0.1")
-    field(:authors, list(String.t()), default: [])
-    field(:homepage, String.t(), default: nil)
-    field(:license, String.t(), default: "MIT")
+    field(:cargo_toml, Kojin.CargoToml.t())
   end
 
   def crate(name, doc, modules, opts \\ []) do
@@ -37,27 +69,38 @@ defmodule Kojin.Rust.Crate do
       name: name,
       doc: doc,
       modules: modules,
-      version: opts[:version],
-      authors: opts[:authors],
-      homepage: opts[:homepage],
-      license: opts[:license]
+      cargo_toml: %Rust.CargoToml{
+        name: name,
+        description: doc,
+        version: opts[:version],
+        authors: opts[:authors],
+        homepage: opts[:homepage],
+        license: opts[:license]
+      }
     }
   end
 
   def generate({crate, generate_spec}) do
-    # my_module = generate_spec.path
+    path = generate_spec.path
+    src_path = Path.join([path, "src"])
 
-    IO.puts("BADABING cratex #{inspect(generate_spec, pretty: true)}")
+    if(!File.exists?(src_path)) do
+      File.mkdir_p!(src_path)
+    end
 
     crate.modules
     |> Enum.reduce(%{}, fn module, acc ->
       Map.merge(
         acc,
-        Module.generate(module, generate_spec)
+        Module.generate(module, %{generate_spec | path: src_path})
       )
     end)
+    |> Enum.each(fn {path, generated_rust_module} ->
+      Logger.debug("Generating #{path}")
+      GeneratedRustModule.write_contents(generated_rust_module)
+    end)
 
-    # IO.puts("Content -> #{inspect(content, pretty: true)}")
+    CargoToml.generate(crate.cargo_toml, Path.join([path, "Cargo.toml"]))
   end
 
   def generate_spec(crate, path) do

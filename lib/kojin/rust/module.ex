@@ -3,9 +3,19 @@ defmodule Kojin.Rust.Module do
   Rust _module_ definition.
   """
 
-  alias Kojin.Rust.{TraitImpl, TypeImpl, Struct, Trait, Module, Fn}
+  alias Kojin.Rust.{
+    TraitImpl,
+    TypeImpl,
+    Struct,
+    Trait,
+    Module,
+    Fn,
+    GenerateSpec,
+    GeneratedRustModule
+  }
+
   import Kojin
-  import Kojin.{Id, Utils}
+  import Kojin.{Rust, Id, Utils}
   use TypedStruct
   use Vex.Struct
   require Logger
@@ -15,7 +25,8 @@ defmodule Kojin.Rust.Module do
   """
   typedstruct do
     field(:name, atom, enforce: true)
-    field(:type_name, enforce: true)
+    field(:type_name, String.t(), enforce: true)
+    field(:visibility, atom, default: :private)
     field(:doc, String.t())
     field(:type, atom, default: :file)
     field(:traits, list(Trait.t()), default: [])
@@ -37,7 +48,8 @@ defmodule Kojin.Rust.Module do
           functions: [],
           structs: [],
           impls: [],
-          modules: []
+          modules: [],
+          visibility: :private
         ],
         opts
       )
@@ -52,25 +64,65 @@ defmodule Kojin.Rust.Module do
       structs: opts[:structs],
       impls: opts[:impls],
       modules: opts[:modules],
-      file_name: "#{name}.rs"
+      file_name: "#{name}.rs",
+      visibility: opts[:visibility]
     }
   end
 
+  def mod_decls(module) do
+    module.modules
+    |> Enum.filter(fn module -> module.type != :inline end)
+    |> Enum.map(fn module ->
+      visibility = visibility_decl(module.visibility)
+      "#{visibility}mod #{snake(module.name)};"
+    end)
+  end
+
   def content(module) do
-    join_content([
-      triple_slash_comment(module.doc),
-      module.functions
-      |> Enum.map(fn fun -> "#{fun}" end),
-      module.modules
-      |> Enum.filter(fn module -> module.type == :inline end)
-      |> Enum.map(fn module ->
-        join_content([
-          "module #{module.type_name} {",
-          indent_block(content(module)),
-          "}"
-        ])
-      end)
-    ])
+    join_content(
+      [
+        ## Include comments
+        Kojin.Rust.doc_comment(module.doc),
+
+        ## Mod decls
+        join_content(Kojin.Rust.Module.mod_decls(module)),
+
+        ## Include Functions
+        join_content(
+          module.functions
+          |> Enum.map(fn fun -> "#{fun}" end),
+          "\n\n"
+        ),
+
+        ## Include Traits
+        join_content(
+          module.traits
+          |> Enum.map(fn trait -> "#{trait}" end),
+          "\n\n"
+        ),
+
+        ## Include Structs
+        join_content(
+          module.structs
+          |> Enum.map(fn struct -> "#{struct}" end),
+          "\n\n"
+        ),
+
+        ## Include Nested Modules
+        module.modules
+        |> Enum.filter(fn module -> module.type == :inline end)
+        |> Enum.map(fn module ->
+          visibility = visibility_decl(module.visibility)
+
+          join_content([
+            "#{visibility}mod #{snake(module.name)} {",
+            indent_block(content(module)) |> String.trim_trailing(),
+            "}"
+          ])
+        end)
+      ],
+      "\n\n"
+    )
   end
 
   def inline_children(module) do
@@ -96,10 +148,7 @@ defmodule Kojin.Rust.Module do
     content =
       if module.type != :inline do
         %{
-          my_path => %{
-            path: my_path,
-            content: content(module)
-          }
+          my_path => GeneratedRustModule.generated_rust_module(my_path, content(module))
         }
       else
         %{}
