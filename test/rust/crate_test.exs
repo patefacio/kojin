@@ -52,7 +52,9 @@ defmodule CrateTest do
   end
 
   test "crate composition" do
-    crate(:c1, "A simple crate", [
+    crate(
+      :c1,
+      "A simple crate",
       make_module(:top, "Top module",
         type: :file,
         modules: [
@@ -66,8 +68,8 @@ defmodule CrateTest do
           )
         ]
       )
-    ])
-    |> Crate.generate_spec("/tmp/test_crate")
+    )
+    |> Crate.generate_spec("/tmp/tcrate")
     |> Crate.generate()
     |> IO.inspect(pretty: true)
   end

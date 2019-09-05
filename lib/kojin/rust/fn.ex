@@ -179,7 +179,7 @@ defmodule Kojin.Rust.Fn do
   use Vex.Struct
   import Kojin.{CodeBlock, Id, Utils, Rust.Type}
   alias Kojin.CodeBlock
-  alias Kojin.Rust.{Fn, Generic, Parm, ToCode}
+  alias Kojin.Rust.{Fn, Generic, Parm, ToCode, Type}
 
   @typedoc """
   A rust function.
@@ -238,13 +238,13 @@ defmodule Kojin.Rust.Fn do
 
       iex> import Kojin.Rust.Fn
       ...> fun([:foo, "foo docs", [], :i32, "returns age"])
-      import Kojin.Rust.Fn; fun(:foo, "foo docs", [], :i32, "returns age")
+      import Kojin.Rust.Fn; fun(:foo, "foo docs", [], return: :i32, return_doc: "returns age")
 
     If four args and fourth is `Keyword` list, it is assumed `options`
 
       iex> import Kojin.Rust.Fn
       ...> fun([:foo, "foo docs", [], [return: :i64]])
-      import Kojin.Rust.Fn; fun(:foo, "foo docs", [], [return: :i64])
+      import Kojin.Rust.Fn; fun(:foo, "foo docs", [], return: :i64)
 
     Otherwise, if four args, assume last is `return`
 
@@ -357,7 +357,8 @@ defmodule Kojin.Rust.Fn do
   @doc ~s"""
     Converts `return` and `return_doc` into options and calls fun/4.
   """
-  @spec fun(binary | atom, binary, list, any, binary) :: Kojin.Rust.Fn.t()
+  @spec fun(binary | atom, binary, list(Parm.t()), binary | atom | Type.t(), binary) ::
+          Kojin.Rust.Fn.t()
   def fun(name, doc, parms, return, return_doc),
     do: fun(name, doc, parms, return: return, return_doc: return_doc)
 

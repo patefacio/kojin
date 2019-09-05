@@ -21,7 +21,7 @@ defmodule Kojin.Rust.Field do
   typedstruct do
     field(:name, atom, enforce: true)
     field(:doc, String.t())
-    field(:type, String.t(), enforce: true)
+    field(:type, Type.t(), enforce: true)
     field(:visibility, atom, default: :private)
   end
 
@@ -61,6 +61,7 @@ defmodule Kojin.Rust.Field do
       } |> String.trim      
     
   """
+  @spec field(atom | binary, atom | Type.t(), binary, list) :: Field.t()
   def field(name, type, doc \\ "TODO: Comment field", opts \\ [])
       when (is_binary(name) or is_atom(name)) and is_binary(doc) do
     alias Kojin.Rust.Type

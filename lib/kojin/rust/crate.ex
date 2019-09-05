@@ -47,11 +47,12 @@ defmodule Kojin.Rust.Crate do
   typedstruct do
     field(:name, atom, enforce: true)
     field(:doc, String.t())
-    field(:modules, list(Module.t()), default: [])
-    field(:cargo_toml, Kojin.CargoToml.t())
+    field(:root_module, Module.t())
+    field(:binaries, default: [])
+    field(:cargo_toml, CargoToml.t())
   end
 
-  def crate(name, doc, modules, opts \\ []) do
+  def crate(name, doc, root_module, opts \\ []) do
     require_snake(name)
 
     opts =
@@ -60,7 +61,8 @@ defmodule Kojin.Rust.Crate do
           version: "0.0.1",
           authors: [],
           homepage: nil,
-          license: "MIT"
+          license: "MIT",
+          binaries: []
         ],
         opts
       )
@@ -68,7 +70,8 @@ defmodule Kojin.Rust.Crate do
     %Crate{
       name: name,
       doc: doc,
-      modules: modules,
+      root_module: root_module,
+      binaries: opts[:binaries],
       cargo_toml: %Rust.CargoToml{
         name: name,
         description: doc,
@@ -88,13 +91,7 @@ defmodule Kojin.Rust.Crate do
       File.mkdir_p!(src_path)
     end
 
-    crate.modules
-    |> Enum.reduce(%{}, fn module, acc ->
-      Map.merge(
-        acc,
-        Module.generate(module, %{generate_spec | path: src_path})
-      )
-    end)
+    Module.generate(crate.root_module, %{generate_spec | path: src_path})
     |> Enum.each(fn {path, generated_rust_module} ->
       Logger.debug("Generating #{path}")
       GeneratedRustModule.write_contents(generated_rust_module)
