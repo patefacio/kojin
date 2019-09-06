@@ -55,7 +55,7 @@ defmodule CrateTest do
     crate(
       :c1,
       "A simple crate",
-      make_module(:top, "Top module",
+      make_module(:lib, "Top module",
         type: :file,
         modules: [
           make_module(:middle, "Middle module",
@@ -69,7 +69,7 @@ defmodule CrateTest do
         ]
       )
     )
-    |> Crate.generate_spec("/tmp/tcrate")
+    |> Crate.generate_spec("/tmp/tmp_crate")
     |> Crate.generate()
     |> IO.inspect(pretty: true)
   end

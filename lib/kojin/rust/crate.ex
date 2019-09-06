@@ -91,13 +91,18 @@ defmodule Kojin.Rust.Crate do
       File.mkdir_p!(src_path)
     end
 
-    Module.generate(crate.root_module, %{generate_spec | path: src_path})
+    CargoToml.generate(crate.cargo_toml, Path.join([path, "Cargo.toml"]))
+
+    generated = Module.generate(crate.root_module, %{generate_spec | path: src_path})
+    File.cd!(path)
+    result = Porcelain.shell("cargo fmt")
+    IO.inspect("Fmt result -> #{inspect(result)}")
+
+    generated
     |> Enum.each(fn {path, generated_rust_module} ->
       Logger.debug("Generating #{path}")
       GeneratedRustModule.write_contents(generated_rust_module)
     end)
-
-    CargoToml.generate(crate.cargo_toml, Path.join([path, "Cargo.toml"]))
   end
 
   def generate_spec(crate, path) do

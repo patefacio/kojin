@@ -44,10 +44,33 @@ defmodule Kojin.Rust.GeneratedRustModule do
       File.mkdir_p!(parent)
     end
 
-    File.write!(
-      path,
-      generated_rust_module.generated_content
-    )
+    if(!File.exists?(path)) do
+      IO.puts("Wrote new: #{path}")
+
+      File.write!(
+        path,
+        generated_rust_module.generated_content
+      )
+    else
+      contents = File.read!(path)
+
+      if(contents == generated_rust_module.generated_content) do
+        IO.puts("No change: #{path}")
+        File.write_stat!(path, generated_rust_module.original_module_file.file_stat)
+      else
+        IO.puts("Updated: #{path}")
+
+        IO.puts("------------------ FIRST ----------------------")
+        IO.puts(contents)
+        IO.puts("------------------ WAS -----------------------")
+        IO.puts(generated_rust_module.generated_content)
+
+        File.write!(
+          path,
+          generated_rust_module.generated_content
+        )
+      end
+    end
   end
 end
 

@@ -22,6 +22,7 @@ defmodule Kojin.MixProject do
   defp deps do
     [
       {:typed_struct, "~> 0.1.4"},
+      {:porcelain, ">= 2.0.3"},
       {:vex, "~> 0.8.0"},
       {:ex_doc, "~> 0.19.2"},
       {:jason, "~> 1.1"},
