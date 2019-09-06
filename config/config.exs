@@ -24,6 +24,8 @@ config :logger, :console,
   level: :info,
   format: "$time $metadata[$level] $levelpad$message\n"
 
+config :porcelain, driver: Porcelain.Driver.Basic
+
 #
 
 # It is also possible to import configuration files, relative to this

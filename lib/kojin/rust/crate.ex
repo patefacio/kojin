@@ -34,7 +34,6 @@ end
 
 defmodule Kojin.Rust.Crate do
   import Kojin
-  import Kojin.{Id, Utils}
   alias Kojin.Rust
   alias Rust.{Crate, Module, GeneratedRustModule, CargoToml}
   use TypedStruct
@@ -85,23 +84,29 @@ defmodule Kojin.Rust.Crate do
 
   def generate({crate, generate_spec}) do
     path = generate_spec.path
+    File.cd!(path)
+
     src_path = Path.join([path, "src"])
 
     if(!File.exists?(src_path)) do
       File.mkdir_p!(src_path)
     end
 
+    # Generate the cargo
     CargoToml.generate(crate.cargo_toml, Path.join([path, "Cargo.toml"]))
 
+    # Generate the code
     generated = Module.generate(crate.root_module, %{generate_spec | path: src_path})
-    File.cd!(path)
-    result = Porcelain.shell("cargo fmt")
-    IO.inspect("Fmt result -> #{inspect(result)}")
 
+    # Format the code
+    result = Porcelain.shell("cargo fmt")
+    Logger.debug("`cargo fmt` result -> #{inspect(result)}")
+
+    # Report on diffs (if no change set timestamp back to original)
     generated
     |> Enum.each(fn {path, generated_rust_module} ->
       Logger.debug("Generating #{path}")
-      GeneratedRustModule.write_contents(generated_rust_module)
+      GeneratedRustModule.evaluate_formatted_diff(generated_rust_module)
     end)
   end
 

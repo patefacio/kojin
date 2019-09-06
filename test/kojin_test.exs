@@ -150,8 +150,7 @@ Post Lore IPSUM
                  """,
                  "test/rust/test_data_files/sample_generated_file.txt"
                )
-             end) ==
-               "No change test/rust/test_data_files/sample_generated_file.txt\n"
+             end) =~ ~r{No Change: .* test/rust/test_data_files/sample_generated_file.txt.*}
     end
 
     test "merge file with `announce` false" do

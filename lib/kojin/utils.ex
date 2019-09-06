@@ -101,4 +101,41 @@ defmodule Kojin.Utils do
     |> Enum.map(&String.Chars.to_string/1)
     |> Enum.join(separator)
   end
+
+  @doc """
+  Convert a `File.Stat` `mtime` to string.
+  """
+  @spec stat_time_to_str(any) :: binary
+  def stat_time_to_str(t) do
+    :calendar.universal_time_to_local_time(t)
+    |> NaiveDateTime.from_erl!()
+    |> String.Chars.to_string()
+  end
+
+  @doc """
+  Announce status of requested generation of `path`.
+
+  Reports one of:
+
+  - `:updated`: The file has been updated
+  - `:no_change`: The file has not changed
+  - `:wrote_new` The file did not exist and has been written
+
+  """
+  @spec announce_file(binary, any, atom | binary) :: :ok
+  def announce_file(path, mtime, :updated), do: announce_file(path, mtime, "Updated:  ")
+  def announce_file(path, mtime, :no_change), do: announce_file(path, mtime, "No Change:")
+  def announce_file(path, mtime, :wrote_new), do: announce_file(path, mtime, "Wrote New:")
+
+  def announce_file(path, mtime, status) do
+    mtime =
+      if(mtime == nil) do
+        File.stat!(path).mtime
+      else
+        mtime
+      end
+
+    time_str = Kojin.Utils.stat_time_to_str(mtime)
+    IO.puts("#{status} #{time_str} #{path}")
+  end
 end

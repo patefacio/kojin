@@ -4,6 +4,8 @@ defmodule Kojin do
   for generating `rust` code.
   """
 
+  import Kojin.Utils
+
   @delimiters %{open: "// α", close: "// ω"}
 
   @doc "Returns default delimiters - with `//` style comments"
@@ -88,11 +90,12 @@ defmodule Kojin do
       File.write!(file_path, merged_content)
 
       if(opts[:announce]) do
-        IO.puts("Wrote #{file_path}")
+        announce_file(file_path, nil, :wrote_new)
       end
     else
       if(opts[:announce]) do
-        IO.puts("No change #{file_path}")
+        file_stat = File.stat!(file_path)
+        announce_file(file_path, file_stat.mtime, :no_change)
       end
     end
 

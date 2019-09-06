@@ -11,14 +11,20 @@ end
 defmodule Kojin.Rust.GeneratedRustModule do
   use TypedStruct
 
+  import Kojin.Utils
   alias Kojin.Rust.{ModuleFile, GeneratedRustModule}
 
   typedstruct do
     field(:original_module_file, Kojin.Rust.ModuleFile.t(), enforce: true)
-    field(:generated_content, String.t(), enforce: true)
   end
 
   def generated_rust_module(path, generated_content) do
+    parent = Path.dirname(path)
+
+    if(!File.exists?(parent)) do
+      File.mkdir_p!(parent)
+    end
+
     {file_stat, content} =
       if(File.exists?(path)) do
         {File.stat!(path), File.read!(path)}
@@ -26,49 +32,32 @@ defmodule Kojin.Rust.GeneratedRustModule do
         {nil, nil}
       end
 
+    File.write!(path, generated_content)
+
     %GeneratedRustModule{
       original_module_file: %ModuleFile{
         path: path,
         file_stat: file_stat,
         content: content
-      },
-      generated_content: generated_content
+      }
     }
   end
 
-  def write_contents(generated_rust_module) do
-    path = generated_rust_module.original_module_file.path
-    parent = Path.dirname(path)
-
-    if(!File.exists?(parent)) do
-      File.mkdir_p!(parent)
-    end
+  def evaluate_formatted_diff(generated_rust_module) do
+    original_module_file = generated_rust_module.original_module_file
+    path = original_module_file.path
+    file_stat = original_module_file.file_stat
 
     if(!File.exists?(path)) do
-      IO.puts("Wrote new: #{path}")
-
-      File.write!(
-        path,
-        generated_rust_module.generated_content
-      )
+      announce_file(path, nil, :wrote_new)
     else
       contents = File.read!(path)
 
-      if(contents == generated_rust_module.generated_content) do
-        IO.puts("No change: #{path}")
-        File.write_stat!(path, generated_rust_module.original_module_file.file_stat)
+      if(contents == original_module_file.content) do
+        File.write_stat!(path, file_stat)
+        announce_file(path, file_stat.mtime, :no_change)
       else
-        IO.puts("Updated: #{path}")
-
-        IO.puts("------------------ FIRST ----------------------")
-        IO.puts(contents)
-        IO.puts("------------------ WAS -----------------------")
-        IO.puts(generated_rust_module.generated_content)
-
-        File.write!(
-          path,
-          generated_rust_module.generated_content
-        )
+        announce_file(path, nil, :updated)
       end
     end
   end

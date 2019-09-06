@@ -71,6 +71,5 @@ defmodule CrateTest do
     )
     |> Crate.generate_spec("/tmp/tmp_crate")
     |> Crate.generate()
-    |> IO.inspect(pretty: true)
   end
 end
