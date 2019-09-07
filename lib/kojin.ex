@@ -76,30 +76,26 @@ defmodule Kojin do
         opts \\ [announce: true]
       )
       when is_map(delimiters) do
-    prior =
+    {status, mtime} =
       if File.exists?(file_path) do
-        File.read!(file_path)
+        prior = File.read!(file_path)
+        merged_content = Kojin.merge(generated, prior, delimiters)
+
+        if(prior == merged_content) do
+          {:no_change, File.stat!(file_path).mtime}
+        else
+          File.write!(file_path, merged_content)
+          {:updated, nil}
+        end
       else
         File.mkdir_p!(Path.dirname(file_path))
-        ""
+        File.write!(file_path, generated)
+        {:wrote_new, nil}
       end
 
-    merged_content = Kojin.merge(generated, prior, delimiters)
-
-    if(prior != merged_content) do
-      File.write!(file_path, merged_content)
-
-      if(opts[:announce]) do
-        announce_file(file_path, nil, :wrote_new)
-      end
-    else
-      if(opts[:announce]) do
-        file_stat = File.stat!(file_path)
-        announce_file(file_path, file_stat.mtime, :no_change)
-      end
+    if(opts[:announce]) do
+      announce_file(file_path, mtime, status)
     end
-
-    nil
   end
 
   @doc ~s"""
