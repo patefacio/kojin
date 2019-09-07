@@ -84,6 +84,7 @@ defmodule Kojin.Rust.Crate do
 
   def generate({crate, generate_spec}) do
     path = generate_spec.path
+    File.mkdir_p!(path)
     File.cd!(path)
 
     src_path = Path.join([path, "src"])
