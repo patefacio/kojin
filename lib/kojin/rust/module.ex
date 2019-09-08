@@ -9,6 +9,7 @@ defmodule Kojin.Rust.Module do
     Struct,
     Trait,
     Module,
+    Uses,
     Fn,
     GenerateSpec,
     GeneratedRustModule
@@ -35,6 +36,7 @@ defmodule Kojin.Rust.Module do
     field(:impls, list(TypeImpl.t() | TraitImpl.t()), default: [])
     field(:modules, list(Module.t()), default: [])
     field(:file_name, String.t())
+    field(:uses, Uses.t(), default: nil)
   end
 
   def module(name, doc, opts \\ []) do
@@ -49,7 +51,8 @@ defmodule Kojin.Rust.Module do
           structs: [],
           impls: [],
           modules: [],
-          visibility: :private
+          visibility: :private,
+          uses: []
         ],
         opts
       )
@@ -65,7 +68,8 @@ defmodule Kojin.Rust.Module do
       impls: opts[:impls],
       modules: opts[:modules],
       file_name: "#{name}.rs",
-      visibility: opts[:visibility]
+      visibility: opts[:visibility],
+      uses: Uses.uses(opts[:uses])
     }
   end
 
@@ -78,11 +82,17 @@ defmodule Kojin.Rust.Module do
     end)
   end
 
+  defp announce_section(s), do: "// --- module #{s} ---\n"
+
   def content(module) do
     join_content(
       [
         ## Include comments
         Kojin.Rust.doc_comment(module.doc),
+
+        ## Uses
+        announce_section("uses"),
+        "#{module.uses}",
 
         ## Mod decls
         join_content(Kojin.Rust.Module.mod_decls(module)),
@@ -134,9 +144,14 @@ defmodule Kojin.Rust.Module do
 
   @spec generate(Module.t(), GenerateSpec.t()) :: any
   def generate(module, generate_spec) do
-    Logger.debug("Generating module `#{module.name}` with spec #{inspect(generate_spec)}")
+    Logger.debug("Generating module `#{module.name}`")
 
-    child_path = Path.join([generate_spec.path, "#{module.name}"])
+    child_path =
+      if module.name == :lib do
+        generate_spec.path
+      else
+        Path.join([generate_spec.path, "#{module.name}"])
+      end
 
     my_path =
       case module.type do

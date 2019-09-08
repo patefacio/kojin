@@ -138,4 +138,21 @@ defmodule Kojin.Utils do
     time_str = Kojin.Utils.stat_time_to_str(mtime)
     IO.puts("#{status} #{time_str} #{path}")
   end
+
+  @doc """
+  Time the provided function and print the timing using provided `label`
+  """
+  def time_function(function, label) do
+    {time, value} =
+      function
+      |> :timer.tc()
+
+    seconds =
+      time
+      |> Kernel./(1_000_000)
+
+    IO.puts("------ Function #{label} -> #{seconds} seconds -------")
+
+    value
+  end
 end

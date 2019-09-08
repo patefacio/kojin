@@ -6,6 +6,7 @@ defmodule Kojin.Rust.Struct do
   alias Kojin.Rust.{Field, Struct, TypeImpl}
   alias Kojin.Utils
   import Utils
+  import Kojin.Id
 
   use TypedStruct
   use Vex.Struct
@@ -17,8 +18,9 @@ defmodule Kojin.Rust.Struct do
   * :doc - Documentation for struct
   * :fields - List of struct fields
   """
-  typedstruct do
-    field(:name, atom, enforce: true)
+  typedstruct enforce: true do
+    field(:name, atom)
+    field(:type_name, String.t())
     field(:doc, String.t())
     field(:fields, list(Field.t()), default: [])
     field(:derivables, list(atom), default: [])
@@ -66,6 +68,7 @@ defmodule Kojin.Rust.Struct do
 
     result = %Struct{
       name: name,
+      type_name: cap_camel(name),
       doc: doc,
       fields: Enum.map(fields, &Struct._make_field/1),
       visibility: opts[:visibility],
