@@ -99,17 +99,10 @@ defmodule Kojin.Rust.Struct do
   end
 
   def decl(struct) do
-    import Kojin.Id
+    import Kojin.{Id, Rust.Utils}
 
     visibility = Kojin.Rust.visibility_decl(struct.visibility)
     derivables_decl = Kojin.Rust.derivables_decl(struct.derivables)
-
-    impl =
-      if(struct.impl) do
-        "#{struct.impl}"
-      else
-        ""
-      end
 
     join_content(
       [
@@ -124,7 +117,7 @@ defmodule Kojin.Rust.Struct do
           ),
           "}"
         ]),
-        impl
+        announce_section("struct impl", struct.impl)
       ],
       "\n\n"
     )

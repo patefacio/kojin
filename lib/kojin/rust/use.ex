@@ -101,7 +101,7 @@ defmodule Kojin.Rust.Uses do
           if group == :private do
             "(default/private)"
           else
-            visibility_decl(group)
+            visibility_decl(group) |> String.trim()
           end
 
         "// -- `#{visibility}` use statements\n" <> join_content(uses)

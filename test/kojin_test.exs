@@ -11,6 +11,8 @@ defmodule KojinTest do
   doctest Kojin.Rust.Parm
   doctest Kojin.Rust.TypeImpl
   doctest Kojin.Rust.Utils
+  doctest Kojin.Rust.Use
+  doctest Kojin.Rust.Uses
   doctest Kojin.Utils
 
   @delimiters %{open: "// α", close: "// ω"}

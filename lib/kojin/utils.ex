@@ -94,13 +94,18 @@ defmodule Kojin.Utils do
       "1, two, three"
 
   """
-  def join_content(content, separator \\ "\n") when is_list(content) do
+  def join_content(content, separator \\ "\n")
+  def join_content(nil, _), do: nil
+
+  def join_content(content, separator) when is_list(content) do
     content
     |> Enum.reject(&is_nil/1)
     |> Enum.reject(&(&1 == ""))
     |> Enum.map(&String.Chars.to_string/1)
     |> Enum.join(separator)
   end
+
+  def join_content(scalar_content, _), do: "#{scalar_content}"
 
   @doc """
   Convert a `File.Stat` `mtime` to string.

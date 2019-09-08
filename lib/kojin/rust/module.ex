@@ -16,7 +16,7 @@ defmodule Kojin.Rust.Module do
   }
 
   import Kojin
-  import Kojin.{Rust, Id, Utils}
+  import Kojin.{Id, Utils, Rust, Rust.Utils}
   use TypedStruct
   use Vex.Struct
   require Logger
@@ -82,8 +82,6 @@ defmodule Kojin.Rust.Module do
     end)
   end
 
-  defp announce_section(s), do: "// --- module #{s} ---\n"
-
   def content(module) do
     join_content(
       [
@@ -91,32 +89,11 @@ defmodule Kojin.Rust.Module do
         Kojin.Rust.doc_comment(module.doc),
 
         ## Uses
-        announce_section("uses"),
-        "#{module.uses}",
-
-        ## Mod decls
-        join_content(Kojin.Rust.Module.mod_decls(module)),
-
-        ## Include Functions
-        join_content(
-          module.functions
-          |> Enum.map(fn fun -> "#{fun}" end),
-          "\n\n"
-        ),
-
-        ## Include Traits
-        join_content(
-          module.traits
-          |> Enum.map(fn trait -> "#{trait}" end),
-          "\n\n"
-        ),
-
-        ## Include Structs
-        join_content(
-          module.structs
-          |> Enum.map(fn struct -> "#{struct}" end),
-          "\n\n"
-        ),
+        module.uses,
+        announce_section("mod decls", Module.mod_decls(module)),
+        announce_section("functions", module.functions),
+        announce_section("traits", module.traits),
+        announce_section("structs", module.structs),
 
         ## Include Nested Modules
         module.modules

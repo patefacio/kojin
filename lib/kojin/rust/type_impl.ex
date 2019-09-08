@@ -1,6 +1,6 @@
 defmodule Kojin.Rust.TypeImpl do
   use TypedStruct
-  import Kojin.{Id, Utils, CodeBlock}
+  import Kojin.{Id, Utils, CodeBlock, Rust.Utils}
 
   alias Kojin.Rust.{Type, ToCode, TypeImpl, Fn}
 
@@ -50,6 +50,10 @@ defmodule Kojin.Rust.TypeImpl do
         // α <impl MyStruct>
         // ω <impl MyStruct>
         
+        ////////////////////////////////////////////////////////////////////////////////////
+        //--- private functions ---
+        ////////////////////////////////////////////////////////////////////////////////////
+        
         /// Function does f
         fn f() {
           // α <MyStruct(fn f)>
@@ -65,9 +69,7 @@ defmodule Kojin.Rust.TypeImpl do
 
     functions =
       impl.functions
-      |> Enum.map(fn f -> ToCode.to_code(f) end)
-      |> Enum.join("\n")
-      |> String.trim_trailing()
+      |> Enum.sort()
 
     [
       join_content([
@@ -77,7 +79,22 @@ defmodule Kojin.Rust.TypeImpl do
       join_content(
         [
           String.trim_trailing(text(impl.code_block)),
-          functions
+          announce_section(
+            "pub functions",
+            functions |> Enum.filter(fn f -> f.visibility == :pub end)
+          ),
+          announce_section(
+            "pub(crate) functions",
+            functions |> Enum.filter(fn f -> f.visibility == :pub_crate end)
+          ),
+          announce_section(
+            "private functions",
+            functions |> Enum.filter(fn f -> f.visibility == :private end)
+          ),
+          announce_section(
+            "pub(self) functions",
+            functions |> Enum.filter(fn f -> f.visibility == :pub_self end)
+          )
         ],
         "\n\n"
       )
