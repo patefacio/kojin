@@ -105,10 +105,12 @@ defmodule Kojin.Rust.Crate do
 
     # Report on diffs (if no change set timestamp back to original)
     generated
-    |> Enum.each(fn {path, generated_rust_module} ->
+    |> Enum.map(fn {path, generated_rust_module} ->
       Logger.debug("Generating #{path}")
       GeneratedRustModule.evaluate_formatted_diff(generated_rust_module)
     end)
+    |> Enum.reduce([], fn status, acc -> [status | acc] end)
+    |> Enum.sort()
   end
 
   def generate_spec(crate, path) do

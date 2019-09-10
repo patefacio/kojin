@@ -127,21 +127,25 @@ defmodule Kojin.Utils do
   - `:wrote_new` The file did not exist and has been written
 
   """
-  @spec announce_file(binary, any, atom | binary) :: :ok
-  def announce_file(path, mtime, :updated), do: announce_file(path, mtime, "Updated:  ")
-  def announce_file(path, mtime, :no_change), do: announce_file(path, mtime, "No Change:")
-  def announce_file(path, mtime, :wrote_new), do: announce_file(path, mtime, "Wrote New:")
+  @spec announce_file(atom | binary, binary, File.Stat.t()) :: binary
+  def announce_file(:updated, path, stat), do: announce_file("Updated:  ", path, stat)
+  def announce_file(:no_change, path, stat), do: announce_file("No Change:", path, stat)
+  def announce_file(:wrote_new, path, stat), do: announce_file("Wrote New:", path, stat)
 
-  def announce_file(path, mtime, status) do
-    mtime =
-      if(mtime == nil) do
-        File.stat!(path).mtime
+  def announce_file(status, path, stat) do
+    stat =
+      if(stat == nil) do
+        File.stat!(path)
       else
-        mtime
+        stat
       end
 
-    time_str = Kojin.Utils.stat_time_to_str(mtime)
-    IO.puts("#{status} #{time_str} #{path}")
+    time_str = Kojin.Utils.stat_time_to_str(stat.mtime)
+
+    size =
+      "#{Number.Delimit.number_to_delimited(stat.size, precision: 0)}" |> String.pad_leading(8)
+
+    "#{status} #{time_str} (#{size}) bytes #{path}"
   end
 
   @doc """

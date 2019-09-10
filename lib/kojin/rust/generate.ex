@@ -49,15 +49,15 @@ defmodule Kojin.Rust.GeneratedRustModule do
     file_stat = original_module_file.file_stat
 
     if(!File.exists?(path)) do
-      announce_file(path, nil, :wrote_new)
+      {:wrote_new, path, nil}
     else
       contents = File.read!(path)
 
       if(contents == original_module_file.content) do
         File.write_stat!(path, file_stat)
-        announce_file(path, file_stat.mtime, :no_change)
+        {:no_change, path, file_stat}
       else
-        announce_file(path, nil, :updated)
+        {:updated, path, nil}
       end
     end
   end

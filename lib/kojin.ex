@@ -76,13 +76,13 @@ defmodule Kojin do
         opts \\ [announce: true]
       )
       when is_map(delimiters) do
-    {status, mtime} =
+    {status, stat} =
       if File.exists?(file_path) do
         prior = File.read!(file_path)
         merged_content = Kojin.merge(generated, prior, delimiters)
 
         if(prior == merged_content) do
-          {:no_change, File.stat!(file_path).mtime}
+          {:no_change, File.stat!(file_path)}
         else
           File.write!(file_path, merged_content)
           {:updated, nil}
@@ -94,7 +94,7 @@ defmodule Kojin do
       end
 
     if(opts[:announce]) do
-      announce_file(file_path, mtime, status)
+      IO.puts(announce_file(status, file_path, stat))
     end
   end
 
