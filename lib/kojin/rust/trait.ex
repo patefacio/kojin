@@ -15,27 +15,33 @@ defmodule Kojin.Rust.Trait do
     field(:name, atom, enforce: true)
     field(:doc, String.t())
     field(:functions, list(Fn.t()), default: [])
+    field(:visibility, atom, default: :private)
   end
 
-  def trait(name, doc, functions \\ [])
+  def trait(name, doc, functions \\ [], opts \\ [])
 
-  def trait(name, doc, functions) when is_binary(name),
-    do: trait(String.to_atom(name), doc, functions)
+  def trait(name, doc, functions, opts) when is_binary(name),
+    do: trait(String.to_atom(name), doc, functions, opts)
 
-  def trait(name, doc, functions) do
+  def trait(name, doc, functions, opts) do
+    opts = Keyword.merge([visibility: :private], opts)
+
     %Trait{
       name: name,
       doc: doc,
-      functions: functions
+      functions: functions,
+      visibility: opts[:visibility]
     }
   end
 
   def trait_name(trait), do: trait.name |> cap_camel
 
   def code(trait) do
+    visibility = Kojin.Rust.visibility_decl(trait.visibility)
+
     [
       triple_slash_comment(trait.doc),
-      "trait #{trait_name(trait)} {",
+      "#{visibility}trait #{trait_name(trait)} {",
       trait.functions
       |> Enum.map(fn fun -> "#{Fn.commented_signature(fun)};" end)
       |> Enum.join("\n")
