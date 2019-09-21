@@ -29,11 +29,11 @@ defmodule Kojin.Rust.Use do
       "use std::opts::Add;"
 
       iex> Kojin.Rust.Use.use_("SomeClass", attrs: ["cfg(test)"]) 
-      ...> |> String.Chars.to_string()
+      ...> |> String.Chars.to_string() |> String.trim()
       ~s'''
       #[cfg(test)]
       use SomeClass;
-      '''
+      ''' |> String.trim()
 
   """
 
@@ -58,10 +58,11 @@ defmodule Kojin.Rust.Use do
       if use.attrs == [] do
         "#{visibility}use #{use.path_name};"
       else
-        """
-        #{use.attrs |> Enum.map(fn attr -> external(attr) end)}
-        #{visibility}use #{use.path_name};
-        """
+        "\n" <>
+          """
+          #{use.attrs |> Enum.map(fn attr -> external(attr) end)}
+          #{visibility}use #{use.path_name};
+          """
       end
     end
   end
@@ -114,7 +115,7 @@ defmodule Kojin.Rust.Uses do
         uses.uses
         |> MapSet.new()
         |> MapSet.to_list()
-        |> Enum.sort()
+        |> Enum.sort(&(String.downcase(&1.path_name) <= String.downcase(&2.path_name)))
 
       uses
       |> Enum.group_by(fn use -> use.visibility end)
