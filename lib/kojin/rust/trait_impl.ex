@@ -1,8 +1,81 @@
 defmodule Kojin.Rust.TraitImpl do
-  use TypedStruct
-  alias Kojin.Rust.Trait
+  @moduledoc """
+  Responsible for generating _Trait_ _Impls_.
 
-  typedstruct do
-    field(:trait, Trait.t(), enforce: true)
+  A `Kojin.Rust.TraitImpl` has definitions for the functions of the trait.
+  Rather than store additional function objects, update the
+  functions in the `Trait` by adding a body if desired.
+
+  If no body is desired for a `Kojin.Rust.Trait`, code blocks
+  will be generated.
+  """
+  use TypedStruct
+  alias Kojin.Rust.{Trait, TraitImpl, Type}
+  import Kojin.Utils
+
+  typedstruct enforce: true do
+    field(:type, Type.t())
+    field(:trait, Trait.t())
+    field(:doc, String.t())
+  end
+
+  @doc """
+  Create a `Kojin.Rust.TraitImpl` from the given `trait`
+  and its implementation specific doc comment, `doc`.
+
+  ## Examples
+
+      iex> import Kojin.Rust.{Trait, TraitImpl}
+      ...> import Kojin
+      ...> trait_impl(:i32, "ThirdPartyTrait")
+      ...> |> String.Chars.to_string()
+      ...> |> dark_matter()
+      import Kojin
+      ~s[
+        impl ThirdPartyTrait for i32 {
+        }
+      ]
+      |> dark_matter()
+
+  """
+  def trait_impl(type, trait, doc \\ nil)
+
+  def trait_impl(type, trait, doc) when is_atom(type) or is_binary(type) do
+    trait_impl(Type.type(type), trait, doc)
+  end
+
+  @spec trait_impl(Kojin.Rust.Type.t(), Kojin.Rust.Trait.t()) :: Kojin.Rust.TraitImpl.t()
+  def trait_impl(%Type{} = type, %Trait{} = trait, doc) do
+    %TraitImpl{
+      type: type,
+      trait: trait,
+      doc: doc
+    }
+  end
+
+  def trait_impl(type, trait, doc) when is_binary(trait),
+    do: trait_impl(type, Trait.trait(trait, "", []), doc)
+
+  defimpl String.Chars do
+    def to_string(%TraitImpl{} = trait_impl) do
+      import Kojin.Utils
+      trait = trait_impl.trait
+      type = trait_impl.type
+
+      [
+        if(trait_impl.doc) do
+          triple_slash_comment(trait_impl.doc)
+        else
+          nil
+        end,
+        "impl #{trait.name} for #{type} {",
+        indent_block(join_content(trait.functions)),
+        "}",
+        trait_impl.trait.functions
+        |> Enum.map(fn trait -> trait.name end)
+        |> Enum.join("\n")
+      ]
+      |> Enum.join("\n")
+    end
   end
 end

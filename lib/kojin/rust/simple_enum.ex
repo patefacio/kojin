@@ -46,7 +46,7 @@ defmodule Kojin.Rust.SimpleEnum do
   def enum(name, doc, values, opts \\ []) do
     defaults = [visibility: :private, derivables: []]
 
-    opts = Keyword.merge(defaults, opts)
+    opts = Kojin.check_args(defaults, opts)
 
     result = %SimpleEnum{
       name: name,

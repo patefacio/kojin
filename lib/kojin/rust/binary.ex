@@ -17,9 +17,17 @@ defmodule Kojin.Rust.Arg do
   end
 
   def arg(name, doc, opts \\ []) when is_atom(name) and is_binary(doc) do
+    defaults = [
+      short: nil,
+      doc: doc,
+      type: Type.type(:string),
+      is_required: false,
+      is_multiple: false
+    ]
+
     opts =
-      Keyword.merge(
-        [short: nil, doc: doc, type: Type.type(:string), is_required: false, is_multiple: false],
+      Kojin.check_args(
+        defaults,
         opts
       )
 

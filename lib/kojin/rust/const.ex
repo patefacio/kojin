@@ -44,7 +44,7 @@ defmodule Kojin.Rust.Const do
     defaults = [visibility: :private]
 
     opts =
-      Keyword.merge(defaults, opts)
+      Kojin.check_args(defaults, opts)
       |> Enum.into(%{})
 
     result = %Const{

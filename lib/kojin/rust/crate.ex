@@ -54,15 +54,17 @@ defmodule Kojin.Rust.Crate do
   def crate(name, doc, root_module, opts \\ []) do
     require_snake(name)
 
+    defaults = [
+      version: "0.0.1",
+      authors: [],
+      homepage: nil,
+      license: "MIT",
+      binaries: []
+    ]
+
     opts =
-      Keyword.merge(
-        [
-          version: "0.0.1",
-          authors: [],
-          homepage: nil,
-          license: "MIT",
-          binaries: []
-        ],
+      Kojin.check_args(
+        defaults,
         opts
       )
 

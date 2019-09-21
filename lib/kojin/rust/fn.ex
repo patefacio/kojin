@@ -135,7 +135,8 @@ defmodule Kojin.Rust.Parm do
 
       iex> import Kojin.Rust.Parm
       ...> id_parm(:some_type, doc: "Some type", mut: true)
-      import Kojin.Rust.{Parm, Type}; parm(:some_type, :some_type, doc: "Some type", mut: true)
+      import Kojin.Rust.{Parm, Type}
+      parm(:some_type, :some_type, doc: "Some type", mut: true)
   """
   def id_parm(name, rest), do: parm(name, name |> Kojin.Id.cap_camel(), rest)
 
@@ -146,7 +147,8 @@ defmodule Kojin.Rust.Parm do
 
       iex> import Kojin.Rust.Type
       ...> ref_parm(:some_type, doc: "Reference to some type", mut: false)
-      import Kojin.Rust.{Parm, Type}; parm(:some_type, ref(:some_type), doc: "Reference to some type", mut: false)
+      import Kojin.Rust.{Parm, Type}
+      parm(:some_type, ref(:some_type), doc: "Reference to some type", mut: false)
   """
   def ref_parm(name, rest), do: parm(name, ref(name |> Kojin.Id.cap_camel()), rest)
 
@@ -157,7 +159,8 @@ defmodule Kojin.Rust.Parm do
 
       iex> import Kojin.Rust.Type
       ...> mref_parm(:some_type, "Reference to some type")
-      import Kojin.Rust.{Parm, Type}; parm(:some_type, mref(:some_type), "Reference to some type")
+      import Kojin.Rust.{Parm, Type}
+      parm(:some_type, mref(:some_type), "Reference to some type")
   """
   def mref_parm(name, rest), do: parm(name, mref(name |> Kojin.Id.cap_camel()), rest)
 
@@ -238,19 +241,22 @@ defmodule Kojin.Rust.Fn do
 
       iex> import Kojin.Rust.Fn
       ...> fun([:foo, "foo docs", [], :i32, "returns age"])
-      import Kojin.Rust.Fn; fun(:foo, "foo docs", [], return: :i32, return_doc: "returns age")
+      import Kojin.Rust.Fn
+      fun(:foo, "foo docs", [], return: :i32, return_doc: "returns age")
 
     If four args and fourth is `Keyword` list, it is assumed `options`
 
       iex> import Kojin.Rust.Fn
       ...> fun([:foo, "foo docs", [], [return: :i64]])
-      import Kojin.Rust.Fn; fun(:foo, "foo docs", [], return: :i64)
+      import Kojin.Rust.Fn
+      fun(:foo, "foo docs", [], return: :i64)
 
     Otherwise, if four args, assume last is `return`
 
       iex> import Kojin.Rust.Fn
       ...> fun([:foo, "foo docs", [[:parm1, :i32]], :i64])
-      import Kojin.Rust.Fn; fun(:foo, "foo docs", [[:parm1, :i32]], :i64)
+      import Kojin.Rust.Fn
+      fun(:foo, "foo docs", [[:parm1, :i32]], :i64)
   """
   @spec fun(list) :: Fn.t()
   def fun([name, doc, parms, return, return_doc]), do: fun(name, doc, parms, return, return_doc)
@@ -478,7 +484,10 @@ defmodule Kojin.Rust.Fn do
 
       iex> import Kojin.Rust.Fn
       ...> commented_signature(fun(:f, "This is an f", []))
-      "///  This is an f\\nfn f()"
+      ~S[
+      ///  This is an f
+      fn f()
+      ] |> String.trim
 
   """
   def commented_signature(fun), do: join_content([Fn.doc(fun), Fn.signature(fun)])
@@ -544,6 +553,6 @@ defmodule Kojin.Rust.Fn do
 
   defimpl ToCode do
     @spec to_code(Fn.t()) :: binary
-    def to_code(fun), do: "#{fun}"
+    def to_code(%Fn{} = fun), do: "#{fun}"
   end
 end

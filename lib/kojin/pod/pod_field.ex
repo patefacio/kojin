@@ -23,7 +23,8 @@ defmodule Kojin.PodField do
 
   def pod_field(name, doc, opts \\ []) do
     type = if opts[:type] == nil, do: name, else: opts[:type]
-    opts = Keyword.merge([name: name, doc: doc, type: type], opts)
+    defaults = [name: name, doc: doc, type: type]
+    opts = Kojin.check_args(defaults, opts)
 
     PodField.__struct__(opts)
     |> validate

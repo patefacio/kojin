@@ -45,8 +45,8 @@ defmodule Kojin.CodeBlock do
     do: code_block(Atom.to_string(tag), opts)
 
   def code_block(tag, opts) do
-    opts =
-      Keyword.merge([tag_prefix: nil, delimiters: @delimiters, header: nil, footer: nil], opts)
+    defaults = [tag_prefix: nil, delimiters: @delimiters, header: nil, footer: nil]
+    opts = Kojin.check_args(defaults, opts)
 
     %Kojin.CodeBlock{
       tag: tag,
@@ -67,7 +67,7 @@ defmodule Kojin.CodeBlock do
       "# α <sample_tag>\\n# ω <sample_tag>\\n"
   """
   def script_block(tag, opts \\ []),
-    do: code_block(tag, Keyword.merge([delimiters: @script_delimiters], opts))
+    do: code_block(tag, Kojin.check_args([delimiters: @script_delimiters], opts))
 
   def _block(delimiters, tag) do
     """

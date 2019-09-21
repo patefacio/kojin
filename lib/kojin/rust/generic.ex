@@ -27,7 +27,9 @@ defmodule Kojin.Rust.TypeParm do
 
   def type_parm(name, opts) when is_atom(name) do
     Logger.debug("type parm name -> #{name} opts -> #{inspect(opts)}")
-    opts = check_args([default_type: nil, bounds: []], opts)
+
+    defaults = [default_type: nil, bounds: []]
+    opts = check_args(defaults, opts)
 
     %TypeParm{
       name: name,

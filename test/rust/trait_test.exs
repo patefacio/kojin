@@ -12,10 +12,10 @@ defmodule TraitTest do
     assert f1 == fun([:f1, fdoc, fparms, :i64])
 
     t = trait(:sample_trait, doc, [])
-    assert(t.name == :sample_trait and t.doc == doc)
+    assert(t.name == "SampleTrait" and t.doc == doc)
     assert(t.doc == doc)
-    t = trait("sample_trait_2", doc, [])
-    assert t.name == :sample_trait_2 and Enum.empty?(t.functions)
+    t = trait("SampleTrait2", doc, [])
+    assert t.name == "SampleTrait2" and Enum.empty?(t.functions)
   end
 
   test "trait with function" do

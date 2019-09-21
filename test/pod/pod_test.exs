@@ -13,7 +13,7 @@ defmodule PodTest do
   end
 
   test "pod field" do
-    pod_field(:foo_bar, "sample foo bar field", optional?: true)
+    pod_field(:foo_bar, "sample foo bar field")
     # TOD Assert pod_field
   end
 end

@@ -42,20 +42,18 @@ defmodule Kojin.Rust.Module do
   def module(name, doc, opts \\ []) do
     require_snake(name)
 
-    opts =
-      Keyword.merge(
-        [
-          type: :file,
-          traits: [],
-          functions: [],
-          structs: [],
-          impls: [],
-          modules: [],
-          visibility: :private,
-          uses: []
-        ],
-        opts
-      )
+    defaults = [
+      type: :file,
+      traits: [],
+      functions: [],
+      structs: [],
+      impls: [],
+      modules: [],
+      visibility: :private,
+      uses: []
+    ]
+
+    opts = Kojin.check_args(defaults, opts)
 
     %Module{
       name: name,
@@ -94,6 +92,7 @@ defmodule Kojin.Rust.Module do
         announce_section("functions", module.functions),
         announce_section("traits", module.traits),
         announce_section("structs", module.structs),
+        announce_section("impls", module.impls),
 
         ## Include Nested Modules
         module.modules

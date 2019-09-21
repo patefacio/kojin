@@ -65,7 +65,9 @@ defmodule Kojin.Rust.Field do
   def field(name, type, doc \\ "TODO: Comment field", opts \\ [])
       when (is_binary(name) or is_atom(name)) and is_binary(doc) do
     alias Kojin.Rust.Type
-    opts = Keyword.merge([visibility: :private], opts)
+
+    defaults = [visibility: :private]
+    opts = Kojin.check_args(defaults, opts)
 
     %Field{
       name: name,

@@ -21,7 +21,8 @@ defmodule Kojin.Rust.TypeImpl do
     code_block_prefix = "#{type_name}"
     code_block = code_block("impl #{type}")
 
-    opts = Keyword.merge(opts, doc: "Implementation for #{type}")
+    defaults = [doc: "Implementation for #{type}"]
+    opts = Kojin.check_args(defaults, opts)
 
     %TypeImpl{
       type: type,

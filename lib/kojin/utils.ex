@@ -69,7 +69,7 @@ defmodule Kojin.Utils do
 
   def indent_block(text, options) do
     defaults = [indent: "  "]
-    %{indent: indent} = Keyword.merge(defaults, options) |> Enum.into(%{})
+    %{indent: indent} = Kojin.check_args(defaults, options) |> Enum.into(%{})
 
     text
     |> String.split("\n")

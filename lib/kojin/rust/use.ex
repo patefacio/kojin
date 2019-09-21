@@ -31,7 +31,8 @@ defmodule Kojin.Rust.Use do
   def use(%Rust.Use{} = use), do: use
 
   def use(path_name, opts \\ []) when is_binary(path_name) do
-    opts = Keyword.merge([visibility: :private], opts)
+    defaults = [visibility: :private]
+    opts = Kojin.check_args(defaults, opts)
 
     %Rust.Use{
       path_name: path_name,
