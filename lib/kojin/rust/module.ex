@@ -89,10 +89,14 @@ defmodule Kojin.Rust.Module do
         ## Uses
         module.uses,
         announce_section("mod decls", Module.mod_decls(module)),
-        announce_section("functions", module.functions),
+        announce_section("functions", module.functions |> Enum.filter(fn f -> !f.is_test end)),
         announce_section("traits", module.traits),
         announce_section("structs", module.structs),
         announce_section("impls", module.impls),
+        announce_section(
+          "cfg(test) functions",
+          module.functions |> Enum.filter(fn f -> f.is_test end)
+        ),
 
         ## Include Nested Modules
         module.modules

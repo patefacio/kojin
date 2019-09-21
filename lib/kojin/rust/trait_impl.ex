@@ -27,7 +27,7 @@ defmodule Kojin.Rust.TraitImpl do
 
       iex> import Kojin.Rust.{Trait, TraitImpl}
       ...> import Kojin
-      ...> trait_impl(:i32, "ThirdPartyTrait")
+      ...> trait_impl("ThirdPartyTrait", :i32)
       ...> |> String.Chars.to_string()
       ...> |> dark_matter()
       import Kojin
@@ -38,14 +38,14 @@ defmodule Kojin.Rust.TraitImpl do
       |> dark_matter()
 
   """
-  def trait_impl(type, trait, doc \\ nil)
+  def trait_impl(trait, type, doc \\ nil)
 
-  def trait_impl(type, trait, doc) when is_atom(type) or is_binary(type) do
-    trait_impl(Type.type(type), trait, doc)
+  def trait_impl(trait, type, doc) when is_atom(type) or is_binary(type) do
+    trait_impl(trait, Type.type(type), doc)
   end
 
-  @spec trait_impl(Kojin.Rust.Type.t(), Kojin.Rust.Trait.t()) :: Kojin.Rust.TraitImpl.t()
-  def trait_impl(%Type{} = type, %Trait{} = trait, doc) do
+  @spec trait_impl(Kojin.Rust.Trait.t(), Kojin.Rust.Type.t()) :: Kojin.Rust.TraitImpl.t()
+  def trait_impl(%Trait{} = trait, %Type{} = type, doc) do
     %TraitImpl{
       type: type,
       trait: trait,
@@ -53,8 +53,8 @@ defmodule Kojin.Rust.TraitImpl do
     }
   end
 
-  def trait_impl(type, trait, doc) when is_binary(trait),
-    do: trait_impl(type, Trait.trait(trait, "", []), doc)
+  def trait_impl(trait, type, doc) when is_binary(trait),
+    do: trait_impl(Trait.trait(trait, "", []), type, doc)
 
   defimpl String.Chars do
     def to_string(%TraitImpl{} = trait_impl) do
@@ -63,18 +63,12 @@ defmodule Kojin.Rust.TraitImpl do
       type = trait_impl.type
 
       [
-        if(trait_impl.doc) do
-          triple_slash_comment(trait_impl.doc)
-        else
-          nil
-        end,
+        if(trait_impl.doc, do: triple_slash_comment(trait_impl.doc)),
         "impl #{trait.name} for #{type} {",
         indent_block(join_content(trait.functions)),
-        "}",
-        trait_impl.trait.functions
-        |> Enum.map(fn trait -> trait.name end)
-        |> Enum.join("\n")
+        "}"
       ]
+      |> Enum.reject(&is_nil/1)
       |> Enum.join("\n")
     end
   end

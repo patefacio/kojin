@@ -182,7 +182,7 @@ defmodule Kojin.Rust.Fn do
   use Vex.Struct
   import Kojin.{CodeBlock, Id, Utils, Rust.Type}
   alias Kojin.CodeBlock
-  alias Kojin.Rust.{Fn, Generic, Parm, ToCode, Type}
+  alias Kojin.Rust.{Fn, Generic, Parm, ToCode, Type, Attr}
 
   @typedoc """
   A rust function.
@@ -213,6 +213,8 @@ defmodule Kojin.Rust.Fn do
     field(:tag_prefix, String.t(), default: nil)
     field(:visibility, atom)
     field(:body, String.t())
+    field(:attrs, list(Attr.t()))
+    field(:is_test, boolean)
   end
 
   validates(:visibility, inclusion: Kojin.Rust.allowed_visibilities())
@@ -278,6 +280,7 @@ defmodule Kojin.Rust.Fn do
     - `generic`: Details of generics of function
     - `consts`: List of constants of the function
     - `code_block_prefix`: Prepended to function name in code block tag
+    - `is_test`: If set adds _cfg(test)_ attribute
 
   ## Examples
 
@@ -307,7 +310,9 @@ defmodule Kojin.Rust.Fn do
       tag_prefix: nil,
       code_block: nil,
       body: nil,
-      visibility: :private
+      visibility: :private,
+      attrs: [],
+      is_test: false
     ]
 
     opts = Kojin.check_args(defaults, opts)
@@ -327,6 +332,13 @@ defmodule Kojin.Rust.Fn do
         return_doc
       end
 
+    attrs =
+      if(opts[:is_test]) do
+        [Attr.attr("cfg(test)") | opts[:attrs]]
+      else
+        opts[:attrs]
+      end
+
     result = %Fn{
       name: name,
       doc: doc,
@@ -344,7 +356,9 @@ defmodule Kojin.Rust.Fn do
       code_block: code_block,
       tag_prefix: opts[:tag_prefix],
       visibility: opts[:visibility],
-      body: opts[:body]
+      body: opts[:body],
+      attrs: attrs,
+      is_test: opts[:is_test]
     }
 
     if(!Vex.valid?(result)) do
@@ -419,9 +433,24 @@ defmodule Kojin.Rust.Fn do
         42
       }
       ] |> Kojin.dark_matter
+
+    With `is_test` set:
+
+      iex> alias Kojin.Rust.Fn
+      ...> Fn.code(Fn.fun(:f, "Simple function", [], is_test: true))
+      ...> |> Kojin.dark_matter
+      ~s'''
+      #[cfg(test)]
+      fn f() {
+        // α <fn f>
+        // ω <fn f>
+      }
+      ''' |> Kojin.dark_matter
+  `
   """
   def code(fun) do
     [
+      fun.attrs |> Enum.map(fn attr -> Attr.external(attr) end),
       "#{signature(fun)} {",
       if(fun.body) do
         indent_block(fun.body)
@@ -431,6 +460,7 @@ defmodule Kojin.Rust.Fn do
       |> String.trim_trailing(),
       "}"
     ]
+    |> Enum.reject(&(&1 == []))
     |> join_content("\n")
   end
 
