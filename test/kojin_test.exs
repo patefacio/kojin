@@ -6,6 +6,7 @@ defmodule KojinTest do
   doctest Kojin.CodeBlock
   doctest Kojin.Id
   doctest Kojin.Rust
+  doctest Kojin.Rust.Attr
   doctest Kojin.Rust.Field
   doctest Kojin.Rust.Fn
   doctest Kojin.Rust.Parm

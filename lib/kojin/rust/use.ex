@@ -1,6 +1,7 @@
 alias Kojin.Rust
 import Kojin.Utils
 import Kojin.Rust
+import Kojin.Rust.Attr
 
 defmodule Kojin.Rust.Use do
   @moduledoc "Models a `use ...` rust statement"
@@ -14,6 +15,7 @@ defmodule Kojin.Rust.Use do
   typedstruct enforce: true do
     field(:path_name, String.t())
     field(:visibility, atom, default: :private)
+    field(:attrs, list(Attr.t()))
   end
 
   @doc ~s"""
@@ -23,7 +25,12 @@ defmodule Kojin.Rust.Use do
   ## Examples
 
       iex> Kojin.Rust.Use.use("std::opts::Add") 
-      %Kojin.Rust.Use{ path_name: "std::opts::Add", visibility: :private }
+      ...> |> String.Chars.to_string()
+      "use std::opts::Add;"
+
+      iex> Kojin.Rust.Use.use("SomeClass", attrs: ["cfg(test)"]) 
+      ...> |> String.Chars.to_string()
+      "use SomeClass;"
 
   """
 
@@ -31,12 +38,13 @@ defmodule Kojin.Rust.Use do
   def use(%Rust.Use{} = use), do: use
 
   def use(path_name, opts \\ []) when is_binary(path_name) do
-    defaults = [visibility: :private]
+    defaults = [visibility: :private, attrs: []]
     opts = Kojin.check_args(defaults, opts)
 
     %Rust.Use{
       path_name: path_name,
-      visibility: opts[:visibility]
+      visibility: opts[:visibility],
+      attrs: opts[:attrs]
     }
   end
 
@@ -67,11 +75,13 @@ defmodule Kojin.Rust.Uses do
 
       iex> alias Kojin.Rust; 
       ...> import Rust.{Use, Uses}
-      ...> uses(["std::ops::Add", "std::ops::Sub"]).uses
-      [
-          %Kojin.Rust.Use{path_name: "std::ops::Add", visibility: :private }, 
-          %Kojin.Rust.Use{path_name: "std::ops::Sub", visibility: :private }
-        ]
+      ...> uses(["std::ops::Add", "std::ops::Sub"])
+      ...> |> String.Chars.to_string
+      ~s[
+      // -- `(default/private)` use statements
+      use std::ops::Add;
+      use std::ops::Sub;
+      ] |> String.trim()
 
   """
   def uses(%Rust.Use{} = use), do: uses([use])
