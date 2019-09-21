@@ -59,6 +59,36 @@ defmodule Kojin.Rust.Attr do
     }
   end
 
+  @doc """
+  Returns the internal representation for the attribute.
+
+  ## Examples
+
+      iex> import Kojin.Rust.Attr
+      ...> internal(attr(:debug))
+      ...> |> String.Chars.to_string()
+      "#![debug]"
+
+  """
+  def internal(%Attr{} = attr) do
+    "#![#{attr}]"
+  end
+
+  @doc """
+  Returns the external representation for the attribute.
+
+  ## Examples
+
+      iex> import Kojin.Rust.Attr
+      ...> external(attr(:debug))
+      ...> |> String.Chars.to_string()
+      "#[debug]"
+
+  """
+  def external(%Attr{} = attr) do
+    "#[#{attr}]"
+  end
+
   defimpl String.Chars do
     def to_string(%Attr{} = attr) do
       import Kojin.Utils

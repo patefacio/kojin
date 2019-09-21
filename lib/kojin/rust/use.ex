@@ -24,34 +24,45 @@ defmodule Kojin.Rust.Use do
 
   ## Examples
 
-      iex> Kojin.Rust.Use.use("std::opts::Add") 
+      iex> Kojin.Rust.Use.use_("std::opts::Add") 
       ...> |> String.Chars.to_string()
       "use std::opts::Add;"
 
-      iex> Kojin.Rust.Use.use("SomeClass", attrs: ["cfg(test)"]) 
+      iex> Kojin.Rust.Use.use_("SomeClass", attrs: ["cfg(test)"]) 
       ...> |> String.Chars.to_string()
-      "use SomeClass;"
+      ~s'''
+      #[cfg(test)]
+      use SomeClass;
+      '''
 
   """
 
-  def use([path_name, opts]), do: Use.use(path_name, opts)
-  def use(%Rust.Use{} = use), do: use
+  def use_([path_name, opts]), do: Use.use_(path_name, opts)
+  def use_(%Rust.Use{} = use), do: use
 
-  def use(path_name, opts \\ []) when is_binary(path_name) do
+  def use_(path_name, opts \\ []) when is_binary(path_name) do
     defaults = [visibility: :private, attrs: []]
     opts = Kojin.check_args(defaults, opts)
 
     %Rust.Use{
       path_name: path_name,
       visibility: opts[:visibility],
-      attrs: opts[:attrs]
+      attrs: opts[:attrs] |> Enum.map(fn attr -> attr(attr) end)
     }
   end
 
   defimpl String.Chars do
     def to_string(use) do
       visibility = Rust.visibility_decl(use.visibility)
-      "#{visibility}use #{use.path_name};"
+
+      if use.attrs == [] do
+        "#{visibility}use #{use.path_name};"
+      else
+        """
+        #{use.attrs |> Enum.map(fn attr -> external(attr) end)}
+        #{visibility}use #{use.path_name};
+        """
+      end
     end
   end
 end
@@ -90,7 +101,7 @@ defmodule Kojin.Rust.Uses do
   def uses(uses) when is_list(uses) do
     uses =
       uses
-      |> Enum.map(fn use -> Rust.Use.use(use) end)
+      |> Enum.map(fn use -> Rust.Use.use_(use) end)
 
     %Rust.Uses{
       uses: uses
