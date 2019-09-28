@@ -24,7 +24,7 @@ defmodule Kojin.Rust.Module do
   @typedoc """
   A rust _module_.
   """
-  typedstruct do
+  typedstruct enforce: true do
     field(:name, atom, enforce: true)
     field(:type_name, String.t(), enforce: true)
     field(:visibility, atom, default: :private)
@@ -37,19 +37,33 @@ defmodule Kojin.Rust.Module do
     field(:modules, list(Module.t()), default: [])
     field(:file_name, String.t())
     field(:uses, Uses.t(), default: nil)
+    field(:has_non_inline_submodules, boolean)
   end
 
   def module(name, doc, opts \\ []) do
     require_snake(name)
 
+    submodules = Keyword.get(opts, :modules, [])
+
+    has_non_inline_submodules =
+      submodules
+      |> Enum.any?(fn module -> module.has_non_inline_submodules || module.type != :inline end)
+
+    default_type =
+      if has_non_inline_submodules do
+        :directory
+      else
+        :file
+      end
+
     defaults = [
-      type: :file,
+      type: default_type,
       traits: [],
       functions: [],
       structs: [],
       impls: [],
-      modules: [],
       visibility: :private,
+      modules: submodules,
       uses: []
     ]
 
@@ -64,11 +78,19 @@ defmodule Kojin.Rust.Module do
       functions: opts[:functions],
       structs: opts[:structs],
       impls: opts[:impls],
-      modules: opts[:modules],
+      modules: submodules,
       file_name: "#{name}.rs",
       visibility: opts[:visibility],
-      uses: Uses.uses(opts[:uses])
+      uses: Uses.uses(opts[:uses]),
+      has_non_inline_submodules: has_non_inline_submodules
     }
+  end
+
+  def all_modules(%Module{} = module) do
+    Enum.reduce(module.modules, [], fn module, acc ->
+      [module | acc]
+    end)
+    |> List.flatten()
   end
 
   def mod_decls(module) do
@@ -119,53 +141,6 @@ defmodule Kojin.Rust.Module do
     module.modules
     |> Enum.reduce(%{}, fn module, acc ->
       Map.put(acc, module.name, {module.type, inline_children(module)})
-    end)
-  end
-
-  @spec generate(Module.t(), GenerateSpec.t()) :: any
-  def generate(module, generate_spec) do
-    Logger.debug("Generating module `#{module.name}`")
-
-    child_path =
-      if module.name == :lib do
-        generate_spec.path
-      else
-        Path.join([generate_spec.path, "#{module.name}"])
-      end
-
-    my_path =
-      case module.type do
-        :file -> Path.join([generate_spec.path, module.file_name])
-        :directory -> Path.join([generate_spec.path, "#{module.name}", "mod.rs"])
-        :inline -> nil
-      end
-
-    content =
-      if module.type != :inline do
-        %{
-          my_path => GeneratedRustModule.generated_rust_module(my_path, content(module))
-        }
-      else
-        %{}
-      end
-
-    module.modules
-    |> Enum.reduce(content, fn child_module, acc ->
-      generate_spec =
-        if child_module.type != :inline do
-          %{
-            generate_spec
-            | path: child_path,
-              parent: module
-          }
-        else
-          generate_spec
-        end
-
-      Map.merge(
-        acc,
-        generate(child_module, generate_spec)
-      )
     end)
   end
 end

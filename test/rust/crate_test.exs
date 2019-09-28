@@ -2,7 +2,7 @@ defmodule CrateTest do
   use ExUnit.Case
 
   import Kojin.Rust.{Crate, Module, Fn, Struct, Field, Trait}
-  alias Kojin.Rust.Crate
+  alias Kojin.Rust.{Crate, CrateGenerator}
 
   def make_module(name, doc, opts \\ []) do
     opts =
@@ -62,14 +62,17 @@ defmodule CrateTest do
             visibility: :pub,
             modules: [
               make_module(:inner_1, "Innermost module 1", type: :directory),
-              make_module(:inner_2, "Innermost module 2", type: :inline, visibility: :pub),
+              make_module(:inner_2, "Innermost module 2",
+                type: :inline,
+                visibility: :pub,
+                modules: [make_module(:file_in_inline, "File module in inline")]
+              ),
               make_module(:inner_3, "Innermost module 3", type: :file)
             ]
           )
         ]
       )
     )
-    |> Crate.generate_spec("/tmp/tmp_crate")
-    |> Crate.generate()
+    |> CrateGenerator.generate_crate("/tmp/tmp_crate")
   end
 end

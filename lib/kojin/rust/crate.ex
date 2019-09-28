@@ -1,6 +1,7 @@
 defmodule Kojin.Rust.CargoToml do
   use TypedStruct
   use Vex.Struct
+  alias Kojin.Rust.CargoToml
 
   typedstruct do
     field(:name, atom, enforce: true)
@@ -11,8 +12,9 @@ defmodule Kojin.Rust.CargoToml do
     field(:license, String.t(), default: "MIT")
   end
 
-  def generate(cargo_toml, path) do
-    toml = ~s"""
+  @spec cargo_toml_content(Kojin.Rust.CargoToml.t()) :: binary
+  def cargo_toml_content(%CargoToml{} = cargo_toml) do
+    ~s"""
     [package]
     name = "#{cargo_toml.name}"
     version = "#{cargo_toml.version}"
@@ -27,15 +29,14 @@ defmodule Kojin.Rust.CargoToml do
     serde_derive = "^1.0.27"
     #{Kojin.CodeBlock.script_block("dependencies")}
     """
-
-    Kojin.merge_generated_with_file(toml, path, Kojin.CodeBlock.script_delimiters())
   end
 end
 
 defmodule Kojin.Rust.Crate do
   import Kojin
   alias Kojin.Rust
-  alias Rust.{Crate, Module, GeneratedRustModule, CargoToml}
+  alias Rust.{Crate, Module, CargoToml}
+
   use TypedStruct
   use Vex.Struct
   require Logger
@@ -80,45 +81,6 @@ defmodule Kojin.Rust.Crate do
         authors: opts[:authors],
         homepage: opts[:homepage],
         license: opts[:license]
-      }
-    }
-  end
-
-  def generate({crate, generate_spec}) do
-    path = generate_spec.path
-    File.mkdir_p!(path)
-
-    src_path = Path.join([path, "src"])
-
-    if(!File.exists?(src_path)) do
-      File.mkdir_p!(src_path)
-    end
-
-    # Generate the cargo
-    CargoToml.generate(crate.cargo_toml, Path.join([path, "Cargo.toml"]))
-
-    # Generate the code
-    generated = Module.generate(crate.root_module, %{generate_spec | path: src_path})
-
-    # Format the code
-    result = Porcelain.shell("cd #{path}; cargo fmt")
-    Logger.debug("`cargo fmt` result -> #{inspect(result)}")
-
-    # Report on diffs (if no change set timestamp back to original)
-    generated
-    |> Enum.map(fn {path, generated_rust_module} ->
-      Logger.debug("Generating #{path}")
-      GeneratedRustModule.evaluate_formatted_diff(generated_rust_module)
-    end)
-    |> Enum.reduce([], fn status, acc -> [status | acc] end)
-    |> Enum.sort()
-  end
-
-  def generate_spec(crate, path) do
-    {
-      crate,
-      %Rust.GenerateSpec{
-        path: path
       }
     }
   end

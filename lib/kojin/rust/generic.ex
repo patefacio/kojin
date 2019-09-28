@@ -117,7 +117,8 @@ defmodule Kojin.Rust.Generic do
           join_content(
             generic.type_parms
             |> Enum.filter(fn type_parm -> !Bounds.empty?(type_parm.bounds) end)
-            |> Enum.map(fn type_parm -> TypeParm.bounds_decl(type_parm) |> IO.inspect() end)
+            |> Enum.map(fn type_parm -> TypeParm.bounds_decl(type_parm) |> IO.inspect() end),
+            ",\n"
           )
         )
       ])

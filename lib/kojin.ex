@@ -68,7 +68,8 @@ defmodule Kojin do
   To not print message pass `announce: false`.
 
   """
-  @spec merge_generated_with_file(String.t(), String.t(), map, announce: boolean) :: nil
+  @spec merge_generated_with_file(String.t(), String.t(), map, announce: boolean) ::
+          {binary, binary}
   def merge_generated_with_file(
         generated,
         file_path,
@@ -76,26 +77,46 @@ defmodule Kojin do
         opts \\ [announce: true]
       )
       when is_map(delimiters) do
-    {status, stat} =
+    {status, final_content} =
       if File.exists?(file_path) do
         prior = File.read!(file_path)
         merged_content = Kojin.merge(generated, prior, delimiters)
 
         if(prior == merged_content) do
-          {:no_change, File.stat!(file_path)}
+          {:no_change, merged_content}
         else
           File.write!(file_path, merged_content)
-          {:updated, nil}
+          {:updated, merged_content}
         end
       else
         File.mkdir_p!(Path.dirname(file_path))
         File.write!(file_path, generated)
-        {:wrote_new, nil}
+        {:wrote_new, generated}
       end
 
     if(opts[:announce]) do
-      IO.puts(announce_file(status, file_path, stat))
+      IO.puts(announce_file(status, file_path, nil))
     end
+
+    {file_path, final_content}
+  end
+
+  def check_write_file(file_path, content) do
+    status =
+      if File.exists?(file_path) do
+        if(File.read!(file_path) == content) do
+          :no_change
+        else
+          File.write!(file_path, content)
+          :updated
+        end
+      else
+        File.mkdir_p!(Path.dirname(file_path))
+        File.write!(file_path, content)
+        :wrote_new
+      end
+
+    IO.puts(announce_file(status, file_path, nil))
   end
 
   @doc ~s"""
