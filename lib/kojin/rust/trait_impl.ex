@@ -10,13 +10,14 @@ defmodule Kojin.Rust.TraitImpl do
   will be generated.
   """
   use TypedStruct
-  alias Kojin.Rust.{Trait, TraitImpl, Type}
+  alias Kojin.Rust.{Trait, TraitImpl, Type, Generic}
   import Kojin.Utils
 
   typedstruct enforce: true do
     field(:type, Type.t())
     field(:trait, Trait.t())
     field(:doc, String.t())
+    field(:generic, Generic.t())
   end
 
   @doc """
@@ -38,23 +39,32 @@ defmodule Kojin.Rust.TraitImpl do
       |> dark_matter()
 
   """
-  def trait_impl(trait, type, doc \\ nil)
+  def trait_impl(trait, type, doc \\ nil, opts \\ [])
 
-  def trait_impl(trait, type, doc) when is_atom(type) or is_binary(type) do
-    trait_impl(trait, Type.type(type), doc)
+  def trait_impl(trait, type, doc, opts) when is_atom(type) or is_binary(type) do
+    trait_impl(trait, Type.type(type), doc, opts)
   end
 
   @spec trait_impl(Kojin.Rust.Trait.t(), Kojin.Rust.Type.t()) :: Kojin.Rust.TraitImpl.t()
-  def trait_impl(%Trait{} = trait, %Type{} = type, doc) do
+  def trait_impl(%Trait{} = trait, %Type{} = type, doc, opts) do
+    defaults = [generic: nil]
+    opts = Kojin.check_args(defaults, opts)
+
     %TraitImpl{
       type: type,
       trait: trait,
-      doc: doc
+      doc: doc,
+      generic:
+        if(opts[:generic] != nil) do
+          Generic.generic(opts[:generic])
+        else
+          nil
+        end
     }
   end
 
-  def trait_impl(trait, type, doc) when is_binary(trait),
-    do: trait_impl(Trait.trait(trait, "", []), type, doc)
+  def trait_impl(trait, type, doc, opts) when is_binary(trait),
+    do: trait_impl(Trait.trait(trait, "", []), type, doc, opts)
 
   defimpl String.Chars do
     def to_string(%TraitImpl{} = trait_impl) do
@@ -62,9 +72,16 @@ defmodule Kojin.Rust.TraitImpl do
       trait = trait_impl.trait
       type = trait_impl.type
 
+      {generic, bounds_decl} =
+        if(trait_impl.generic) do
+          {Generic.code(trait_impl.generic), Generic.bounds_decl(trait_impl.generic)}
+        else
+          {"", ""}
+        end
+
       [
         if(trait_impl.doc, do: triple_slash_comment(trait_impl.doc)),
-        "impl #{trait.name} for #{type} {",
+        "impl#{generic} #{trait.name} for #{type}#{bounds_decl} {",
         indent_block(join_content(trait.functions)),
         "}"
       ]

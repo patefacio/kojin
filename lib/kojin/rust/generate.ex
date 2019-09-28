@@ -25,14 +25,15 @@ defmodule Kojin.Rust.GeneratedRustModule do
       File.mkdir_p!(parent)
     end
 
-    {file_stat, content} =
+    {file_stat, content, merged} =
       if(File.exists?(path)) do
-        {File.stat!(path), File.read!(path)}
+        original_content = File.read!(path)
+        {File.stat!(path), original_content, Kojin.merge(generated_content, original_content)}
       else
-        {nil, nil}
+        {nil, nil, generated_content}
       end
 
-    File.write!(path, generated_content)
+    File.write!(path, merged)
 
     %GeneratedRustModule{
       original_module_file: %ModuleFile{

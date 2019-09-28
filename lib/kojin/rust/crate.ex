@@ -87,7 +87,6 @@ defmodule Kojin.Rust.Crate do
   def generate({crate, generate_spec}) do
     path = generate_spec.path
     File.mkdir_p!(path)
-    File.cd!(path)
 
     src_path = Path.join([path, "src"])
 
@@ -102,7 +101,7 @@ defmodule Kojin.Rust.Crate do
     generated = Module.generate(crate.root_module, %{generate_spec | path: src_path})
 
     # Format the code
-    result = Porcelain.shell("cargo fmt")
+    result = Porcelain.shell("cd #{path}; cargo fmt")
     Logger.debug("`cargo fmt` result -> #{inspect(result)}")
 
     # Report on diffs (if no change set timestamp back to original)

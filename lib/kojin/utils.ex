@@ -93,6 +93,13 @@ defmodule Kojin.Utils do
       iex> Kojin.Utils.join_content([1, :two, "three"], ", ")
       "1, two, three"
 
+      iex> Kojin.Utils.join_content(["a", ["b", "c"]])
+      ~S[
+      a
+      b
+      c
+      ] |> String.trim()
+
   """
   def join_content(content, separator \\ "\n")
   def join_content(nil, _), do: nil
@@ -101,6 +108,7 @@ defmodule Kojin.Utils do
     content
     |> Enum.reject(&is_nil/1)
     |> Enum.reject(&(&1 == ""))
+    |> List.flatten()
     |> Enum.map(&String.Chars.to_string/1)
     |> Enum.join(separator)
   end

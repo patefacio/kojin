@@ -22,7 +22,7 @@ defmodule GenericTest do
   end
 
   test "generic with lifetimes" do
-    assert dark_matter(code(generic([:T1, :T2, "T3"], lifetimes: [:a, :b]))) ==
+    assert dark_matter(code(generic([:T1, :T2, :t3], lifetimes: [:a, :b]))) ==
              dark_matter("<'a, 'b, T1, T2, T3>")
 
     assert dark_matter(code(generic([:T1, [:T2, default_type: :i64]], lifetimes: [:a, :b]))) ==
