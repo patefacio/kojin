@@ -10,9 +10,7 @@ defmodule Kojin.Rust.Module do
     Trait,
     Module,
     Uses,
-    Fn,
-    GenerateSpec,
-    GeneratedRustModule
+    Fn
   }
 
   import Kojin

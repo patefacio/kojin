@@ -6,7 +6,6 @@ defmodule Kojin.Rust.SimpleEnum do
   """
 
   alias Kojin.Rust.SimpleEnum
-  alias Kojin.Rust.UnitVariant
   alias Kojin.Utils
   import Utils
 

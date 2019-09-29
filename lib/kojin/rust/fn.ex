@@ -135,7 +135,7 @@ defmodule Kojin.Rust.Parm do
 
       iex> import Kojin.Rust.Parm
       ...> id_parm(:some_type, doc: "Some type", mut: true)
-      import Kojin.Rust.{Parm, Type}
+      import Kojin.Rust.{Parm}
       parm(:some_type, :some_type, doc: "Some type", mut: true)
   """
   def id_parm(name, rest), do: parm(name, name |> Kojin.Id.cap_camel(), rest)
@@ -145,20 +145,18 @@ defmodule Kojin.Rust.Parm do
 
   ## Examples
 
-      iex> import Kojin.Rust.Type
-      ...> ref_parm(:some_type, doc: "Reference to some type", mut: false)
+      iex> ref_parm(:some_type, doc: "Reference to some type", mut: false)
       import Kojin.Rust.{Parm, Type}
       parm(:some_type, ref(:some_type), doc: "Reference to some type", mut: false)
   """
-  def ref_parm(name, rest), do: parm(name, ref(name |> Kojin.Id.cap_camel()), rest)
+  def ref_parm(name, rest), do: parm(name, ref(Kojin.Id.cap_camel(name)), rest)
 
   @doc ~s"""
   Returns param with `type` that is a mref to corresponding name.
 
   ## Examples
 
-      iex> import Kojin.Rust.Type
-      ...> mref_parm(:some_type, "Reference to some type")
+      iex> mref_parm(:some_type, "Reference to some type")
       import Kojin.Rust.{Parm, Type}
       parm(:some_type, mref(:some_type), "Reference to some type")
   """
@@ -446,7 +444,6 @@ defmodule Kojin.Rust.Fn do
         // ω <fn f>
       }
       ''' |> Kojin.dark_matter
-  `
   """
   def code(fun) do
     [

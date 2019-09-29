@@ -1,9 +1,9 @@
 defmodule TraitImplTest do
   use ExUnit.Case
-  import Kojin.Rust.TraitImpl
+  # import Kojin.Rust.TraitImpl
 
   test "trait impl test" do
-    "Trait test"
+    assert "Trait test"
     # TODO: Trait test asserts
   end
 end

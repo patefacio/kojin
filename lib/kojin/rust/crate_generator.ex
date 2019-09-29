@@ -3,7 +3,7 @@ require Logger
 defmodule Kojin.Rust.CrateGenerateSpec do
   use TypedStruct
   alias Kojin.Rust
-  alias Rust.{Crate, Module, CrateGenerateSpec}
+  alias Rust.{Crate, CrateGenerateSpec}
 
   typedstruct enforce: true do
     field(:crate, Crate.t())
@@ -43,7 +43,7 @@ defmodule Kojin.Rust.CrateGenerateSpec do
 end
 
 defmodule Kojin.Rust.CrateGenerator do
-  alias Kojin.Rust.{Crate, CargoToml}
+  alias Kojin.Rust.{Crate}
   import Kojin.Rust.{CrateGenerateSpec, ModuleGenerateSpec, ModuleGenerator, CargoToml}
 
   @spec generate_crate(Kojin.Rust.Crate.t(), binary) :: any

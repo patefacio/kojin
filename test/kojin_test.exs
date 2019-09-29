@@ -10,6 +10,7 @@ defmodule KojinTest do
   doctest Kojin.Rust.Field
   doctest Kojin.Rust.Fn
   doctest Kojin.Rust.Parm
+  doctest Kojin.Rust.Type
   doctest Kojin.Rust.Trait
   doctest Kojin.Rust.TraitImpl
   doctest Kojin.Rust.TypeImpl

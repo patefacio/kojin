@@ -59,11 +59,28 @@ defmodule Kojin.Rust.Type do
 
   def type(type) when is_atom(type), do: type(Kojin.Id.cap_camel(Atom.to_string(type)))
 
+  @doc ~S"""
+  Creates a reference to provided type `t`.
+
+  ## Examples
+
+      iex> Kojin.Rust.Type.ref(:i32)
+      ...> |> String.Chars.to_string()
+      "& i32"
+      
+  """
   def ref(t, lifetime \\ nil),
     do: %Type{primitive?: false, referrent: type(t), ref?: true, lifetime: lifetime}
 
   @doc """
-  Create type that is *mutable reference* to `t` with specified `lifetime`
+  Create type that is *mutable reference* to `t` with specified `lifetime`.
+
+    ## Examples
+
+      iex> Kojin.Rust.Type.mref(:i32)
+      ...> |> String.Chars.to_string()
+      "& mut i32"
+      
   """
   def mref(t, lifetime \\ nil),
     do: %Type{primitive?: false, referrent: type(t), mref?: true, lifetime: lifetime}

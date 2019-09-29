@@ -38,7 +38,6 @@ defmodule Kojin.Rust.Trait do
       |> dark_matter()
 
       iex> import Kojin.Rust.Trait
-      ...> import Kojin
       ...> (%Kojin.Rust.Trait{ name: "ThirdPartyTrait<T>"} = trait("ThirdPartyTrait<T>")) && :good
       :good    
   """

@@ -26,7 +26,7 @@ defmodule Kojin.Rust.TraitImpl do
 
   ## Examples
 
-      iex> import Kojin.Rust.{Trait, TraitImpl}
+      iex> import Kojin.Rust.{TraitImpl}
       ...> import Kojin
       ...> trait_impl("ThirdPartyTrait", :i32)
       ...> |> String.Chars.to_string()

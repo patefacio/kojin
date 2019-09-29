@@ -86,7 +86,7 @@ defmodule Kojin.Rust.Uses do
   ## Examples
 
       iex> alias Kojin.Rust; 
-      ...> import Rust.{Use, Uses}
+      ...> import Rust.{Uses}
       ...> uses(["std::ops::Add", "std::ops::Sub"])
       ...> |> String.Chars.to_string
       ~s[

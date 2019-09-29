@@ -2,7 +2,7 @@ defmodule CrateTest do
   use ExUnit.Case
 
   import Kojin.Rust.{Crate, Module, Fn, Struct, Field, Trait}
-  alias Kojin.Rust.{Crate, CrateGenerator}
+  alias Kojin.Rust.{CrateGenerator}
 
   def make_module(name, doc, opts \\ []) do
     opts =

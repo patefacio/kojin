@@ -14,6 +14,8 @@ defmodule Kojin.Rust.TypeImpl do
 
   def type_impl(%TypeImpl{} = t), do: t
   def type_impl([type, functions, opts]), do: type_impl(type, functions, opts)
+  def type_impl([type, functions]), do: type_impl(type, functions, [])
+  def type_impl([type]), do: type_impl(type, [], [])
 
   def type_impl(type, functions \\ [], opts \\ []) do
     type = Type.type(type)

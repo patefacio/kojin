@@ -101,6 +101,31 @@ defmodule Kojin.Rust.Field do
   def field([name, type, doc]), do: Field.field(name, type, doc)
   def field([name, type]), do: Field.field(name, type)
 
+  @doc ~S"""
+  Given an `id` creates a field with same type as id name.
+
+  ## Examples
+
+      iex> import Kojin.Rust.Field
+      ...> id_field(:bank_account, "The Bank Account") |> String.Chars.to_string
+      ~s{
+      ///  The Bank Account
+      bank_account: BankAccount
+      } |> String.trim   
+    
+      iex> import Kojin.Rust.Field
+      ...> id_field([:bank_account, "The Bank Account"]) |> String.Chars.to_string
+      ~s{
+      ///  The Bank Account
+      bank_account: BankAccount
+      } |> String.trim   
+  """
+  def id_field(id, doc, opts \\ [])
+
+  def id_field(id, doc, opts), do: field(id, id, doc, opts)
+  def id_field([id, doc, opts]), do: field(id, id, doc, opts)
+  def id_field([id, doc]), do: field(id, id, doc, [])
+
   defimpl String.Chars do
     def to_string(field) do
       triple_slash_comment(

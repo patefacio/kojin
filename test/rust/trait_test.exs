@@ -19,16 +19,15 @@ defmodule TraitTest do
   end
 
   test "trait with function" do
-    t =
-      trait(:t, "Sample trait with fn", [
-        fun(
-          :increment,
-          "Adds 1 to [a]",
-          [parm(:a, :A, "Value to increment")],
-          :i32,
-          "incremented value"
-        )
-      ])
+    trait(:t, "Sample trait with fn", [
+      fun(
+        :increment,
+        "Adds 1 to [a]",
+        [parm(:a, :A, "Value to increment")],
+        :i32,
+        "incremented value"
+      )
+    ])
 
     # TODO: add asserts and move to doctest
   end

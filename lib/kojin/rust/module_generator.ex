@@ -60,13 +60,17 @@ defmodule Kojin.Rust.ModuleGenerator do
 
         original_path = Path.join([crate_path, module_generate_spec.module_relative_path])
 
-        root_path = tmp_path || crate_path
-
         content = Module.content(module)
 
         if(is_using_tmp) do
           target_path =
             Path.join([crate_generate_spec.tmp_path, module_generate_spec.module_relative_path])
+
+          dirname = Path.dirname(target_path)
+
+          if !File.exists?(dirname) do
+            File.mkdir_p!(dirname)
+          end
 
           File.write!(target_path, content)
           {target_path, original_path}

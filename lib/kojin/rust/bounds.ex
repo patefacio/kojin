@@ -19,9 +19,9 @@ defmodule Kojin.Rust.Bounds do
     Map.put(current, :traits, [bound | traits])
   end
 
-  @doc """
-  Validates lifetime, ensuring it consists only of word characters
-  """
+  ###################################################################### 
+  # Validates lifetime, ensuring it consists only of word characters
+  ######################################################################
   defp lifetime(lt) when is_atom(lt) do
     true = Regex.match?(~r/^\w+$/, "#{lt}")
     lt
