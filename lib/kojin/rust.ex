@@ -183,7 +183,7 @@ defmodule Kojin.Rust do
       _ ->
         raise ArgumentError,
           message: """
-          Invalid visibility spcifed: #{visibility}
+          Invalid visibility specifed: #{visibility}
           """
     end
   end
@@ -200,4 +200,15 @@ defmodule Kojin.Rust do
   def doc_comment(text) do
     Kojin.Utils.comment(text, "//! ")
   end
+
+  @doc "Add `[ visibility: :pub ]` option to `item`"
+  def pub(item), do: %{item | visibility: :pub}
+  @doc "Add `[ visibility: :pub_crate ]` option to `item`"
+  def pub_crate(item), do: %{item | visibility: :pub_crate}
+  @doc "Add `[ visibility: :pub_self]` option to `item`"
+  def pub_self(item), do: %{item | visibility: :pub_self}
+  @doc "Add `[ visibility: :private ]` option to `item`"
+  def private(item), do: %{item | visibility: :private}
+  @doc "Add `[ mut: true ]` option to `item`"
+  def mut(item), do: %{item | mut: true}
 end

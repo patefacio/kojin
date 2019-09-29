@@ -344,12 +344,7 @@ defmodule Kojin.Rust.Fn do
       return: return,
       return_doc: return_doc,
       inline: opts[:inline],
-      generic:
-        if(opts[:generic] != nil) do
-          Generic.generic(opts[:generic])
-        else
-          nil
-        end,
+      generic: if(opts[:generic] != nil, do: Generic.generic(opts[:generic])),
       consts: opts[:consts],
       code_block: code_block,
       tag_prefix: opts[:tag_prefix],
@@ -575,6 +570,36 @@ defmodule Kojin.Rust.Fn do
     )
     |> triple_slash_comment()
   end
+
+  @doc """
+  Creates a _public_ `Kojin.Rust.Fn` by forwarding to `Kojin.Rust.Fn.fun` with
+  extra option `[visibility: :pub]`
+  """
+  def pub_fun([name, doc, parms, return, return_doc]),
+    do: pub_fun(name, doc, parms, return, return_doc)
+
+  def pub_fun([name, doc, parms, opts]) when is_list(opts), do: pub_fun(name, doc, parms, opts)
+
+  def pub_fun([name, doc, parms, return]), do: pub_fun(name, doc, parms, return)
+
+  def pub_fun(name, doc, parms \\ [], opts \\ [])
+
+  @spec pub_fun(binary | atom, binary, list(Parm.t()), list) :: Fn.t()
+
+  def pub_fun(name, doc, parms, rest) when is_binary(name),
+    do: pub_fun(String.to_atom(name), doc, parms, rest)
+
+  def pub_fun(name, doc, parms, return) when not is_list(return),
+    do: pub_fun(name, doc, parms, return: return)
+
+  def pub_fun(name, doc, parms, opts) when is_list(opts) do
+    fun(name, doc, parms, Keyword.merge(opts, visibility: :pub))
+  end
+
+  @spec pub_fun(binary | atom, binary, list(Parm.t()), binary | atom | Type.t(), binary) ::
+          Kojin.Rust.Fn.t()
+  def pub_fun(name, doc, parms, return, return_doc),
+    do: pub_fun(name, doc, parms, return: return, return_doc: return_doc)
 
   defimpl(String.Chars, do: def(to_string(fun), do: join_content([Fn.doc(fun), Fn.code(fun)])))
 

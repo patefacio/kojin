@@ -3,7 +3,7 @@ defmodule Kojin.Rust.Struct do
   Rust _struct_ definition.
   """
 
-  alias Kojin.Rust.{Field, Struct, TypeImpl}
+  alias Kojin.Rust.{Field, Struct, TypeImpl, Generic}
   alias Kojin.Utils
   import Utils
   import Kojin.Id
@@ -25,6 +25,7 @@ defmodule Kojin.Rust.Struct do
     field(:fields, list(Field.t()), default: [])
     field(:derivables, list(atom), default: [])
     field(:visibility, atom, default: :private)
+    field(:generic, Generic.t(), default: nil)
     field(:impl, TypeImpl.t() | nil, default: nil)
   end
 
@@ -51,7 +52,7 @@ defmodule Kojin.Rust.Struct do
 
   @spec struct(String.t() | atom, String.t(), list(Field.t()), keyword) :: Kojin.Rust.Struct.t()
   def struct(name, doc, fields, opts \\ []) do
-    defaults = [visibility: :private, derivables: [], impl: nil, impl?: false]
+    defaults = [visibility: :private, derivables: [], impl: nil, impl?: false, generic: nil]
 
     opts = Kojin.check_args(defaults, opts)
 
@@ -73,6 +74,7 @@ defmodule Kojin.Rust.Struct do
       fields: Enum.map(fields, &Struct._make_field/1),
       visibility: opts[:visibility],
       derivables: opts[:derivables],
+      generic: if(opts[:generic] != nil, do: Generic.generic(opts[:generic])),
       impl: impl
     }
 
@@ -98,18 +100,35 @@ defmodule Kojin.Rust.Struct do
     def to_code(struct), do: Struct.decl(struct)
   end
 
+  @doc """
+  Creates a _public_ `Kojin.Rust.Struct` by forwarding to `Kojin.Rust.Struct.struct` with
+  extra option `[visibility: :pub]`
+  """
+  @spec pub_struct(String.t() | atom, String.t(), list(Field.t()), keyword) ::
+          Kojin.Rust.Struct.t()
+  def pub_struct(name, doc, fields, opts \\ []) do
+    struct(name, doc, fields, Keyword.merge(opts, visibility: :pub))
+  end
+
   def decl(struct) do
     import Kojin.{Id, Rust.Utils}
 
     visibility = Kojin.Rust.visibility_decl(struct.visibility)
     derivables_decl = Kojin.Rust.derivables_decl(struct.derivables)
 
+    {generic, bounds_decl} =
+      if(struct.generic) do
+        {Generic.code(struct.generic), Generic.bounds_decl(struct.generic)}
+      else
+        {"", ""}
+      end
+
     join_content(
       [
         join_content([
           String.trim(triple_slash_comment(struct.doc)),
           derivables_decl,
-          "#{visibility}struct #{cap_camel(struct.name)} {",
+          "#{visibility}struct #{cap_camel(struct.name)}#{generic} {",
           indent_block(
             struct.fields
             |> Enum.map(&to_string/1)
