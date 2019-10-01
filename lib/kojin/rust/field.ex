@@ -18,10 +18,10 @@ defmodule Kojin.Rust.Field do
   * :type - The rust type of the field
   * :visibility - The visibility for the field (eg :pub, :pub(crate), etc)
   """
-  typedstruct do
-    field(:name, atom, enforce: true)
-    field(:doc, String.t())
-    field(:type, Type.t(), enforce: true)
+  typedstruct enforce: true do
+    field(:name, atom)
+    field(:doc, String.t(), enforce: false)
+    field(:type, Type.t())
     field(:visibility, atom, default: :private)
   end
 

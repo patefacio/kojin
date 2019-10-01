@@ -116,7 +116,7 @@ defmodule Kojin.Rust.Struct do
     visibility = Kojin.Rust.visibility_decl(struct.visibility)
     derivables_decl = Kojin.Rust.derivables_decl(struct.derivables)
 
-    {generic, bounds_decl} =
+    {generic, _bounds_decl} =
       if(struct.generic) do
         {Generic.code(struct.generic), Generic.bounds_decl(struct.generic)}
       else
