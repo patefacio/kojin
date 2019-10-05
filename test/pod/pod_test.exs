@@ -1,7 +1,7 @@
 defmodule PodTest do
   use ExUnit.Case
-  alias Kojin.PodObject
-  import Kojin.PodField
+  alias Kojin.Pod.PodObject
+  import Kojin.Pod.PodField
 
   test "pod object" do
     p1 = %PodObject{name: "foo", doc: "Goo"}

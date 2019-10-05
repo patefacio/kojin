@@ -135,12 +135,14 @@ defmodule Kojin.Utils do
   - `:wrote_new` The file did not exist and has been written
 
   """
-  @spec announce_file(atom | binary, binary, File.Stat.t()) :: binary
   def announce_file(:updated, path, stat), do: announce_file("Updated:  ", path, stat)
+
   def announce_file(:no_change, path, stat), do: announce_file("No Change:", path, stat)
+
   def announce_file(:wrote_new, path, stat), do: announce_file("Wrote New:", path, stat)
 
-  def announce_file(status, path, stat) do
+  @spec announce_file(binary, binary, File.Stat.t()) :: binary
+  def announce_file(status, path, stat) when is_binary(status) do
     stat =
       if(stat == nil) do
         File.stat!(path)

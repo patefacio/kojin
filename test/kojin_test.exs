@@ -3,6 +3,9 @@ defmodule KojinTest do
   import ExUnit.CaptureIO
 
   doctest Kojin
+  doctest Kojin.Pod.EnumValue
+  doctest Kojin.Pod.PodEnum
+  doctest Kojin.Pod.PodType
   doctest Kojin.CodeBlock
   doctest Kojin.Id
   doctest Kojin.Rust

@@ -1,7 +1,9 @@
-defmodule Kojin.PodObject do
+defmodule Kojin.Pod.PodObject do
   @moduledoc """
   Module for defining plain old data objects, independent of target language
   """
+
+  alias Kojin.Pod.PodField
 
   use TypedStruct
   use Vex.Struct
@@ -12,6 +14,6 @@ defmodule Kojin.PodObject do
   typedstruct do
     field(:name, atom, enforce: true)
     field(:doc, String.t())
-    field(:fields, list(struct()), default: [])
+    field(:fields, list(PodField.t()), default: [])
   end
 end
