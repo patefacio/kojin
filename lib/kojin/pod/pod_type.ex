@@ -1,12 +1,28 @@
+import Kojin.Id
+
 defmodule Kojin.Pod.PodType do
+  @moduledoc """
+  A set of functions for defining _Plain Old Data_ types (i.e. POD Types).
+  """
+
   alias Kojin.Pod.PodType
   use TypedStruct
 
+  @typedoc """
+  A `Kojin.Pod.PodType` defines a type that can be used to type fields
+  in objects and arrays in a schema.
+
+  - `id`: The identifier for the _POD_ type.
+  - `doc`: Documentation for the type
+  - `variable_size?`: Boolean indicating if type is _fixed size_, for purposes
+    of serialization
+  - `item_type`: Used only for array types to refer to the type of items in
+    the array.
+  """
   typedstruct enforce: true do
     field(:id, atom)
     field(:doc, binary)
     field(:variable_size?, boolean)
-    field(:item_type, Kojin.Pod.PodType.t())
   end
 
   @doc """
@@ -22,21 +38,30 @@ defmodule Kojin.Pod.PodType do
       ...> (%Kojin.Pod.PodType{id: :number} = t) && :match
       :match
 
+    Id must be snake case
+
+      iex> t = Kojin.Pod.PodType.pod_type(:SomeNumber, "A number")
+      ** (RuntimeError) PodType id `SomeNumber` must be snake case.
+
   """
   def pod_type(id, doc, opts \\ []) when is_atom(id) and is_binary(doc) do
-    defaults = [variable_size?: false, item_type: nil]
+    if !is_snake(id), do: raise("PodType id `#{id}` must be snake case.")
+
+    defaults = [variable_size?: false]
     opts = Keyword.merge(opts, defaults)
 
     %PodType{
       id: id,
       doc: doc,
-      variable_size?: opts[:variable_size],
-      item_type: opts[:item_type]
+      variable_size?: opts[:variable_size?]
     }
   end
 end
 
-defmodule PodTypes do
+defmodule Kojin.Pod.PodTypes do
+  @moduledoc """
+  Provides a set of predefined types.
+  """
   import Kojin.Pod.PodType
 
   @predefined %{

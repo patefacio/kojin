@@ -19,6 +19,8 @@ defmodule Kojin.Pod.EnumValue do
       iex> Kojin.Pod.EnumValue.ev(:red, "The color of blood")
       %Kojin.Pod.EnumValue{ id: :red, doc: "The color of blood" }      
 
+    Id must be snake case
+
       iex> Kojin.Pod.EnumValue.ev(:Foo)
       ** (RuntimeError) Enum value id `Foo` must be snake case.
 

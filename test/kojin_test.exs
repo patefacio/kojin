@@ -5,7 +5,10 @@ defmodule KojinTest do
   doctest Kojin
   doctest Kojin.Pod.EnumValue
   doctest Kojin.Pod.PodEnum
+  doctest Kojin.Pod.PodArray
+  doctest Kojin.Pod.PodField
   doctest Kojin.Pod.PodType
+  doctest Kojin.Pod.PodObject
   doctest Kojin.CodeBlock
   doctest Kojin.Id
   doctest Kojin.Rust

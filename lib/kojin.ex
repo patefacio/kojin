@@ -101,6 +101,7 @@ defmodule Kojin do
     {file_path, final_content}
   end
 
+  @spec check_write_file(any, any) :: :none
   def check_write_file(file_path, content) do
     status =
       if File.exists?(file_path) do
@@ -149,10 +150,6 @@ defmodule Kojin do
 
     Keyword.merge(defaults, passed)
   end
-
-  def listify(l) when is_list(l), do: l
-
-  def listify(l), do: [l]
 
   @doc """
   Returns string with all white space removed, useful for testing if whitespace

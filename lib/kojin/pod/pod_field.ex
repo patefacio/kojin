@@ -1,14 +1,13 @@
+import Kojin.Id
+
 defmodule Kojin.Pod.PodField do
   @moduledoc """
   Field in a pod object
   """
 
   use TypedStruct
-  alias Jason.{Encoder}
-  alias Kojin.Pod.PodField
+  alias Kojin.Pod.{PodField, PodTypes}
   # use Vex.Struct
-
-  @derive {Encoder, only: [:id, :doc, :type, :optional?, :default_value]}
 
   @typedoc """
   A plain old data object.
@@ -17,9 +16,13 @@ defmodule Kojin.Pod.PodField do
     field(:id, atom)
     field(:doc, String.t())
     field(:type, PodType.t())
-    field(:optional?, boolean(), default: false)
+    field(:optional?, boolean())
     field(:default_value, any())
   end
+
+  def pod_field(%PodField{} = pod_field), do: pod_field
+
+  def pod_field(id, doc, opts \\ [])
 
   @doc """
   Creates a `Kojin.PodField` from the provide `name`, `doc`
@@ -27,21 +30,43 @@ defmodule Kojin.Pod.PodField do
 
   ## Examples
 
-      iex> Kojin.PodField.pod_field(:f_1, "A field")
+      iex> Kojin.Pod.PodField.pod_field(:f_1, "A field")
+      import Kojin.Pod.PodTypes
+      %Kojin.Pod.PodField{id: :f_1,
+        doc: "A field",
+        type: pod_type(:string),
+        default_value: nil,
+        optional?: false
+      }
+
   """
-  def pod_field(id, doc, opts \\ []) do
-    type = if opts[:type] == nil, do: id, else: opts[:type]
-    defaults = [id: id, doc: doc, type: type, default_value: nil]
+  def pod_field(id, doc, opts) when is_atom(id) and is_binary(doc) and is_list(opts) do
+    if !is_snake(id), do: raise("PodField id `#{id}` must be snake case.")
+
+    defaults = [
+      id: id,
+      doc: doc,
+      type: Keyword.get(opts, :type, PodTypes.pod_type(:string)),
+      default_value: nil,
+      optional?: false
+    ]
+
     opts = Kojin.check_args(defaults, opts)
 
-    PodField.__struct__(opts)
-    |> validate
+    %PodField{
+      id: id,
+      doc: doc,
+      type: opts[:type],
+      optional?: opts[:optional?],
+      default_value: opts[:default_value]
+    }
   end
 
-  @spec validate(atom() | %{id: any()}) :: atom() | %{id: any()}
-  def validate(pod_field) do
-    Kojin.require_snake(pod_field.id)
-    pod_field
+  def pod_field([id, doc, type]), do: pod_field(id, doc, type)
+
+  def pod_field(id, doc, type)
+      when is_atom(id) and is_binary(doc) and is_atom(type) do
+    pod_field(id, doc, type: PodTypes.pod_type(type))
   end
 end
 
