@@ -6,7 +6,6 @@ defmodule Kojin.Pod.PodObject do
   alias Kojin.Pod.{PodField, PodObject}
 
   use TypedStruct
-  use Vex.Struct
 
   @typedoc """
   A plain old data object, with an `id`, a `doc` comment and a
@@ -28,28 +27,53 @@ defmodule Kojin.Pod.PodObject do
 
   ## Examples
 
-      iex> alias Kojin.Pod.{PodObject, PodField}
-      ...> point = PodObject.pod_object(:point, "A 2 dimensional point", [
-      ...>  PodField.pod_field(:x, "Abcissa", :int32),
-      ...>  PodField.pod_field(:y, "Ordinate", :int32)
+      iex> alias Kojin.Pod.{PodObject, PodField, PodType}
+      ...> import Kojin.Pod.{PodObject, PodField}
+      ...> point = pod_object(:point, "A 2 dimensional point", [
+      ...>  pod_field(:x, "Abcissa", :int32),
+      ...>  pod_field(:y, "Ordinate", :int32)
       ...> ])
-      ...> (%Kojin.Pod.PodObject{
+      ...> (%PodObject{
       ...>    id: :point,
-      ...>    doc: "A 2 dimensional point"
+      ...>    doc: "A 2 dimensional point",
+      ...>    fields: [
+      ...>       %PodField{
+      ...>          id: :x,
+      ...>          doc: "Abcissa",
+      ...>          type: %PodType{ id: :int32 }
+      ...>       },
+      ...>       %PodField{
+      ...>          id: :y,
+      ...>          doc: "Ordinate",
+      ...>          type: %PodType{ id: :int32 }
+      ...>       }
+      ...>    ]
       ...> } = point) && true
       true
 
     Converts list of field parameters into list of fields:
 
-      iex> alias Kojin.Pod.{PodObject, PodField}
-      ...> point = PodObject.pod_object(:point, "A 2 dimensional point", [
+      iex> alias Kojin.Pod.{PodObject, PodField, PodType}
+      ...> import Kojin.Pod.{PodObject, PodField}
+      ...> point = pod_object(:point, "A 2 dimensional point", [
       ...>  [:x, "Abcissa", :int32],
       ...>  [:y, "Ordinate", :int32]
       ...> ])
       ...> (%Kojin.Pod.PodObject{
       ...>    id: :point,
       ...>    doc: "A 2 dimensional point",
-      ...>    fields: [ %Kojin.Pod.PodField{ id: :x }, %Kojin.Pod.PodField{ id: :y } ]
+      ...>    fields: [
+      ...>       %PodField{
+      ...>          id: :x,
+      ...>          doc: "Abcissa",
+      ...>          type: %PodType{ id: :int32 }
+      ...>       },
+      ...>       %PodField{
+      ...>          id: :y,
+      ...>          doc: "Ordinate",
+      ...>          type: %PodType{ id: :int32 }
+      ...>       }
+      ...>    ]
       ...> } = point) && true
       true
   """

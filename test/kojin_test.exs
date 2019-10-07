@@ -8,6 +8,8 @@ defmodule KojinTest do
   doctest Kojin.Pod.PodArray
   doctest Kojin.Pod.PodField
   doctest Kojin.Pod.PodType
+  doctest Kojin.Pod.PodTypeRef
+  doctest Kojin.Pod.PodTypes
   doctest Kojin.Pod.PodObject
   doctest Kojin.CodeBlock
   doctest Kojin.Id
