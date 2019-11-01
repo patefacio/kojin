@@ -142,6 +142,7 @@ defmodule Kojin.Pod.PodTypes do
   Provides a set of predefined types.
   """
   import Kojin.Pod.PodType
+  import Kojin.Pod.PodTypeRef
 
   @std_types %{
     string: pod_type(:string, "One or more characters", variable_size?: true, package: :std),
@@ -179,6 +180,12 @@ defmodule Kojin.Pod.PodTypes do
   #{@example_tests}
   }
 
+      iex> Kojin.Pod.PodTypes.pod_type(:user_defined_type)
+      %Kojin.Pod.PodTypeRef{
+        type_id: :user_defined_type,
+        type_path: []
+      }
+
   """
 
   def pod_type(:string), do: @std_types.string
@@ -197,6 +204,8 @@ defmodule Kojin.Pod.PodTypes do
   def pod_type(:double), do: @std_types.double
   def pod_type(:boolean), do: @std_types.boolean
   def pod_type(:uuid), do: @std_types.uuid
+  def pod_type(t) when is_atom(t), do: pod_type_ref(t)
+  def pod_type(t) when is_binary(t), do: pod_type_ref(t)
 
   @doc """
   Map of std types indexed by atom
