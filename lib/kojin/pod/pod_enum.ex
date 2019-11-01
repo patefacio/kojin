@@ -3,6 +3,9 @@ import Kojin.Id
 defmodule Kojin.Pod.EnumValue do
   use TypedStruct
 
+  @typedoc """
+  Names a preferrably documented value in an enum
+  """
   typedstruct enforce: true do
     field(:id, atom)
     field(:doc, binary | nil)
@@ -17,7 +20,7 @@ defmodule Kojin.Pod.EnumValue do
       %Kojin.Pod.EnumValue{ id: :red, doc: nil }
 
       iex> Kojin.Pod.EnumValue.ev(:red, "The color of blood")
-      %Kojin.Pod.EnumValue{ id: :red, doc: "The color of blood" }      
+      %Kojin.Pod.EnumValue{ id: :red, doc: "The color of blood" }
 
     Id must be snake case
 
@@ -26,7 +29,7 @@ defmodule Kojin.Pod.EnumValue do
 
   """
   @spec ev(atom, binary | nil) :: Kojin.Pod.EnumValue.t() | none
-  def ev(id, doc) when is_atom(id) do
+  def ev(id, doc) when is_atom(id) and is_binary(doc) do
     if !is_snake(id), do: raise("Enum value id `#{id}` must be snake case.")
 
     %Kojin.Pod.EnumValue{
@@ -35,11 +38,21 @@ defmodule Kojin.Pod.EnumValue do
     }
   end
 
-  def ev(id, nil) when is_atom(id), do: ev(id, nil)
+  def ev(id, nil) when is_atom(id) do
+    if !is_snake(id), do: raise("Enum value id `#{id}` must be snake case.")
+
+    %Kojin.Pod.EnumValue{
+      id: id,
+      doc: nil
+    }
+  end
 
   def ev(id) when is_atom(id), do: ev(id, nil)
 
   def ev(%Kojin.Pod.EnumValue{} = ev), do: ev
+
+  def ev([id]), do: ev(id, nil)
+  def ev([id, doc]), do: ev(id, doc)
 
   defmodule String.Chars do
     def to_string(%Kojin.Pod.EnumValue{} = ev) do
@@ -74,10 +87,10 @@ defmodule Kojin.Pod.PodEnum do
       iex> Kojin.Pod.PodEnum.pod_enum(:color, "Fundamental colors", [:red, :green, :blue])
       alias Kojin.Pod.{PodEnum, EnumValue}
       %PodEnum{ id: :color, doc: "Fundamental colors", values: [
-        %EnumValue{id: :red, doc: nil}, 
-        %EnumValue{id: :green, doc: nil}, 
+        %EnumValue{id: :red, doc: nil},
+        %EnumValue{id: :green, doc: nil},
         %EnumValue{id: :blue, doc: nil}
-        ] 
+        ]
       }
 
       iex> Kojin.Pod.PodEnum.pod_enum(:TheColor, "Fundamental colors", [:red, :green, :blue])

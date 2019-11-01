@@ -11,6 +11,7 @@ defmodule KojinTest do
   doctest Kojin.Pod.PodTypeRef
   doctest Kojin.Pod.PodTypes
   doctest Kojin.Pod.PodObject
+  doctest Kojin.Pod.PodPackage
   doctest Kojin.CodeBlock
   doctest Kojin.Id
   doctest Kojin.Rust
