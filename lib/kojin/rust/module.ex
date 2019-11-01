@@ -108,7 +108,7 @@ defmodule Kojin.Rust.Module do
 
         ## Uses
         module.uses,
-        announce_section("mod decls", Module.mod_decls(module)),
+        announce_section("mod decls", join_content(Module.mod_decls(module))),
         announce_section("functions", module.functions |> Enum.filter(fn f -> !f.is_test end)),
         announce_section("traits", module.traits),
         announce_section("structs", module.structs),

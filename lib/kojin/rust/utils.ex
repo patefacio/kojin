@@ -13,7 +13,11 @@ defmodule Kojin.Rust.Utils do
     end
   end
 
-  def announce_section(s, section, sep \\ "\n\n") do
+  def announce_section(s, section, sep \\ "\n\n")
+
+  def announce_section(s, "", sep), do: nil
+
+  def announce_section(s, section, sep) do
     if section != nil && section != [] do
       """
       ////////////////////////////////////////////////////////////////////////////////////
