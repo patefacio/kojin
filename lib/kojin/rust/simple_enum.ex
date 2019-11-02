@@ -78,7 +78,7 @@ defmodule Kojin.Rust.SimpleEnum do
     values =
       enum.values
       |> Enum.map(fn {e, doc} ->
-        Kojin.Utils.join_content([triple_slash_comment(doc), String.upcase(e)])
+        Kojin.Utils.join_content([triple_slash_comment(doc), cap_camel("#{e}")])
       end)
       |> Enum.join(",\n")
 

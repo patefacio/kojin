@@ -6,6 +6,7 @@ defmodule Kojin.Rust.Module do
   alias Kojin.Rust.{
     TraitImpl,
     TypeImpl,
+    SimpleEnum,
     Struct,
     Trait,
     Module,
@@ -28,6 +29,7 @@ defmodule Kojin.Rust.Module do
     field(:visibility, atom, default: :private)
     field(:doc, String.t())
     field(:type, atom, default: :file)
+    field(:enums, list(SimpleEnum.t()), default: [])
     field(:traits, list(Trait.t()), default: [])
     field(:functions, list(Fn.t()), default: [])
     field(:structs, list(Struct.t()), default: [])
@@ -56,6 +58,7 @@ defmodule Kojin.Rust.Module do
 
     defaults = [
       type: default_type,
+      enums: [],
       traits: [],
       functions: [],
       structs: [],
@@ -72,6 +75,7 @@ defmodule Kojin.Rust.Module do
       type_name: cap_camel(name),
       doc: doc,
       type: opts[:type],
+      enums: opts[:enums],
       traits: opts[:traits],
       functions: opts[:functions],
       structs: opts[:structs],
@@ -109,6 +113,7 @@ defmodule Kojin.Rust.Module do
         ## Uses
         module.uses,
         announce_section("mod decls", join_content(Module.mod_decls(module))),
+        announce_section("enums", module.enums),
         announce_section("functions", module.functions |> Enum.filter(fn f -> !f.is_test end)),
         announce_section("traits", module.traits),
         announce_section("structs", module.structs),
