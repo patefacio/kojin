@@ -86,6 +86,16 @@ defmodule Kojin.PodRust.ToCrate do
     )
   end
 
+  def to_crate(%PodPackageSet{} = pod_package_set, crate_name) when is_atom(crate_name) do
+    crate(
+      crate_name,
+      pod_package_set.doc,
+      module(:top_module, "Top module",
+        modules: Enum.map(pod_package_set.packages, fn p -> to_module(p) end)
+      )
+    )
+  end
+
   def generate_crate(
         %PodPackageSet{} = pod_package_set,
         crate_name,
@@ -94,13 +104,7 @@ defmodule Kojin.PodRust.ToCrate do
       when is_atom(crate_name) do
     target_path = target_path || "/tmp/tmp/#{crate_name}"
 
-    crate(
-      crate_name,
-      pod_package_set.doc,
-      module(:top_module, "Top module",
-        modules: Enum.map(pod_package_set.packages, fn p -> to_module(p) end)
-      )
-    )
+    to_crate(pod_package_set, crate_name)
     |> CrateGenerator.generate_crate(target_path)
   end
 end

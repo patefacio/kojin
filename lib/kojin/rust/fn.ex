@@ -44,7 +44,7 @@ defmodule Kojin.Rust.Parm do
 
       iex> import Kojin.Rust.Parm
       ...> String.Chars.to_string(parm(parm(parm(:a, :i32))))
-      "a: i32"  
+      "a: i32"
 
   Special `self` parameters.
 
@@ -60,7 +60,7 @@ defmodule Kojin.Rust.Parm do
 
       iex> import Kojin.Rust.Parm
       ...> String.Chars.to_string(parm(:self_mref))
-      "self: & mut Self"      
+      "self: & mut Self"
 
   To associate lifetimes to `self` use `parm(:self, ref(:self, :a))`
   or `parm(:self, ref(:self, :b))`
@@ -73,7 +73,7 @@ defmodule Kojin.Rust.Parm do
 
       iex> import Kojin.Rust.{Parm, Type}
       ...> String.Chars.to_string(parm(:self, mref(:self, :b)))
-      "self: & 'b mut Self"      
+      "self: & 'b mut Self"
 
   """
   def parm(%Parm{} = parm), do: parm
@@ -99,15 +99,15 @@ defmodule Kojin.Rust.Parm do
 
       iex> import Kojin.Rust.Parm
       ...> String.Chars.to_string(parm(:size, :i32, doc: "Size in bytes"))
-      "size: i32"    
+      "size: i32"
 
       iex> import Kojin.Rust.Parm
       ...> String.Chars.to_string(parm(:size, :i32, "Size in bytes"))
-      "size: i32"    
+      "size: i32"
 
       iex> import Kojin.Rust.Parm
       ...> String.Chars.to_string(parm(:size, :i32, mut: true))
-      "mut size: i32"  
+      "mut size: i32"
 
   """
   def parm(name, type, opts \\ [])
@@ -283,7 +283,14 @@ defmodule Kojin.Rust.Fn do
   ## Examples
 
       iex> import Kojin.Rust.Fn
-      ...> signature(fun(:f, "Simple function", [], return: :i32, return_doc: "Latest value of f"))
+      ...> signature(
+      ...>   fun(:f,
+      ...>       "Simple function",
+      ...>       [],
+      ...>       return: :i32,
+      ...>       return_doc: "Latest value of f"
+      ...>   )
+      ...> )
       "fn f() -> i32"
 
   """

@@ -101,9 +101,14 @@ defmodule Kojin.Rust.CrateGenerator do
         Kojin.check_write_file(original_file, new_contents)
       end)
 
-      Logger.info("Cleaning up tmp path #{tmp_path}")
+      Logger.debug("Cleaning up tmp path #{tmp_path}")
 
-      File.rm_rf!(tmp_path)
+      removed = File.rm_rf!(tmp_path)
+
+      Logger.debug(
+        "Removed formatted tmp files:\n#{inspect(removed, pretty: true, limit: :infinity)}"
+      )
+
       :ok
     end
   end

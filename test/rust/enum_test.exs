@@ -8,7 +8,7 @@ defmodule EnumTest do
     # TODO assert s
     e = enum(:color, "The color choices", [{:red, "Red"}, {:green, "Green"}, {:blue, "Blue"}])
 
-    IO.puts decl(e)
+    IO.puts(decl(e))
 
     tv(:color, 3)
   end
