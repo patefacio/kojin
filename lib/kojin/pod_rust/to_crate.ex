@@ -1,5 +1,5 @@
 defmodule Kojin.PodRust.ToCrate do
-  alias Kojin.Pod.{PodPackageSet, PodPackage, PodType, PodTypeRef}
+  alias Kojin.Pod.{PodPackageSet, PodPackage, PodType, PodArray, PodTypeRef}
   alias Kojin.Rust.{CrateGenerator}
   import Kojin.Rust.{Crate, Module, Struct, Field, SimpleEnum}
   import Kojin.Pod.PodTypes
@@ -25,6 +25,11 @@ defmodule Kojin.PodRust.ToCrate do
     Kojin.Rust.Type.type(pod_type_ref.type_id)
   end
 
+  def pod_type_to_rust_type(%PodArray{} = pod_array) do
+    referred_type = pod_type_to_rust_type(pod_array.item_type)
+    Kojin.Rust.Type.type("Vec<#{referred_type}>")
+  end
+
   def pod_type_to_rust_type(%PodType{} = pod_type) do
     alias Kojin.Rust.Type
 
@@ -34,7 +39,6 @@ defmodule Kojin.PodRust.ToCrate do
       @pod_int8 -> Type.type(:i8)
       @pod_int16 -> Type.type(:i16)
       @pod_int32 -> Type.type(:i32)
-      @pod_int64 -> Type.type(:i64)
       @pod_uint8 -> Type.type(:u8)
       @pod_uint16 -> Type.type(:u16)
       @pod_uint32 -> Type.type(:u32)
@@ -48,12 +52,6 @@ defmodule Kojin.PodRust.ToCrate do
   end
 
   def to_module(%PodPackage{} = pod_package) do
-    e =
-      pod_package.pod_enums
-      |> Enum.map(fn pe -> pe.id end)
-      |> Enum.join(", ")
-      |> IO.inspect(pretty: true)
-
     module(pod_package.id, pod_package.doc,
       ## Add the enums
       enums:

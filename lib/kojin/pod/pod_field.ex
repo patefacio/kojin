@@ -6,7 +6,7 @@ defmodule Kojin.Pod.PodField do
   """
 
   use TypedStruct
-  alias Kojin.Pod.{PodField, PodType, PodTypeRef, PodTypes}
+  alias Kojin.Pod.{PodField, PodType, PodArray, PodTypeRef, PodTypes}
   # use Vex.Struct
 
   @typedoc """
@@ -15,21 +15,17 @@ defmodule Kojin.Pod.PodField do
   typedstruct enforce: true do
     field(:id, atom)
     field(:doc, String.t())
-    field(:type, PodType.t() | PodTypeRef.t())
+    field(:type, PodType.t() | PodTypeRef.t() | PodArray.t())
     field(:optional?, boolean())
     field(:default_value, any())
   end
 
   @doc """
-  Returns value if given `Kojin.Pod.PodField`.
-  """
-  @spec pod_field(Kojin.Pod.PodField.t()) :: Kojin.Pod.PodField.t()
-  def pod_field(%PodField{} = pod_field), do: pod_field
-
-  @doc """
   Creates a `Kojin.Pod.PodField` if provided list that looks like field parameters.
 
   ## Examples
+
+    When provided list [id, doc, atom type] that looks like field parameters.
 
       iex> import Kojin.Pod.{PodField}
       ...> pod_field([:f_1, "A field", :int32])
@@ -43,13 +39,7 @@ defmodule Kojin.Pod.PodField do
         optional?: false
       }
 
-  """
-  def pod_field([id, doc, type]), do: pod_field(id, doc, type)
-
-  @doc """
-  Creates a `Kojin.Pod.PodField` if provided list that looks like field parameters.
-
-  ## Examples
+    When provided list [id, doc] that looks like field parameters, defaulting to string.
 
       iex> import Kojin.Pod.{PodField}
       ...> pod_field([:f_1, "A field"])
@@ -63,16 +53,42 @@ defmodule Kojin.Pod.PodField do
         optional?: false
       }
 
+    When provided list [id, doc, array of type] that looks like field parameters.
+
+      iex> import Kojin.Pod.{PodField, PodArray}
+      ...> pod_field([:f_1, "Int array", array_of(:int32)])
+      alias Kojin.Pod.PodField
+      import Kojin.Pod.{PodTypes, PodArray}
+      %PodField{
+        id: :f_1,
+        doc: "Int array",
+        type: array_of(:int32),
+        default_value: nil,
+        optional?: false
+      }
+
   """
+  @spec pod_field(Kojin.Pod.PodField.t()) :: Kojin.Pod.PodField.t()
+  def pod_field(%PodField{} = pod_field), do: pod_field
+
+  def pod_field([id, doc, type]), do: pod_field(id, doc, type)
+
   def pod_field([id, doc]), do: pod_field(id, doc)
 
-  def pod_field(id, doc, opts \\ [])
-
   @doc """
-  Creates a `Kojin.PodField` from the provide `name`, `doc`
-  and `opts`.
+  Creates a `Kojin.PodField` from the provided `name`, `doc`
+  and predefined type identified by `type` atom.
 
   ## Examples
+
+      iex> Kojin.Pod.PodField.pod_field(:f_1, "A field", :int64)
+      import Kojin.Pod.PodTypes
+      %Kojin.Pod.PodField{id: :f_1,
+        doc: "A field",
+        type: pod_type(:int64),
+        default_value: nil,
+        optional?: false
+      }
 
       iex> Kojin.Pod.PodField.pod_field(:f_1, "A field")
       import Kojin.Pod.PodTypes
@@ -84,6 +100,8 @@ defmodule Kojin.Pod.PodField do
       }
 
   """
+  def pod_field(id, doc, opts \\ [])
+
   def pod_field(id, doc, opts) when is_atom(id) and is_binary(doc) and is_list(opts) do
     if !is_snake(id), do: raise("PodField id `#{id}` must be snake case.")
 
@@ -106,26 +124,14 @@ defmodule Kojin.Pod.PodField do
     }
   end
 
-  @doc """
-  Creates a `Kojin.PodField` from the provide `name`, `doc`
-  and predefined type identified by `type` atom.
-
-  ## Examples
-
-      iex> Kojin.Pod.PodField.pod_field(:f_1, "A field", :int64)
-      import Kojin.Pod.PodTypes
-      %Kojin.Pod.PodField{id: :f_1,
-        doc: "A field",
-        type: pod_type(:int64),
-        default_value: nil,
-        optional?: false
-      }
-
-  """
   def pod_field(id, doc, type)
       when is_atom(id) and is_binary(doc) and is_atom(type) do
     pod_field(id, doc, type: PodTypes.pod_type(type))
   end
+
+  def pod_field(id, doc, %PodType{} = type), do: pod_field(id, doc, type: type)
+  def pod_field(id, doc, %PodTypeRef{} = type), do: pod_field(id, doc, type: type)
+  def pod_field(id, doc, %PodArray{} = type), do: pod_field(id, doc, type: type)
 end
 
 defimpl String.Chars, for: Kojin.PodField do

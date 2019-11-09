@@ -54,12 +54,12 @@ defmodule Kojin.Pod.PodObject do
     Converts list of field parameters into list of fields:
 
       iex> alias Kojin.Pod.{PodObject, PodField, PodType}
-      ...> import Kojin.Pod.{PodObject, PodField}
+      ...> import Kojin.Pod.{PodObject}
       ...> point = pod_object(:point, "A 2 dimensional point", [
       ...>  [:x, "Abcissa", :int32],
       ...>  [:y, "Ordinate", :int32]
       ...> ])
-      ...> (%Kojin.Pod.PodObject{
+      ...> (%PodObject{
       ...>    id: :point,
       ...>    doc: "A 2 dimensional point",
       ...>    fields: [

@@ -4,13 +4,13 @@ defmodule Kojin.Pod.PodArray do
   """
   use TypedStruct
 
-  alias Kojin.Pod.{PodType, PodTypes}
+  alias Kojin.Pod.{PodType, PodTypeRef, PodTypes}
 
   @typedoc """
   Defines an array of items typed by `item_type` which is a `Kojin.Pod.PodType`.
   """
   typedstruct enforce: true do
-    field(:item_type, PodType.t())
+    field(:item_type, PodType.t() | PodTypeRef.t())
   end
 
   @doc """
@@ -53,4 +53,8 @@ defmodule Kojin.Pod.PodArray do
 
   """
   def array_of(item_type) when is_atom(item_type), do: array_of(PodTypes.pod_type(item_type))
+
+  def array_of(%PodTypeRef{} = pod_type_ref) do
+    %Kojin.Pod.PodArray{item_type: pod_type_ref}
+  end
 end

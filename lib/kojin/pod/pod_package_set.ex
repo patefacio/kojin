@@ -32,22 +32,20 @@ defmodule Kojin.Pod.PodPackageSet do
 
   def find_enum(%PodPackageSet{} = pod_package_set, %PodTypeRef{} = pod_type_ref) do
     pod_package_set.packages
-    |> Enum.map(fn package ->
+    |> Enum.find_value(fn package ->
       package.pod_enums
-      |> Enum.filter(fn enum -> enum.id == pod_type_ref.type_id end)
-      |> Enum.map(fn enum -> {package.path, package.id, enum} end)
+      |> Enum.find_value(fn enum -> enum.id == pod_type_ref.type_id && {package.id, enum} end)
     end)
-    |> List.flatten()
   end
 
   def find_object(%PodPackageSet{} = pod_package_set, %PodTypeRef{} = pod_type_ref) do
     pod_package_set.packages
-    |> Enum.map(fn package ->
+    |> Enum.find_value(fn package ->
       package.pod_objects
-      |> Enum.filter(fn object -> object.id == pod_type_ref.type_id end)
-      |> Enum.map(fn object -> {package.path, package.id, object} end)
+      |> Enum.find_value(fn object ->
+        object.id == pod_type_ref.type_id && {package.id, object}
+      end)
     end)
-    |> List.flatten()
   end
 
   def info(%PodPackageSet{} = pod_package_set) do

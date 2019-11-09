@@ -29,7 +29,7 @@ defmodule Kojin.Pod.PodPackage do
 
   ## Examples
 
-      iex> import Kojin.Pod.{PodPackage, PodEnum, PodObject}
+      iex> import Kojin.Pod.{PodPackage, PodObject}
       ...> pod_package(:p,
       ...>   "The `P` package",
       ...>   pod_objects: [

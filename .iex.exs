@@ -40,3 +40,4 @@ IEx.configure(
 )
 
 import Kojin.Pod.PodField
+import Kojin.Pod.PodArray
