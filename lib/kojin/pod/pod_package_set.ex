@@ -6,7 +6,7 @@ defmodule Kojin.Pod.PodPackageSet do
 
   use TypedStruct
 
-  alias Kojin.Pod.{PodPackage, PodPackageSet, PodTypeRef}
+  alias Kojin.Pod.{PodPackage, PodPackageSet, PodTypeRef, PodArray, PodType}
 
   @typedoc """
   Models a collection of related packages which may refer to
@@ -30,22 +30,33 @@ defmodule Kojin.Pod.PodPackageSet do
     }
   end
 
+  def find_object(%PodPackageSet{} = pod_package_set, %PodTypeRef{} = pod_type_ref) do
+    pod_package_set.packages
+    |> Enum.find_value(fn package -> PodPackage.find_object(package, pod_type_ref) end)
+  end
+
   def find_enum(%PodPackageSet{} = pod_package_set, %PodTypeRef{} = pod_type_ref) do
     pod_package_set.packages
-    |> Enum.find_value(fn package ->
-      package.pod_enums
-      |> Enum.find_value(fn enum -> enum.id == pod_type_ref.type_id && {package.id, enum} end)
+    |> Enum.find_value(fn package -> PodPackage.find_enum(package, pod_type_ref) end)
+  end
+
+  def all_types(%PodPackageSet{} = pod_package_set) do
+    pod_package_set.packages
+    |> Enum.reduce(MapSet.new(), fn pod_package, acc ->
+      MapSet.union(acc, PodPackage.all_types(pod_package))
     end)
   end
 
-  def find_object(%PodPackageSet{} = pod_package_set, %PodTypeRef{} = pod_type_ref) do
-    pod_package_set.packages
-    |> Enum.find_value(fn package ->
-      package.pod_objects
-      |> Enum.find_value(fn object ->
-        object.id == pod_type_ref.type_id && {package.id, object}
-      end)
-    end)
+  def all_pod__types(%PodPackageSet{} = pod_package_set) do
+    for {_package, %PodType{}} = elm <- all_types(pod_package_set), do: elm
+  end
+
+  def all_ref_types(%PodPackageSet{} = pod_package_set) do
+    for {_package, %PodTypeRef{}} = elm <- all_types(pod_package_set), do: elm
+  end
+
+  def all_array_types(%PodPackageSet{} = pod_package_set) do
+    for {_package, %PodArray{}} = elm <- all_types(pod_package_set), do: elm
   end
 
   def info(%PodPackageSet{} = pod_package_set) do
