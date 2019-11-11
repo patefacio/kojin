@@ -47,7 +47,7 @@ defmodule Kojin.Pod.PodPackageSet do
     end)
   end
 
-  def all_pod__types(%PodPackageSet{} = pod_package_set) do
+  def all_pod_types(%PodPackageSet{} = pod_package_set) do
     for {_package, %PodType{}} = elm <- all_types(pod_package_set), do: elm
   end
 

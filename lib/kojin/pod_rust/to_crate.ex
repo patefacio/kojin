@@ -21,16 +21,28 @@ defmodule Kojin.PodRust.ToCrate do
   @pod_date pod_type(:date)
   @pod_timestamp pod_type(:timestamp)
 
-  def pod_type_to_rust_type(%PodTypeRef{} = pod_type_ref) do
+  def pod_type_to_rust_type(
+        %PodPackageSet{} = pod_package_set,
+        %PodPackage{} = pod_package,
+        %PodTypeRef{} = pod_type_ref
+      ) do
     Kojin.Rust.Type.type(pod_type_ref.type_id)
   end
 
-  def pod_type_to_rust_type(%PodArray{} = pod_array) do
-    referred_type = pod_type_to_rust_type(pod_array.item_type)
+  def pod_type_to_rust_type(
+        %PodPackageSet{} = pod_package_set,
+        %PodPackage{} = pod_package,
+        %PodArray{} = pod_array
+      ) do
+    referred_type = pod_type_to_rust_type(pod_package_set, pod_package, pod_array.item_type)
     Kojin.Rust.Type.type("Vec<#{referred_type}>")
   end
 
-  def pod_type_to_rust_type(%PodType{} = pod_type) do
+  def pod_type_to_rust_type(
+        %PodPackageSet{} = pod_package_set,
+        %PodPackage{} = pod_package,
+        %PodType{} = pod_type
+      ) do
     alias Kojin.Rust.Type
 
     case pod_type do
@@ -51,7 +63,7 @@ defmodule Kojin.PodRust.ToCrate do
     end
   end
 
-  def to_module(%PodPackage{} = pod_package) do
+  def to_module(%PodPackageSet{} = pod_package_set, %PodPackage{} = pod_package) do
     module(pod_package.id, pod_package.doc,
       ## Add the enums
       enums:
@@ -76,7 +88,9 @@ defmodule Kojin.PodRust.ToCrate do
                 po.id,
                 po.doc,
                 po.fields
-                |> Enum.map(fn f -> field(f.id, pod_type_to_rust_type(f.type), f.doc) end)
+                |> Enum.map(fn f ->
+                  field(f.id, pod_type_to_rust_type(pod_package_set, pod_package, f.type), f.doc)
+                end)
               )
             ]
           )
@@ -89,7 +103,7 @@ defmodule Kojin.PodRust.ToCrate do
       crate_name,
       pod_package_set.doc,
       module(:top_module, "Top module",
-        modules: Enum.map(pod_package_set.packages, fn p -> to_module(p) end)
+        modules: Enum.map(pod_package_set.packages, fn p -> to_module(pod_package_set, p) end)
       )
     )
   end

@@ -4,7 +4,7 @@ defmodule Kojin.Pod.PodArray do
   """
   use TypedStruct
 
-  alias Kojin.Pod.{PodType, PodTypeRef, PodTypes}
+  alias Kojin.Pod.{PodArray, PodType, PodTypeRef, PodTypes}
 
   @typedoc """
   Defines an array of items typed by `item_type` which is a `Kojin.Pod.PodType`.
@@ -56,5 +56,9 @@ defmodule Kojin.Pod.PodArray do
 
   def array_of(%PodTypeRef{} = pod_type_ref) do
     %Kojin.Pod.PodArray{item_type: pod_type_ref}
+  end
+
+  def array_of(%PodArray{} = pod_array) do
+    %Kojin.Pod.PodArray{item_type: pod_array}
   end
 end

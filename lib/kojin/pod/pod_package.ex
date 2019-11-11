@@ -20,6 +20,7 @@ defmodule Kojin.Pod.PodPackage do
     field(:pod_enums, list(PodEnum.t()))
     field(:pod_objects, list(PodObject.t()))
     field(:imports, list(binary))
+    field(:pod_packages, list(PodPackage.t()))
     field(:path, binary)
   end
 
@@ -43,6 +44,7 @@ defmodule Kojin.Pod.PodPackage do
         id: :p,
         imports: [],
         pod_enums: [],
+        pod_packages: [],
         pod_objects: [
           %Kojin.Pod.PodObject{
             doc: "A 2 dimensional point",
@@ -87,6 +89,7 @@ defmodule Kojin.Pod.PodPackage do
       pod_enums: [],
       pod_objects: [],
       imports: [],
+      pod_packages: [],
       path: nil
     ]
 
@@ -98,6 +101,7 @@ defmodule Kojin.Pod.PodPackage do
       pod_enums: opts[:pod_enums],
       pod_objects: opts[:pod_objects],
       imports: opts[:imports],
+      pod_packages: opts[:pod_packages],
       path: opts[:path]
     }
   end
