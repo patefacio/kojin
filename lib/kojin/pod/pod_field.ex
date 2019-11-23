@@ -108,7 +108,7 @@ defmodule Kojin.Pod.PodField do
     defaults = [
       id: id,
       doc: doc,
-      type: Keyword.get(opts, :type, PodTypes.pod_type(:string)),
+      type: :string,
       default_value: nil,
       optional?: false
     ]
@@ -118,7 +118,7 @@ defmodule Kojin.Pod.PodField do
     %PodField{
       id: id,
       doc: doc,
-      type: opts[:type],
+      type: PodTypes.pod_type(opts[:type]),
       optional?: opts[:optional?],
       default_value: opts[:default_value]
     }

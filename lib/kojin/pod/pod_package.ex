@@ -8,7 +8,7 @@ defmodule Kojin.Pod.PodPackage do
 
   use TypedStruct
 
-  alias Kojin.Pod.{PodPackage, PodTypeRef}
+  alias Kojin.Pod.{PodPackage, PodTypeRef, PodObject}
 
   @typedoc """
   Models a package of related `Kojin.Pod.PodObject` and
@@ -120,16 +120,33 @@ defmodule Kojin.Pod.PodPackage do
     end)
   end
 
+  @doc """
+  Returns the set of all reference types within the package.
+  """
   def all_types(%PodPackage{} = pod_package) do
     pod_package.pod_objects
     |> Enum.reduce(MapSet.new(), fn pod_object, acc ->
-      pod_object.fields
-      |> Enum.reduce(acc, fn pod_field, acc ->
-        MapSet.put(acc, {pod_package.id, pod_field.type})
-      end)
+      MapSet.union(
+        acc,
+        PodObject.all_types(pod_object)
+        |> Enum.map(fn t -> {pod_package.id, t} end)
+        |> MapSet.new()
+      )
     end)
   end
 
+  @doc """
+  Returns the set of all reference types within the package.
+  """
   def all_ref_types(%PodPackage{} = pod_package) do
+    pod_package.pod_objects
+    |> Enum.reduce(MapSet.new(), fn pod_object, acc ->
+      MapSet.union(
+        acc,
+        PodObject.all_ref_types(pod_object)
+        |> Enum.map(fn t -> {pod_package.id, t} end)
+        |> MapSet.new()
+      )
+    end)
   end
 end

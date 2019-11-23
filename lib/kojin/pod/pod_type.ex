@@ -187,7 +187,9 @@ defmodule Kojin.Pod.PodTypes do
       }
 
   """
-
+  def pod_type(%Kojin.Pod.PodType{} = pod_type), do: pod_type
+  def pod_type(%Kojin.Pod.PodTypeRef{} = pod_type_ref), do: pod_type_ref
+  def pod_type(%Kojin.Pod.PodArray{} = pod_array), do: pod_array
   def pod_type(:string), do: @std_types.string
   def pod_type(:int64), do: @std_types.int64
   def pod_type(:int32), do: @std_types.int32

@@ -30,6 +30,11 @@ defmodule Kojin.Pod.PodPackageSet do
     }
   end
 
+  def find_pod_package(%PodPackageSet{} = pod_package_set, package_id) when is_atom(package_id) do
+    pod_package_set.packages
+    |> Enum.find(fn package -> package.id == package_id end)
+  end
+
   def find_object(%PodPackageSet{} = pod_package_set, %PodTypeRef{} = pod_type_ref) do
     pod_package_set.packages
     |> Enum.find_value(fn package -> PodPackage.find_object(package, pod_type_ref) end)

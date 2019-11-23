@@ -3,7 +3,7 @@ defmodule Kojin.Pod.PodObject do
   Module for defining plain old data objects, independent of target language
   """
 
-  alias Kojin.Pod.{PodField, PodObject}
+  alias Kojin.Pod.{PodField, PodObject, PodTypeRef}
 
   use TypedStruct
 
@@ -83,5 +83,23 @@ defmodule Kojin.Pod.PodObject do
       doc: doc,
       fields: fields |> Enum.map(fn field -> PodField.pod_field(field) end)
     }
+  end
+
+  @doc """
+  Returns all distinct types referenced in the `PodObject` (non-recursive)
+  """
+  def all_types(%PodObject{} = pod_object) do
+    pod_object.fields
+    |> Enum.reduce(MapSet.new(), fn pod_field, acc ->
+      MapSet.put(acc, pod_field.type)
+    end)
+  end
+
+  @doc """
+  Returns all distinct ref types referenced in the `PodObject` (non-recursive)
+  """
+  def all_ref_types(%PodObject{} = pod_object) do
+    (for %PodTypeRef{} = elm <- all_types(pod_object), do: elm)
+    |> MapSet.new()
   end
 end

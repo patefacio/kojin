@@ -6,6 +6,8 @@ defmodule TestHelper do
   import Kojin.Utils
   alias String.Chars
 
+  Code.load_file("test/sample_data/pod_samples.ex")
+
   @doc "
   Remove whitespace from `under_test` and `expected`,
   compare them and if false run standard assert.
