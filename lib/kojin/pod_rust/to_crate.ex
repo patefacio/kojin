@@ -1,8 +1,9 @@
 defmodule Kojin.PodRust.ToCrate do
-  alias Kojin.Pod.{PodPackageSet, PodPackage, PodType, PodArray, PodTypeRef}
+  alias Kojin.Pod.{PodPackageSet, PodPackage, PodType, PodArray, PodTypeRef, PodObject}
   alias Kojin.Rust.{CrateGenerator}
   import Kojin.Rust.{Crate, Module, Struct, Field, SimpleEnum}
   import Kojin.Pod.PodTypes
+  alias Kojin.Id
 
   @pod_string pod_type(:string)
 
@@ -92,7 +93,27 @@ defmodule Kojin.PodRust.ToCrate do
                   field(f.id, pod_type_to_rust_type(pod_package_set, pod_package, f.type), f.doc)
                 end)
               )
-            ]
+            ],
+            uses:
+              PodObject.all_ref_types(po)
+              |> Enum.map(fn type ->
+                rust_type =
+                  case PodPackageSet.find_object(pod_package_set, type) do
+                    {package_id, pod_object} ->
+                      "#{package_id}::#{pod_object.id}::#{Id.cap_camel(pod_object.id)}"
+
+                    nil ->
+                      case PodPackageSet.find_enum(pod_package_set, type) do
+                        {package_id, pod_enum} ->
+                          "#{package_id}::#{Id.cap_camel(pod_enum.id)}"
+
+                        nil ->
+                          "std::i32 as #{pod_type_to_rust_type(pod_package_set, pod_package, type)}"
+                      end
+                  end
+
+                "#{rust_type}"
+              end)
           )
         end)
     )

@@ -99,7 +99,7 @@ defmodule Kojin.Pod.PodObject do
   Returns all distinct ref types referenced in the `PodObject` (non-recursive)
   """
   def all_ref_types(%PodObject{} = pod_object) do
-    (for %PodTypeRef{} = elm <- all_types(pod_object), do: elm)
+    for(%PodTypeRef{} = elm <- all_types(pod_object), do: elm)
     |> MapSet.new()
   end
 end
