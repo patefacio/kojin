@@ -213,4 +213,13 @@ defmodule Kojin.Pod.PodTypes do
   Map of std types indexed by atom
   """
   def std(), do: @std_types
+
+  @doc """
+
+  Returns a referred to type (e.g. user defined type)
+
+  """
+  def ref_type(%Kojin.Pod.PodType{} = pod_type), do: nil
+  def ref_type(%Kojin.Pod.PodTypeRef{} = pod_type_ref), do: pod_type_ref
+  def ref_type(%Kojin.Pod.PodArray{} = pod_array), do: ref_type(pod_array.item_type)
 end

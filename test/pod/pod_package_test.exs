@@ -7,7 +7,7 @@ defmodule PodPackageTest do
 
   test "all_types" do
     assert(
-      [:int64, :string, :vaccination]
+      [:int64, :string, :vaccination, :toy]
       |> Enum.map(fn t -> {:pet_store, PodTypes.pod_type(t)} end)
       |> MapSet.new() == PodPackage.all_types(sample_package())
     )

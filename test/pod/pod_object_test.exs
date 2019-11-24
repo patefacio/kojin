@@ -7,7 +7,7 @@ defmodule PodObjectTest do
 
   test "all_types" do
     assert(
-      [:int64, :string, :vaccination]
+      [:int64, :string, :vaccination, :toy]
       |> Enum.map(fn t -> PodTypes.pod_type(t) end)
       |> MapSet.new() == PodObject.all_types(sample_object())
     )
@@ -15,7 +15,7 @@ defmodule PodObjectTest do
 
   test "all_ref_types" do
     assert(
-      [:vaccination]
+      [:vaccination, :toy]
       |> Enum.map(fn t -> PodTypes.pod_type(t) end)
       |> MapSet.new() == PodObject.all_ref_types(sample_object())
     )

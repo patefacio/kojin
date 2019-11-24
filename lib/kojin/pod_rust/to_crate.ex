@@ -94,29 +94,36 @@ defmodule Kojin.PodRust.ToCrate do
                 end)
               )
             ],
-            uses:
-              PodObject.all_ref_types(po)
-              |> Enum.map(fn type ->
-                rust_type =
-                  case PodPackageSet.find_object(pod_package_set, type) do
-                    {package_id, pod_object} ->
-                      "#{package_id}::#{pod_object.id}::#{Id.cap_camel(pod_object.id)}"
-
-                    nil ->
-                      case PodPackageSet.find_enum(pod_package_set, type) do
-                        {package_id, pod_enum} ->
-                          "#{package_id}::#{Id.cap_camel(pod_enum.id)}"
-
-                        nil ->
-                          "std::i32 as #{pod_type_to_rust_type(pod_package_set, pod_package, type)}"
-                      end
-                  end
-
-                "#{rust_type}"
-              end)
+            uses: object_usings_and_predefineds(pod_package_set, pod_package, po)
           )
         end)
     )
+  end
+
+  def object_usings_and_predefineds(
+        %PodPackageSet{} = pod_package_set,
+        %PodPackage{} = pod_package,
+        %PodObject{} = pod_object
+      ) do
+    PodObject.all_ref_types(pod_object)
+    |> Enum.map(fn type ->
+      rust_type =
+        case PodPackageSet.find_object(pod_package_set, type) do
+          {package_id, pod_object} ->
+            "#{package_id}::#{pod_object.id}::#{Id.cap_camel(pod_object.id)}"
+
+          nil ->
+            case PodPackageSet.find_enum(pod_package_set, type) do
+              {package_id, pod_enum} ->
+                "#{package_id}::#{Id.cap_camel(pod_enum.id)}"
+
+              nil ->
+                "std::i32 as #{pod_type_to_rust_type(pod_package_set, pod_package, type)}"
+            end
+        end
+
+      "#{rust_type}"
+    end)
   end
 
   def to_crate(%PodPackageSet{} = pod_package_set, crate_name) when is_atom(crate_name) do

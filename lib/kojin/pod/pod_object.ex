@@ -3,7 +3,7 @@ defmodule Kojin.Pod.PodObject do
   Module for defining plain old data objects, independent of target language
   """
 
-  alias Kojin.Pod.{PodField, PodObject, PodTypeRef}
+  alias Kojin.Pod.{PodField, PodObject, PodTypeRef, PodTypes}
 
   use TypedStruct
 
@@ -86,12 +86,22 @@ defmodule Kojin.Pod.PodObject do
   end
 
   @doc """
-  Returns all distinct types referenced in the `PodObject` (non-recursive)
+  Returns all distinct types referenced in the `PodObject` (non-recursive).
+
+  Note: Array is not represented as a type
+
+  ## Examples
+
+      iex> import Kojin.Pod.{PodObject, PodField, PodTypes, PodArray}
+      ...> all_types(pod_object(:x, "x", [ pod_field(:f, "f", array_of(:t))]))
+      MapSet.new([Kojin.Pod.PodTypes.pod_type(:t)])
+
   """
   def all_types(%PodObject{} = pod_object) do
     pod_object.fields
     |> Enum.reduce(MapSet.new(), fn pod_field, acc ->
-      MapSet.put(acc, pod_field.type)
+      # put in the referred type if there is one, or the standard type
+      MapSet.put(acc, PodTypes.ref_type(pod_field.type) || pod_field.type)
     end)
   end
 
@@ -99,7 +109,10 @@ defmodule Kojin.Pod.PodObject do
   Returns all distinct ref types referenced in the `PodObject` (non-recursive)
   """
   def all_ref_types(%PodObject{} = pod_object) do
-    for(%PodTypeRef{} = elm <- all_types(pod_object), do: elm)
+    for(
+      %PodTypeRef{} = elm <- Enum.map(all_types(pod_object), fn t -> PodTypes.ref_type(t) end),
+      do: elm
+    )
     |> MapSet.new()
   end
 end
