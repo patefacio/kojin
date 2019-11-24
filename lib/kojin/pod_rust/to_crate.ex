@@ -1,9 +1,11 @@
 defmodule Kojin.PodRust.ToCrate do
+  alias Kojin.Id
   alias Kojin.Pod.{PodPackageSet, PodPackage, PodType, PodArray, PodTypeRef, PodObject}
   alias Kojin.Rust.{CrateGenerator}
+  alias Kojin.PodRust.PodPackageToModule
+
   import Kojin.Rust.{Crate, Module, Struct, Field, SimpleEnum}
   import Kojin.Pod.PodTypes
-  alias Kojin.Id
 
   @pod_string pod_type(:string)
 
@@ -21,6 +23,8 @@ defmodule Kojin.PodRust.ToCrate do
   @pod_uchar pod_type(:uchar)
   @pod_date pod_type(:date)
   @pod_timestamp pod_type(:timestamp)
+  @pod_boolean pod_type(:boolean)
+  @pod_double pod_type(:double)
 
   def pod_type_to_rust_type(
         %PodPackageSet{} = pod_package_set,
@@ -60,7 +64,9 @@ defmodule Kojin.PodRust.ToCrate do
       @pod_uchar -> Type.type(:uchar)
       @pod_date -> Type.type(:date)
       @pod_timestamp -> Type.type(:timestamp)
-      _ -> Type.type(:bool)
+      @pod_boolean -> Type.type(:bool)
+      @pod_double -> Type.type(:f64)
+      _ -> Type.type(:MISSING)
     end
   end
 
@@ -110,19 +116,19 @@ defmodule Kojin.PodRust.ToCrate do
       rust_type =
         case PodPackageSet.find_object(pod_package_set, type) do
           {package_id, pod_object} ->
-            "#{package_id}::#{pod_object.id}::#{Id.cap_camel(pod_object.id)}"
+            {:using, "#{package_id}::#{pod_object.id}::#{Id.cap_camel(pod_object.id)}"}
 
           nil ->
             case PodPackageSet.find_enum(pod_package_set, type) do
               {package_id, pod_enum} ->
-                "#{package_id}::#{Id.cap_camel(pod_enum.id)}"
+                {:using, "#{package_id}::#{Id.cap_camel(pod_enum.id)}"}
 
               nil ->
-                "std::i32 as #{pod_type_to_rust_type(pod_package_set, pod_package, type)}"
+                {:predefined, "#{pod_type_to_rust_type(pod_package_set, pod_package, type)}"}
             end
         end
 
-      "#{rust_type}"
+      "#{elem(rust_type, 1)}"
     end)
   end
 
@@ -131,7 +137,12 @@ defmodule Kojin.PodRust.ToCrate do
       crate_name,
       pod_package_set.doc,
       module(:top_module, "Top module",
-        modules: Enum.map(pod_package_set.packages, fn p -> to_module(pod_package_set, p) end)
+        modules:
+          Enum.map(pod_package_set.packages, fn p ->
+            converter = PodPackageToModule.pod_package_to_module(pod_package_set, p)
+            PodPackageToModule.to_module(converter)
+            # to_module(pod_package_set, p)
+          end)
       )
     )
   end

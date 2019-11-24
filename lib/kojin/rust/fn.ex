@@ -138,7 +138,7 @@ defmodule Kojin.Rust.Parm do
       import Kojin.Rust.{Parm}
       parm(:some_type, :some_type, doc: "Some type", mut: true)
   """
-  def id_parm(name, rest), do: parm(name, name |> Kojin.Id.cap_camel(), rest)
+  def id_parm(name, rest), do: parm(name, Kojin.Id.cap_camel(name), rest)
 
   @doc ~s"""
   Returns param with `type` that is a ref to corresponding name.
@@ -160,7 +160,7 @@ defmodule Kojin.Rust.Parm do
       import Kojin.Rust.{Parm, Type}
       parm(:some_type, mref(:some_type), "Reference to some type")
   """
-  def mref_parm(name, rest), do: parm(name, mref(name |> Kojin.Id.cap_camel()), rest)
+  def mref_parm(name, rest), do: parm(name, mref(Kojin.Id.cap_camel(name)), rest)
 
   defimpl String.Chars do
     def to_string(parm) do

@@ -187,7 +187,7 @@ defmodule Kojin.Pod.PodPackage do
       MapSet.union(
         acc,
         PodObject.all_ref_types(pod_object)
-        |> Enum.map(fn t -> {pod_package.id, t} end)
+        |> Enum.map(fn t -> t end)
         |> MapSet.new()
       )
     end)

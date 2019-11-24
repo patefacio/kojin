@@ -37,6 +37,7 @@ defmodule Kojin.Rust.Module do
     field(:modules, list(Module.t()), default: [])
     field(:file_name, String.t())
     field(:uses, Uses.t(), default: nil)
+    field(:type_aliases, list(TypeAlias.t()), default: [])
     field(:has_non_inline_submodules, boolean)
   end
 
@@ -65,7 +66,8 @@ defmodule Kojin.Rust.Module do
       impls: [],
       visibility: :private,
       modules: submodules,
-      uses: []
+      uses: [],
+      type_aliases: []
     ]
 
     opts = Kojin.check_args(defaults, opts)
@@ -84,6 +86,7 @@ defmodule Kojin.Rust.Module do
       file_name: "#{name}.rs",
       visibility: opts[:visibility],
       uses: Uses.uses(opts[:uses]),
+      type_aliases: opts[:type_aliases],
       has_non_inline_submodules: has_non_inline_submodules
     }
   end
@@ -113,6 +116,7 @@ defmodule Kojin.Rust.Module do
         ## Uses
         module.uses,
         announce_section("mod decls", join_content(Module.mod_decls(module))),
+        announce_section("type aliases", module.type_aliases, "\n"),
         announce_section("enums", module.enums),
         announce_section("functions", module.functions |> Enum.filter(fn f -> !f.is_test end)),
         announce_section("traits", module.traits),
