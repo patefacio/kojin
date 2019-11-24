@@ -92,7 +92,7 @@ defmodule Kojin.Pod.PodObject do
 
   ## Examples
 
-      iex> import Kojin.Pod.{PodObject, PodField, PodTypes, PodArray}
+      iex> import Kojin.Pod.{PodObject, PodField, PodArray}
       ...> all_types(pod_object(:x, "x", [ pod_field(:f, "f", array_of(:t))]))
       MapSet.new([Kojin.Pod.PodTypes.pod_type(:t)])
 

@@ -49,8 +49,8 @@ defmodule Kojin.Pod.PodPackageSet do
   end
 
   def find_item_id(%PodPackageSet{} = pod_package_set, id) when is_atom(id) do
-    Enum.find(pod_package_set.enums_map, fn {e_id, list} -> e_id == id end) ||
-      Enum.find(pod_package_set.objects_map, fn {o_id, list} -> o_id == id end)
+    Enum.find(pod_package_set.enums_map, fn {e_id, _list} -> e_id == id end) ||
+      Enum.find(pod_package_set.objects_map, fn {o_id, _list} -> o_id == id end)
   end
 
   def find_pod_package(%PodPackageSet{} = pod_package_set, package_id) when is_atom(package_id) do
