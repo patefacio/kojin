@@ -164,7 +164,7 @@ defmodule Kojin.Pod.PodPackage do
   end
 
   @doc """
-  Returns the set of all reference types within the package.
+  Returns the set of all types within the package.
   """
   def all_types(%PodPackage{} = pod_package) do
     pod_package.pod_objects

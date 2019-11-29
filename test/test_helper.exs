@@ -6,6 +6,10 @@ defmodule TestHelper do
   import Kojin.Utils
   alias String.Chars
 
+  #######################################################################################
+  # This allows tests to access module with sample data
+  # https://stackoverflow.com/questions/30652439/importing-test-code-in-elixir-unit-test
+  #######################################################################################
   Code.load_file("test/sample_data/pod_samples.ex")
 
   @doc "
