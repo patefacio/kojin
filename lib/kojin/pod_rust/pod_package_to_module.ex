@@ -50,7 +50,9 @@ defmodule Kojin.PodRust.PodPackageToModule do
         enum_type_name = Id.cap_camel(pe.id)
         enum_first_val_name = Id.cap_camel(List.first(pe.values).id)
         body = "#{enum_type_name}::#{enum_first_val_name}"
-        return_doc = "Returns the first value of type `#{enum_type_name}` -> `#{body}`"
+
+        return_doc =
+          "Returns the first value of type\n            `#{enum_type_name}` -> `#{body}`."
 
         SimpleEnum.enum(
           pe.id,

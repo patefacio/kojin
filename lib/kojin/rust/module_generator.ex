@@ -60,7 +60,13 @@ defmodule Kojin.Rust.ModuleGenerator do
 
         original_path = Path.join([crate_path, module_generate_spec.module_relative_path])
 
-        content = Module.content(module)
+        {original_content, content} =
+          if(File.exists?(original_path)) do
+            original_content = File.read!(original_path)
+            {original_content, Kojin.merge(Module.content(module), original_content)}
+          else
+            {nil, Module.content(module)}
+          end
 
         if(is_using_tmp) do
           target_path =
@@ -75,7 +81,7 @@ defmodule Kojin.Rust.ModuleGenerator do
           File.write!(target_path, content)
           {target_path, original_path}
         else
-          Kojin.check_write_file(original_path, content)
+          Kojin.check_write_file(original_path, content, original_content)
           nil
         end
 

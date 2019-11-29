@@ -1,6 +1,6 @@
 defmodule Kojin.PodRust.ToCrate do
   alias Kojin.Pod.{PodPackageSet, PodTypes}
-  alias Kojin.Rust.{CrateGenerator, TypeAlias}
+  alias Kojin.Rust.{CrateGenerator}
   import Kojin.PodRust.PodPackageToModule
 
   import Kojin.Rust.{Crate, Module}
@@ -16,12 +16,6 @@ defmodule Kojin.PodRust.ToCrate do
       crate_name,
       pod_package_set.doc,
       module(:top_module, "Top module",
-        type_aliases:
-          if(uses_date) do
-            [TypeAlias.type_alias(:date, "chrono::Date<chrono::Utc>")]
-          else
-            []
-          end,
         modules:
           Enum.map(pod_package_set.packages, fn pod_package ->
             to_module(pod_package_to_module(pod_package_set, pod_package))

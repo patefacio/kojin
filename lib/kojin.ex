@@ -101,11 +101,23 @@ defmodule Kojin do
     {file_path, final_content}
   end
 
-  @spec check_write_file(any, any) :: :none
-  def check_write_file(file_path, content) do
+  @doc """
+  Writes to `content` to `file_path` if `content` differes from
+  `previous_content`, which is read from `file_path` if
+  value is _nil_. Returns:
+
+  - :no_change if `content` is same as `previous_content`
+  - :wrote_new if `file_path` did not exist and was written
+  - :updated if `file_path` existed and updated `content` were written to it
+
+  """
+  @spec check_write_file(any, binary, binary | nil) :: :none
+  def check_write_file(file_path, content, previous_content \\ nil) do
     status =
       if File.exists?(file_path) do
-        if(File.read!(file_path) == content) do
+        previous_content = previous_content || File.read!(file_path)
+
+        if(previous_content == content) do
           :no_change
         else
           File.write!(file_path, content)
