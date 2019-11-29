@@ -5,7 +5,7 @@ defmodule Kojin.Rust.SimpleEnum do
   A `SimpleEnum` corresponds to a C++ style enum that simply enumerates a set of values.
   """
 
-  alias Kojin.Rust.SimpleEnum
+  alias Kojin.Rust.{SimpleEnum, TypeImpl}
   alias Kojin.Utils
   import Utils
 
@@ -18,10 +18,13 @@ defmodule Kojin.Rust.SimpleEnum do
   """
   typedstruct do
     field(:name, atom, enforce: true)
+    field(:type_name, binary, enforce: true)
     field(:doc, String.t())
     field(:values, list(), enforce: true)
     field(:derivables, list(atom), default: [])
     field(:visibility, atom, default: :private)
+    field(:impl, TypeImpl.t() | nil, default: nil)
+    field(:trait_impls, list(TraitImpl.t()), default: [])
   end
 
   validates(:visibility, inclusion: Kojin.Rust.allowed_visibilities())
@@ -43,16 +46,30 @@ defmodule Kojin.Rust.SimpleEnum do
   @spec enum(name :: bitstring(), doc :: bitstring(), values :: list(atom), opts :: list()) ::
           SimpleEnum.t()
   def enum(name, doc, values, opts \\ []) do
-    defaults = [visibility: :private, derivables: []]
+    defaults = [visibility: :private, derivables: [], impl: nil, impl?: false, trait_impls: []]
+
+    impl =
+      if(opts[:impl]) do
+        TypeImpl.type_impl(opts[:impl])
+      else
+        if(Keyword.get(opts, :impl?)) do
+          TypeImpl.type_impl(name)
+        else
+          nil
+        end
+      end
 
     opts = Kojin.check_args(defaults, opts)
 
     result = %SimpleEnum{
       name: name,
+      type_name: Kojin.Id.cap_camel(name),
       doc: doc,
       values: values,
       derivables: opts[:derivables],
-      visibility: opts[:visibility]
+      visibility: opts[:visibility],
+      impl: impl,
+      trait_impls: opts[:trait_impls]
     }
 
     if(!Vex.valid?(result)) do
@@ -87,7 +104,7 @@ defmodule Kojin.Rust.SimpleEnum do
 
     Kojin.Utils.join_content([
       derivables_decl,
-      "#{visibility_decl}enum #{cap_camel(enum.name)} {",
+      "#{visibility_decl}enum #{enum.type_name} {",
       indent_block(values),
       "}"
     ])
@@ -95,6 +112,8 @@ defmodule Kojin.Rust.SimpleEnum do
 
   defimpl String.Chars do
     def to_string(enum) do
+      import Kojin.Rust.Utils
+
       Kojin.Utils.join_content([
         triple_slash_comment(
           if String.length(enum.doc) > 0 do
@@ -103,7 +122,13 @@ defmodule Kojin.Rust.SimpleEnum do
             "TODO: document #{enum.name}"
           end
         ),
-        SimpleEnum.decl(enum)
+        SimpleEnum.decl(enum),
+        if(enum.impl) do
+          announce_section("enum impl", enum.impl)
+        end,
+        if(!Enum.empty?(enum.trait_impls)) do
+          announce_section("#{enum.type_name} trait impls", enum.trait_impls)
+        end
       ])
     end
   end

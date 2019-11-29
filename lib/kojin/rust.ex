@@ -42,7 +42,7 @@ defmodule Kojin.Rust do
   def allowed_derivables(), do: @allowed_derivables
 
   # Common derivables for generated structs
-  @common_derivables [
+  @struct_common_derivables [
     :clone,
     :debug,
     :default,
@@ -51,21 +51,46 @@ defmodule Kojin.Rust do
     :serialize
   ]
 
-  @doc """
-  List of common derivables.
+  # Common derivables for generated structs
+  @enum_common_derivables [
+    :clone,
+    :debug,
+    :deserialize,
+    :partial_eq,
+    :serialize
+  ]
 
-  This list of derivables is useful for generation of basic structs/enums
+  @doc """
+  List of common struct derivables.
+
+  This list of derivables is useful for generation of basic structs
   so they can be serialized, copied, compared, etc.
 
   Values:
 
   \n#{
-    @common_derivables
+    @struct_common_derivables
     |> Enum.map(fn d -> "  - `:#{d}`" end)
     |> Enum.join("\n")
   }
   """
-  def common_derivables(), do: @common_derivables
+  def struct_common_derivables(), do: @struct_common_derivables
+
+  @doc """
+  List of common enum derivables.
+
+  This list of derivables is useful for generation of basic enums
+  so they can be serialized, copied, compared, etc.
+
+  Values:
+
+  \n#{
+    @enum_common_derivables
+    |> Enum.map(fn d -> "  - `:#{d}`" end)
+    |> Enum.join("\n")
+  }
+  """
+  def enum_common_derivables(), do: @enum_common_derivables
 
   @doc ~s"""
   Returns true if supplied `derivables` are all valid.
@@ -146,12 +171,12 @@ defmodule Kojin.Rust do
 
       iex> Kojin.Rust.valid_name(:foo_bar)
       true
-      
+
       iex> Kojin.Rust.valid_name("FooBar")
       false
 
       iex> Kojin.Rust.valid_name("foo_bar")
-      true          
+      true
   """
   def valid_name(name) when is_atom(name) do
     Atom.to_string(name) |> valid_name

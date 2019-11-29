@@ -28,11 +28,15 @@ defmodule Kojin.PodRust.ToCrate do
           end)
       ),
       dependencies:
-        if(uses_date) do
-          [~s(chrono = { version = "0.4.10", features = ["serde"] })]
-        else
-          []
-        end
+        [
+          ~s(serde = "^1.0.103"),
+          ~s(serde_derive = "^1.0.103")
+        ] ++
+          if(uses_date) do
+            [~s(chrono = { version = "0.4.10", features = ["serde"] })]
+          else
+            []
+          end
     )
   end
 

@@ -38,15 +38,33 @@ defmodule Kojin.PodRust.PodPackageToModule do
   def pod_package_to_module(%PodPackageSet{} = pod_package_set, %PodPackage{} = pod_package) do
     alias Kojin.Id
 
+    default_fun =
+      Kojin.Rust.Fn.fun([:default, "Function to provide default value of type", [], "Self"])
+
+    default_trait =
+      Kojin.Rust.Trait.trait(:default, "Trait to provide default value", [default_fun])
+
     rs_enums =
       pod_package.pod_enums
       |> Enum.map(fn pe ->
+        enum_type_name = Id.cap_camel(pe.id)
+        enum_first_val_name = Id.cap_camel(List.first(pe.values).id)
+        body = "#{enum_type_name}::#{enum_first_val_name}"
+        return_doc = "Returns the first value of type `#{enum_type_name}` -> `#{body}`"
+
         SimpleEnum.enum(
           pe.id,
           pe.doc,
           pe.values
           |> Enum.map(fn ev -> {ev.id, ev.doc} end),
-          visibility: :pub
+          visibility: :pub,
+          derivables: Kojin.Rust.enum_common_derivables(),
+          trait_impls: [
+            Kojin.Rust.TraitImpl.trait_impl(
+              %{default_trait | functions: [%{default_fun | body: body, return_doc: return_doc}]},
+              enum_type_name
+            )
+          ]
         )
       end)
 
@@ -61,7 +79,8 @@ defmodule Kojin.PodRust.PodPackageToModule do
             rust_type = pod_type_to_rust_type(f.type)
             Field.field(f.id, rust_type, f.doc, visibility: :pub)
           end),
-          visibility: :pub
+          visibility: :pub,
+          derivables: Kojin.Rust.struct_common_derivables()
         )
       end)
 

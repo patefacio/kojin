@@ -26,8 +26,6 @@ defmodule Kojin.Rust.CargoToml do
 
     [dependencies]
     itertools = "^0.7.6"
-    serde = "^1.0.27"
-    serde_derive = "^1.0.27"
     #{Enum.join(cargo_toml.dependencies, "\n")}
     #{Kojin.CodeBlock.script_block("dependencies")}
     """

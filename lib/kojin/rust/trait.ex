@@ -39,7 +39,7 @@ defmodule Kojin.Rust.Trait do
 
       iex> import Kojin.Rust.Trait
       ...> (%Kojin.Rust.Trait{ name: "ThirdPartyTrait<T>"} = trait("ThirdPartyTrait<T>")) && :good
-      :good    
+      :good
   """
 
   def trait(name, doc \\ nil, functions \\ [], opts \\ [])
@@ -58,7 +58,7 @@ defmodule Kojin.Rust.Trait do
       name: name,
       id: id,
       doc: doc || "TODO: Document trait #{name}",
-      functions: functions,
+      functions: Enum.map(functions, fn fun -> Kojin.Rust.Fn.fun(fun) end),
       visibility: opts[:visibility]
     }
   end

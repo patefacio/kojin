@@ -60,7 +60,7 @@ defmodule Kojin.Rust.Struct do
       if(opts[:impl]) do
         TypeImpl.type_impl(opts[:impl])
       else
-        if(!opts[:impl] && Keyword.get(opts, :impl?)) do
+        if(Keyword.get(opts, :impl?)) do
           TypeImpl.type_impl(name)
         else
           nil

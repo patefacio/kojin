@@ -15,7 +15,7 @@ defmodule Kojin.Rust.Module do
   }
 
   import Kojin
-  import Kojin.{Id, Utils, Rust, Rust.Utils}
+  import Kojin.{CodeBlock, Id, Utils, Rust, Rust.Utils}
   use TypedStruct
   use Vex.Struct
   require Logger
@@ -39,6 +39,7 @@ defmodule Kojin.Rust.Module do
     field(:uses, Uses.t(), default: nil)
     field(:type_aliases, list(TypeAlias.t()), default: [])
     field(:has_non_inline_submodules, boolean)
+    field(:code_block, Kojin.CodeBlock.t(), default: nil)
   end
 
   def module(name, doc, opts \\ []) do
@@ -67,7 +68,8 @@ defmodule Kojin.Rust.Module do
       visibility: :private,
       modules: submodules,
       uses: [],
-      type_aliases: []
+      type_aliases: [],
+      code_block: code_block("mod-def #{snake(name)}")
     ]
 
     opts = Kojin.check_args(defaults, opts)
@@ -87,7 +89,8 @@ defmodule Kojin.Rust.Module do
       visibility: opts[:visibility],
       uses: Uses.uses(opts[:uses]),
       type_aliases: opts[:type_aliases],
-      has_non_inline_submodules: has_non_inline_submodules
+      has_non_inline_submodules: has_non_inline_submodules,
+      code_block: opts[:code_block]
     }
   end
 
@@ -112,6 +115,11 @@ defmodule Kojin.Rust.Module do
       [
         ## Include comments
         Kojin.Rust.doc_comment(module.doc),
+
+        ## TODO: Clean this up
+        announce_section("imports", """
+        // TODO
+        """),
 
         ## Uses
         module.uses,
@@ -138,7 +146,8 @@ defmodule Kojin.Rust.Module do
             indent_block(content(module)) |> String.trim_trailing(),
             "}"
           ])
-        end)
+        end),
+        text(module.code_block)
       ],
       "\n\n"
     )
