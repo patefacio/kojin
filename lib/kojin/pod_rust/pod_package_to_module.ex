@@ -84,18 +84,18 @@ defmodule Kojin.PodRust.PodPackageToModule do
         end
       end)
 
-    date_type = PodTypes.pod_type(:date)
-    uses_date = PodPackage.all_types(pod_package) |> Enum.any?(fn {_pkg, t} -> t == date_type end)
-
     of_interest =
       split_refs
       |> Enum.reject(&is_nil/1)
 
-    # chrono::Date<chrono::Utc>
     type_aliases =
       of_interest
       |> Enum.filter(fn {type, _value} -> type == :missing end)
       |> Enum.map(fn {_type, value} -> TypeAlias.type_alias(value, "i32") end)
+      |> Enum.sort()
+
+    date_type = PodTypes.pod_type(:date)
+    uses_date = Enum.any?(PodPackage.all_types(pod_package), fn {_pkg, t} -> t == date_type end)
 
     rs_uses =
       if(uses_date) do

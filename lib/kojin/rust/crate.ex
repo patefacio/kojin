@@ -10,6 +10,7 @@ defmodule Kojin.Rust.CargoToml do
     field(:authors, list(String.t()), default: [])
     field(:homepage, String.t(), default: nil)
     field(:license, String.t(), default: "MIT")
+    field(:dependencies, String.t(), default: [])
   end
 
   @spec cargo_toml_content(Kojin.Rust.CargoToml.t()) :: binary
@@ -27,6 +28,7 @@ defmodule Kojin.Rust.CargoToml do
     itertools = "^0.7.6"
     serde = "^1.0.27"
     serde_derive = "^1.0.27"
+    #{Enum.join(cargo_toml.dependencies, "\n")}
     #{Kojin.CodeBlock.script_block("dependencies")}
     """
   end
@@ -60,7 +62,8 @@ defmodule Kojin.Rust.Crate do
       authors: [],
       homepage: nil,
       license: "MIT",
-      binaries: []
+      binaries: [],
+      dependencies: []
     ]
 
     opts =
@@ -80,7 +83,8 @@ defmodule Kojin.Rust.Crate do
         version: opts[:version],
         authors: opts[:authors],
         homepage: opts[:homepage],
-        license: opts[:license]
+        license: opts[:license],
+        dependencies: opts[:dependencies]
       }
     }
   end
