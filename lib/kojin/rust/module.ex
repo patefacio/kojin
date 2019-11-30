@@ -40,6 +40,7 @@ defmodule Kojin.Rust.Module do
     field(:type_aliases, list(TypeAlias.t()), default: [])
     field(:has_non_inline_submodules, boolean)
     field(:code_block, Kojin.CodeBlock.t(), default: nil)
+    field(:macro_uses, list(binary), default: [])
   end
 
   def module(name, doc, opts \\ []) do
@@ -69,6 +70,7 @@ defmodule Kojin.Rust.Module do
       modules: submodules,
       uses: [],
       type_aliases: [],
+      macro_uses: [],
       code_block: code_block("mod-def #{snake(name)}")
     ]
 
@@ -90,6 +92,7 @@ defmodule Kojin.Rust.Module do
       uses: Uses.uses(opts[:uses]),
       type_aliases: opts[:type_aliases],
       has_non_inline_submodules: has_non_inline_submodules,
+      macro_uses: opts[:macro_uses],
       code_block: opts[:code_block]
     }
   end
@@ -115,14 +118,13 @@ defmodule Kojin.Rust.Module do
       [
         ## Include comments
         Kojin.Rust.doc_comment(module.doc),
-
-        ## TODO: Clean this up
-        announce_section("imports", """
-        // TODO
-        """),
-
-        ## Uses
-        module.uses,
+        announce_section(
+          "macro-use imports",
+          join_content(
+            Enum.map(module.macro_uses, fn mu -> "#[macro_use]\nextern crate #{mu};" end)
+          )
+        ),
+        announce_section("module uses", join_content(module.uses)),
         announce_section("mod decls", join_content(Module.mod_decls(module))),
         announce_section("type aliases", module.type_aliases, "\n"),
         announce_section("enums", module.enums),
