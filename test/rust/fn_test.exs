@@ -127,7 +127,7 @@ defmodule FnTest do
           [:d, :i32]
         ],
         generic: [
-          [:T1, [:T3, bounds: [:a, :b, "Infinite", "Collapsible", "Responsible"]]],
+          type_parms: [:T1, [:T3, bounds: [:a, :b, "Infinite", "Collapsible", "Responsible"]]],
           lifetimes: [:a, :b]
         ],
         return: {:i32, "Foo"},
@@ -143,7 +143,7 @@ defmodule FnTest do
     ///   * `d` - TODO: Comment d
     ///   * _return_ - Foo
     #[inline]
-    fn<'a, 'b, T1, T3> do_it(a: & 'a A, mut b: & 'b mut B, c: C, d: i32) -> i32
+    fn do_it<'a, 'b, T1, T3>(a: & 'a A, mut b: & 'b mut B, c: C, d: i32) -> i32
     where
     T3:   'a + 'b + Infinite + Collapsible + Responsible {
       // α <fn do_it>

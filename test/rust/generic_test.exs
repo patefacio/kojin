@@ -17,21 +17,25 @@ defmodule GenericTest do
   end
 
   test "generic no lifetimes" do
-    assert dark_matter(code(generic([:T1, [:T2, default_type: :i64]]))) ==
+    assert dark_matter(code(generic(type_parms: [:T1, [:T2, default_type: :i64]]))) ==
              dark_matter("<T1, T2 = i64>")
   end
 
   test "generic with lifetimes" do
-    assert dark_matter(code(generic([:T1, :T2, :t3], lifetimes: [:a, :b]))) ==
+    assert dark_matter(code(generic(type_parms: [:T1, :T2, :t3], lifetimes: [:a, :b]))) ==
              dark_matter("<'a, 'b, T1, T2, T3>")
 
-    assert dark_matter(code(generic([:T1, [:T2, default_type: :i64]], lifetimes: [:a, :b]))) ==
+    assert dark_matter(
+             code(generic(type_parms: [:T1, [:T2, default_type: :i64]], lifetimes: [:a, :b]))
+           ) ==
              dark_matter("<'a, 'b, T1, T2 = i64>")
   end
 
   test "generic with lifetimes and simple type" do
     assert dark_matter(
-             Generic.code(Generic.generic([:T1, [:T2, default_type: :i64]], lifetimes: [:a, :b]))
+             Generic.code(
+               Generic.generic(type_parms: [:T1, [:T2, default_type: :i64]], lifetimes: [:a, :b])
+             )
            ) ==
              dark_matter("<'a, 'b, T1, T2 = i64>")
   end

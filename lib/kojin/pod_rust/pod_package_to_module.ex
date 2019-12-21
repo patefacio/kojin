@@ -78,7 +78,13 @@ defmodule Kojin.PodRust.PodPackageToModule do
           po.doc,
           po.fields
           |> Enum.map(fn f ->
-            rust_type = pod_type_to_rust_type(f.type)
+            rust_type =
+              if(f.optional?) do
+                "Option<#{pod_type_to_rust_type(f.type)}>"
+              else
+                pod_type_to_rust_type(f.type)
+              end
+
             Field.field(f.id, rust_type, f.doc, visibility: :pub)
           end),
           visibility: :pub,
@@ -89,19 +95,24 @@ defmodule Kojin.PodRust.PodPackageToModule do
     split_refs =
       PodPackage.all_ref_types(pod_package)
       |> Enum.map(fn type ->
-        found = PodPackageSet.find_item_id(pod_package_set, type.type_id)
+        type_id = type.type_id
+        found = PodPackageSet.find_item_id(pod_package_set, type_id)
 
         if(found != nil) do
           {_item_id, [{package_id, _item} | _rest]} =
-            PodPackageSet.find_item_id(pod_package_set, type.type_id)
+            PodPackageSet.find_item_id(pod_package_set, type_id)
 
           if(package_id == pod_package.id) do
             nil
           else
-            {:use, "#{package_id}::#{Id.cap_camel(type.type_id)}"}
+            {:use, "#{package_id}::#{Id.cap_camel(type_id)}"}
           end
         else
-          {:missing, Id.cap_camel(type.type_id)}
+          if(Enum.member?(pod_package_set.predefined_types, type_id)) do
+            {:use, "::#{Id.cap_camel(type_id)}"}
+          else
+            {:missing, Id.cap_camel(type_id)}
+          end
         end
       end)
 

@@ -15,6 +15,7 @@ defmodule Kojin.Pod.PodObject do
     field(:id, atom, enforce: true)
     field(:doc, String.t())
     field(:fields, list(PodField.t()), default: [])
+    field(:properties, any, default: [])
   end
 
   @doc """
@@ -77,11 +78,20 @@ defmodule Kojin.Pod.PodObject do
       ...> } = point) && true
       true
   """
-  def pod_object(id, doc, fields) when is_atom(id) and is_binary(doc) do
+  def pod_object(id, doc, fields, opts \\ []) when is_atom(id) and is_binary(doc) do
+    opts =
+      Kojin.check_args(
+        [
+          properties: []
+        ],
+        opts
+      )
+
     %PodObject{
       id: id,
       doc: doc,
-      fields: fields |> Enum.map(fn field -> PodField.pod_field(field) end)
+      fields: fields |> Enum.map(fn field -> PodField.pod_field(field) end),
+      properties: opts[:properties]
     }
   end
 

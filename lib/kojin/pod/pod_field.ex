@@ -73,6 +73,8 @@ defmodule Kojin.Pod.PodField do
 
   def pod_field([id, doc, type]), do: pod_field(id, doc, type)
 
+  def pod_field([id, doc, type, opts]), do: pod_field(id, doc, Keyword.merge(opts, type: type))
+
   def pod_field([id, doc]), do: pod_field(id, doc)
 
   @doc """

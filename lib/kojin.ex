@@ -143,12 +143,13 @@ defmodule Kojin do
       iex> Kojin.require_snake(:foo_bar)
       nil
   """
-  def require_snake(name) when is_atom(name) do
-    if !(Atom.to_string(name)
-         |> Kojin.Id.is_snake()) do
+  def require_snake(name) when is_binary(name) do
+    if !Kojin.Id.is_snake(name) do
       raise ArgumentError, "Name must be snake: `#{name}`"
     end
   end
+
+  def require_snake(name) when is_atom(name), do: require_snake(Atom.to_string(name))
 
   @spec check_args(keyword, keyword) :: keyword
   def check_args(defaults, passed) do

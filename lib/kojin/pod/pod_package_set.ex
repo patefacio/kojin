@@ -20,13 +20,17 @@ defmodule Kojin.Pod.PodPackageSet do
     field(:enums_map, %{atom => list(PodEnum.t())})
     field(:objects, list(PodObject.t()))
     field(:objects_map, %{atom => list(PodObject.t())})
+    field(:predefined_types, list(atom), default: [])
   end
 
   @doc """
   Creates a collection of related packages which may refer to
   types with `dot notation` paths.
   """
-  def pod_package_set(id, doc, packages) when is_list(packages) do
+  def pod_package_set(id, doc, packages, opts \\ []) when is_list(packages) do
+    defaults = [predefined_types: []]
+    opts = Kojin.check_args(defaults, opts)
+
     enums =
       packages
       |> Enum.map(fn package -> Enum.map(package.pod_enums, fn e -> {package.id, e} end) end)
@@ -44,7 +48,8 @@ defmodule Kojin.Pod.PodPackageSet do
       enums: enums,
       enums_map: Enum.group_by(enums, fn {_pkg, e} -> e.id end),
       objects: objects,
-      objects_map: Enum.group_by(objects, fn {_pkg, o} -> o.id end)
+      objects_map: Enum.group_by(objects, fn {_pkg, o} -> o.id end),
+      predefined_types: opts[:predefined_types]
     }
   end
 
