@@ -58,25 +58,18 @@ defmodule Kojin.Rust.CrateGenerator do
     toml_content = cargo_toml_content(crate.cargo_toml)
     delims = Kojin.CodeBlock.script_delimiters()
 
+    Kojin.merge_generated_with_file(
+      toml_content,
+      toml_path,
+      delims
+    )
+
     written_toml =
       if is_using_tmp do
         tmp_toml_path = Path.join([tmp_path, "Cargo.toml"])
-
-        Kojin.merge_generated_with_file(
-          toml_content,
-          tmp_toml_path,
-          delims,
-          announce: false
-        )
-
+        File.copy!(toml_path, tmp_toml_path)
         [{tmp_toml_path, toml_path}]
       else
-        Kojin.merge_generated_with_file(
-          toml_content,
-          toml_path,
-          delims
-        )
-
         []
       end
 

@@ -4,9 +4,8 @@ defmodule Kojin.Rust.Trait do
   """
 
   alias Kojin.Rust.{Fn, Trait, ToCode}
-  import Kojin.{Id, Utils}
+  import Kojin.{Id, Utils, Rust.Utils}
   use TypedStruct
-  use Vex.Struct
 
   @typedoc """
   A rust _trait_.
@@ -17,6 +16,7 @@ defmodule Kojin.Rust.Trait do
     field(:doc, String.t())
     field(:functions, list(Fn.t()), default: [])
     field(:visibility, atom, default: :private)
+    field(:associated_types, list(), default: [])
   end
 
   @doc """
@@ -40,6 +40,31 @@ defmodule Kojin.Rust.Trait do
       iex> import Kojin.Rust.Trait
       ...> (%Kojin.Rust.Trait{ name: "ThirdPartyTrait<T>"} = trait("ThirdPartyTrait<T>")) && :good
       :good
+
+
+      iex> import Kojin.Rust.Trait
+      ...> import Kojin
+      ...> trait(:trait_with_assoc_type, "A trait with an associated type", [],
+      ...>     associated_types: [[:t, "Assoc Type"]])
+      ...> |> String.Chars.to_string()
+      ...> |> dark_matter()
+      import Kojin
+      ~S[
+      ///  A trait with an associated type
+      trait TraitWithAssocType {
+          ////////////////////////////////////////////////////////////////////////////////////
+          // --- associated types ---
+          ////////////////////////////////////////////////////////////////////////////////////
+          /// Assoc Type
+          type T;
+      }
+      ]
+      |> Kojin.dark_matter()
+
+      iex> import Kojin.Rust.Trait
+      ...> (%Kojin.Rust.Trait{ name: "ThirdPartyTrait<T>"} = trait("ThirdPartyTrait<T>")) && :good
+      :good
+
   """
 
   def trait(name, doc \\ nil, functions \\ [], opts \\ [])
@@ -51,7 +76,7 @@ defmodule Kojin.Rust.Trait do
     do: _trait(name, cap_camel(name), doc, functions, opts)
 
   defp _trait(id, name, doc, functions, opts) do
-    defaults = [visibility: :private]
+    defaults = [visibility: :private, associated_types: []]
     opts = Kojin.check_args(defaults, opts)
 
     %Trait{
@@ -59,6 +84,10 @@ defmodule Kojin.Rust.Trait do
       id: id,
       doc: doc || "TODO: Document trait #{name}",
       functions: Enum.map(functions, fn fun -> Kojin.Rust.Fn.fun(fun) end),
+      associated_types:
+        Enum.map(opts[:associated_types], fn at ->
+          Kojin.Rust.AssociatedType.associated_type(at)
+        end),
       visibility: opts[:visibility]
     }
   end
@@ -72,9 +101,16 @@ defmodule Kojin.Rust.Trait do
     [
       triple_slash_comment(trait.doc),
       "#{visibility}trait #{trait_name(trait)} {",
+      announce_section("associated types", trait.associated_types),
       trait.functions
-      |> Enum.map(fn fun -> "#{Fn.commented_signature(fun)};" end)
-      |> Enum.join("\n")
+      |> Enum.map(fn fun ->
+        if(fun.body) do
+          "#{fun}"
+        else
+          "#{Fn.commented_signature(fun)};"
+        end
+      end)
+      |> Enum.join("\n\n")
       |> indent_block,
       "}"
     ]

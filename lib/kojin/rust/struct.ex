@@ -116,7 +116,7 @@ defmodule Kojin.Rust.Struct do
     visibility = Kojin.Rust.visibility_decl(struct.visibility)
     derivables_decl = Kojin.Rust.derivables_decl(struct.derivables)
 
-    {generic, _bounds_decl} =
+    {generic, bounds_decl} =
       if(struct.generic) do
         {Generic.code(struct.generic), Generic.bounds_decl(struct.generic)}
       else
@@ -128,7 +128,7 @@ defmodule Kojin.Rust.Struct do
         join_content([
           String.trim(triple_slash_comment(struct.doc)),
           derivables_decl,
-          "#{visibility}struct #{cap_camel(struct.name)}#{generic} {",
+          "#{visibility}struct #{cap_camel(struct.name)}#{generic}#{bounds_decl} {",
           indent_block(
             struct.fields
             |> Enum.map(&to_string/1)

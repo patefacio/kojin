@@ -104,7 +104,7 @@ defmodule Kojin.Rust.Module do
     |> List.flatten()
   end
 
-  def mod_decls(module) do
+  def mod_decls(%Module{} = module) do
     module.modules
     |> Enum.filter(fn module -> module.type != :inline end)
     |> Enum.map(fn module ->
@@ -113,7 +113,7 @@ defmodule Kojin.Rust.Module do
     end)
   end
 
-  def content(module) do
+  def content(%Module{} = module) do
     join_content(
       [
         ## Include comments
@@ -155,7 +155,7 @@ defmodule Kojin.Rust.Module do
     )
   end
 
-  def inline_children(module) do
+  def inline_children(%Module{} = module) do
     module.modules
     |> Enum.reduce(%{}, fn module, acc ->
       Map.put(acc, module.name, {module.type, inline_children(module)})

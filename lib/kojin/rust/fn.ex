@@ -503,7 +503,7 @@ defmodule Kojin.Rust.Fn do
         {"", ""}
       end
 
-    "#{inline}#{visibility}fn#{generic} #{snake(fun.name)}(#{parms})#{rt}#{bounds_decl}"
+    "#{inline}#{visibility}fn #{snake(fun.name)}#{generic}(#{parms})#{rt}#{bounds_decl}"
   end
 
   @doc ~s"""

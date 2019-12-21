@@ -12,19 +12,20 @@ defmodule Kojin.Rust.TypeParm do
   A type parm for a generic
   """
   typedstruct enforce: true do
-    field(:name, binary())
     field(:id, atom)
     field(:default_type, Type.t())
     field(:bounds, Bounds.t())
+    field(:name, binary())
   end
 
   def type_parm(%TypeParm{} = type_parm), do: type_parm
 
-  def type_parm([name | opts]), do: type_parm(name, opts)
+  def type_parm([id | opts]) do
+    type_parm(id, opts)
+  end
 
-  def type_parm(name, opts \\ [])
+  def type_parm(id, opts \\ [])
 
-  # TODO: Maybe remove this flexibility
   def type_parm(id, opts) when is_atom(id) do
     Logger.debug("type parm name -> #{id} opts -> #{inspect(opts)}")
 
@@ -84,18 +85,16 @@ defmodule Kojin.Rust.Generic do
 
   def generic(%Generic{} = generic), do: generic
 
-  def generic([type_parms | opts]) when is_list(type_parms), do: generic(type_parms, opts)
-
   @doc """
   Creates generic when given type parms plus additional options
   """
-  def generic(type_parms, opts \\ []) when is_list(type_parms) do
-    Logger.debug("Generic Opts #{inspect(type_parms)} -> #{inspect(opts)}")
-    opts = check_args([lifetimes: []], opts)
+  def generic(opts) when is_list(opts) do
+    Logger.debug("Generic Opts -> #{inspect(opts)}")
+    opts = check_args([type_parms: [], lifetimes: []], opts)
 
     %Generic{
       type_parms:
-        type_parms
+        opts[:type_parms]
         |> Enum.map(fn tp ->
           TypeParm.type_parm(tp)
         end),
