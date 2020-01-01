@@ -88,7 +88,15 @@ defmodule Kojin.PodRust.PodPackageToModule do
             Field.field(f.id, rust_type, f.doc, visibility: :pub)
           end),
           visibility: :pub,
-          derivables: Kojin.Rust.struct_common_derivables()
+          derivables:
+            (Kojin.Rust.struct_common_derivables() ++
+               get_in(po, [
+                 Access.key(:properties, %{}),
+                 Access.key(:rust, %{}),
+                 Access.key(:derivables, [])
+               ]))
+            |> MapSet.new()
+            |> Enum.to_list()
         )
       end)
 

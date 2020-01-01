@@ -15,7 +15,7 @@ defmodule Kojin.Pod.PodObject do
     field(:id, atom, enforce: true)
     field(:doc, String.t())
     field(:fields, list(PodField.t()), default: [])
-    field(:properties, any, default: [])
+    field(:properties, map(), default: %{})
   end
 
   @doc """
@@ -82,7 +82,7 @@ defmodule Kojin.Pod.PodObject do
     opts =
       Kojin.check_args(
         [
-          properties: []
+          properties: %{}
         ],
         opts
       )
