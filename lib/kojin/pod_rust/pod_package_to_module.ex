@@ -66,7 +66,8 @@ defmodule Kojin.PodRust.PodPackageToModule do
               %{default_trait | functions: [%{default_fun | body: body, return_doc: return_doc}]},
               enum_type_name
             )
-          ]
+          ],
+          has_snake_conversions: get_in(pe.properties, [:rust, :has_snake_conversions])
         )
       end)
 
@@ -90,11 +91,14 @@ defmodule Kojin.PodRust.PodPackageToModule do
           visibility: :pub,
           derivables:
             (Kojin.Rust.struct_common_derivables() ++
-               get_in(po, [
-                 Access.key(:properties, %{}),
-                 Access.key(:rust, %{}),
-                 Access.key(:derivables, [])
-               ]))
+               get_in(
+                 po,
+                 [
+                   Access.key(:properties, %{}),
+                   Access.key(:rust, %{}),
+                   Access.key(:derivables, [])
+                 ]
+               ))
             |> MapSet.new()
             |> Enum.to_list()
         )
@@ -190,7 +194,9 @@ defmodule Kojin.PodRust.PodPackageToModule do
   def to_module(%PodPackageToModule{} = pod_package_to_module) do
     pod_package = pod_package_to_module.pod_package
 
-    Module.module(pod_package.id, pod_package.doc,
+    Module.module(
+      pod_package.id,
+      pod_package.doc,
       enums: pod_package_to_module.rs_enums,
       structs: pod_package_to_module.rs_structs,
       uses: pod_package_to_module.rs_uses,

@@ -6,6 +6,7 @@ defmodule Kojin.Rust.Module do
   alias Kojin.Rust.{
     TraitImpl,
     TypeImpl,
+    TypeAlias,
     SimpleEnum,
     Struct,
     Trait,
@@ -90,7 +91,8 @@ defmodule Kojin.Rust.Module do
       file_name: "#{name}.rs",
       visibility: opts[:visibility],
       uses: Uses.uses(opts[:uses]),
-      type_aliases: opts[:type_aliases],
+      type_aliases:
+        Enum.map(opts[:type_aliases], fn type_alias -> TypeAlias.type_alias(type_alias) end),
       has_non_inline_submodules: has_non_inline_submodules,
       macro_uses: opts[:macro_uses],
       code_block: opts[:code_block]
@@ -98,9 +100,13 @@ defmodule Kojin.Rust.Module do
   end
 
   def all_modules(%Module{} = module) do
-    Enum.reduce(module.modules, [], fn module, acc ->
-      [module | acc]
-    end)
+    Enum.reduce(
+      module.modules,
+      [],
+      fn module, acc ->
+        [module | acc]
+      end
+    )
     |> List.flatten()
   end
 
@@ -128,13 +134,18 @@ defmodule Kojin.Rust.Module do
         announce_section("mod decls", join_content(Module.mod_decls(module))),
         announce_section("type aliases", module.type_aliases, "\n"),
         announce_section("enums", module.enums),
-        announce_section("functions", module.functions |> Enum.filter(fn f -> !f.is_test end)),
+        announce_section(
+          "functions",
+          module.functions
+          |> Enum.filter(fn f -> !f.is_test end)
+        ),
         announce_section("traits", module.traits),
         announce_section("structs", module.structs),
         announce_section("impls", module.impls),
         announce_section(
           "cfg(test) functions",
-          module.functions |> Enum.filter(fn f -> f.is_test end)
+          module.functions
+          |> Enum.filter(fn f -> f.is_test end)
         ),
 
         ## Include Nested Modules
@@ -145,7 +156,8 @@ defmodule Kojin.Rust.Module do
 
           join_content([
             "#{visibility}mod #{snake(module.name)} {",
-            indent_block(content(module)) |> String.trim_trailing(),
+            indent_block(content(module))
+            |> String.trim_trailing(),
             "}"
           ])
         end),
@@ -157,8 +169,11 @@ defmodule Kojin.Rust.Module do
 
   def inline_children(%Module{} = module) do
     module.modules
-    |> Enum.reduce(%{}, fn module, acc ->
-      Map.put(acc, module.name, {module.type, inline_children(module)})
-    end)
+    |> Enum.reduce(
+      %{},
+      fn module, acc ->
+        Map.put(acc, module.name, {module.type, inline_children(module)})
+      end
+    )
   end
 end

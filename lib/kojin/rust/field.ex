@@ -22,7 +22,7 @@ defmodule Kojin.Rust.Field do
     field(:name, atom)
     field(:doc, String.t(), enforce: false)
     field(:type, Type.t())
-    field(:visibility, atom, default: :private)
+    field(:visibility, atom, default: :pub)
   end
 
   validates(:visibility, inclusion: Kojin.Rust.allowed_visibilities())
@@ -47,7 +47,7 @@ defmodule Kojin.Rust.Field do
   ## Examples
 
       iex> import Kojin.Rust.Field
-      ...> field(:age, :i32, "Age") |> String.Chars.to_string
+      ...> field(:age, :i32, "Age", visibility: :private) |> String.Chars.to_string
       ~s{
       ///  Age
       age: i32
@@ -66,7 +66,7 @@ defmodule Kojin.Rust.Field do
       when (is_binary(name) or is_atom(name)) and is_binary(doc) do
     alias Kojin.Rust.Type
 
-    defaults = [visibility: :private]
+    defaults = [visibility: :pub]
     opts = Kojin.check_args(defaults, opts)
 
     %Field{
@@ -83,7 +83,7 @@ defmodule Kojin.Rust.Field do
   ## Examples
 
       iex> import Kojin.Rust.Field
-      ...> field([:age, :i32, "Age"]) |> String.Chars.to_string
+      ...> field([:age, :i32, "Age", [visibility: :private]]) |> String.Chars.to_string
       ~s{
       ///  Age
       age: i32
@@ -110,14 +110,14 @@ defmodule Kojin.Rust.Field do
       ...> id_field(:bank_account, "The Bank Account") |> String.Chars.to_string
       ~s{
       ///  The Bank Account
-      bank_account: BankAccount
+      pub bank_account: BankAccount
       } |> String.trim   
     
       iex> import Kojin.Rust.Field
       ...> id_field([:bank_account, "The Bank Account"]) |> String.Chars.to_string
       ~s{
       ///  The Bank Account
-      bank_account: BankAccount
+      pub bank_account: BankAccount
       } |> String.trim   
   """
   def id_field(id, doc, opts \\ [])
@@ -158,7 +158,7 @@ defmodule Kojin.Rust.Field do
   ## Example
 
       iex> import Kojin.Rust.Field
-      ...> decl(field(:age, :i32, "Age of customer"))
+      ...> decl(field(:age, :i32, "Age of customer", visibility: :private))
       "age: i32"
 
   """

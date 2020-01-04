@@ -75,6 +75,7 @@ defmodule Kojin.Pod.PodEnum do
     field(:id, atom, enforce: true)
     field(:doc, String.t())
     field(:values, list(Kojin.Pod.EnumValue), default: [])
+    field(:properties, map(), default: %{})
   end
 
   @doc ~S"""
@@ -98,13 +99,23 @@ defmodule Kojin.Pod.PodEnum do
 
   """
   @spec pod_enum(atom, binary, any) :: Kojin.Pod.PodEnum.t()
-  def pod_enum(id, doc, values) when is_atom(id) and is_binary(doc) do
+  def pod_enum(id, doc, values, opts \\ [])
+      when is_atom(id) and is_binary(doc) and is_list(opts) do
     if !is_snake(id), do: raise("Enum id `#{id}` must be snake case.")
+
+    opts =
+      Kojin.check_args(
+        [
+          properties: %{}
+        ],
+        opts
+      )
 
     %Kojin.Pod.PodEnum{
       id: id,
       doc: doc,
-      values: Enum.map(values, fn ev -> Kojin.Pod.EnumValue.ev(ev) end)
+      values: Enum.map(values, fn ev -> Kojin.Pod.EnumValue.ev(ev) end),
+      properties: opts[:properties]
     }
   end
 end

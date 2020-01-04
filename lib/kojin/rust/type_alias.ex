@@ -13,12 +13,16 @@ defmodule Kojin.Rust.TypeAlias do
     field(:aliased, String.t())
   end
 
+  def type_alias(%TypeAlias{} = type_alias), do: type_alias
+
   def type_alias(name, aliased, _opts \\ []) do
     %TypeAlias{
       name: name,
       aliased: aliased
     }
   end
+
+  def type_alias([name, aliased]), do: type_alias(name, aliased)
 
   defimpl String.Chars do
     def to_string(type_alias),
