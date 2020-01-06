@@ -10,14 +10,16 @@ defmodule Kojin.Rust.TraitImpl do
   will be generated.
   """
   use TypedStruct
-  alias Kojin.Rust.{Trait, TraitImpl, Type, Generic}
-  import Kojin.Utils
+  alias Kojin.Rust.{Trait, TraitImpl, Type, Generic, Utils}
+  import Kojin.{Id, Utils}
 
   typedstruct enforce: true do
     field(:type, Type.t())
     field(:trait, Trait.t())
     field(:doc, String.t())
     field(:generic, Generic.t())
+    field(:bodies, map())
+    field(:associated_types, map())
   end
 
   @doc """
@@ -47,7 +49,7 @@ defmodule Kojin.Rust.TraitImpl do
 
   @spec trait_impl(Kojin.Rust.Trait.t(), Kojin.Rust.Type.t()) :: Kojin.Rust.TraitImpl.t()
   def trait_impl(%Trait{} = trait, %Type{} = type, doc, opts) do
-    defaults = [generic: nil]
+    defaults = [generic: nil, bodies: %{}, associated_types: %{}]
     opts = Kojin.check_args(defaults, opts)
 
     %TraitImpl{
@@ -59,17 +61,25 @@ defmodule Kojin.Rust.TraitImpl do
           Generic.generic(opts[:generic])
         else
           nil
-        end
+        end,
+      bodies: opts[:bodies],
+      associated_types: opts[:associated_types]
     }
   end
 
   def trait_impl(trait, type, doc, opts) when is_binary(trait),
-    do: trait_impl(Trait.trait(trait, "", []), type, doc, opts)
+      do: trait_impl(Trait.trait(trait, "", []), type, doc, opts)
 
   defimpl String.Chars do
     def to_string(%TraitImpl{} = trait_impl) do
       import Kojin.Utils
+
       trait = trait_impl.trait
+
+      functions = trait.functions
+                  |> Enum.filter(fn f -> !f.body end)
+                  |> Enum.map(fn f -> %{f | body: Map.get(trait_impl.bodies, f.name)} end)
+
       type = trait_impl.type
 
       {generic, bounds_decl} =
@@ -82,7 +92,16 @@ defmodule Kojin.Rust.TraitImpl do
       [
         if(trait_impl.doc, do: triple_slash_comment(trait_impl.doc)),
         "impl#{generic} #{trait.name} for #{type}#{bounds_decl} {",
-        indent_block(join_content(trait.functions)),
+        if(!Enum.empty?(trait_impl.associated_types)) do
+          Utils.announce_section(
+            "type aliases",
+            Map.keys(trait_impl.associated_types)
+            |> Enum.sort()
+            |> Enum.map(fn t -> "type #{cap_camel(t)} = #{Map.get(trait_impl.associated_types, t)};" end)
+            |> Enum.join("\n")
+          )
+        end,
+        indent_block(join_content(functions)),
         "}"
       ]
       |> Enum.reject(&is_nil/1)

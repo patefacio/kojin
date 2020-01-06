@@ -207,7 +207,6 @@ defmodule Kojin.Rust.Fn do
     field(:inline, boolean, default: false)
     field(:generic, Generic.t(), default: nil)
     field(:consts, Kojin.Rust.Const.t())
-    field(:code_block, Kojin.CodeBlock.t(), default: nil)
     field(:tag_prefix, String.t(), default: nil)
     field(:visibility, atom)
     field(:body, String.t())
@@ -299,10 +298,10 @@ defmodule Kojin.Rust.Fn do
   @spec fun(binary | atom, binary, list(Parm.t()), list) :: Fn.t()
 
   def fun(name, doc, parms, rest) when is_binary(name),
-    do: fun(String.to_atom(name), doc, parms, rest)
+      do: fun(String.to_atom(name), doc, parms, rest)
 
   def fun(name, doc, parms, return) when not is_list(return),
-    do: fun(name, doc, parms, return: return)
+      do: fun(name, doc, parms, return: return)
 
   def fun(name, doc, parms, opts) when is_list(opts) do
     defaults = [
@@ -313,7 +312,6 @@ defmodule Kojin.Rust.Fn do
       generic: nil,
       consts: [],
       tag_prefix: nil,
-      code_block: nil,
       body: nil,
       visibility: :private,
       attrs: [],
@@ -322,13 +320,6 @@ defmodule Kojin.Rust.Fn do
 
     opts = Kojin.check_args(defaults, opts)
     {return, return_doc} = return(opts[:return])
-
-    code_block =
-      if(opts[:body]) do
-        nil
-      else
-        CodeBlock.code_block("fn #{snake(name)}", tag_prefix: opts[:tag_prefix])
-      end
 
     return_doc =
       if(!return_doc) do
@@ -353,7 +344,6 @@ defmodule Kojin.Rust.Fn do
       inline: opts[:inline],
       generic: if(opts[:generic] != nil, do: Generic.generic(opts[:generic])),
       consts: opts[:consts],
-      code_block: code_block,
       tag_prefix: opts[:tag_prefix],
       visibility: opts[:visibility],
       body: opts[:body],
@@ -363,12 +353,12 @@ defmodule Kojin.Rust.Fn do
 
     if(!Vex.valid?(result)) do
       raise ArgumentError,
-        message: """
-        Invalid `fn`:
-        #{inspect(result, pretty: true)}
-        ------- Fn Validations ---
-        #{inspect(Vex.results(result), pretty: true)}
-        """
+            message: """
+            Invalid `fn`:
+            #{inspect(result, pretty: true)}
+            ------- Fn Validations ---
+            #{inspect(Vex.results(result), pretty: true)}
+            """
     end
 
     result
@@ -380,7 +370,7 @@ defmodule Kojin.Rust.Fn do
   @spec fun(binary | atom, binary, list(Parm.t()), binary | atom | Type.t(), binary) ::
           Kojin.Rust.Fn.t()
   def fun(name, doc, parms, return, return_doc),
-    do: fun(name, doc, parms, return: return, return_doc: return_doc)
+      do: fun(name, doc, parms, return: return, return_doc: return_doc)
 
   @doc ~s"""
   Return new `Kojin.Rust.Fn` with specified `tag_prefix`.
@@ -449,12 +439,13 @@ defmodule Kojin.Rust.Fn do
   """
   def code(fun) do
     [
-      fun.attrs |> Enum.map(fn attr -> Attr.external(attr) end),
+      fun.attrs
+      |> Enum.map(fn attr -> Attr.external(attr) end),
       "#{signature(fun)} {",
       if(fun.body) do
         indent_block(fun.body)
       else
-        indent_block(text(fun.code_block))
+        indent_block(text(CodeBlock.code_block("fn #{snake(fun.name)}", tag_prefix: fun.tag_prefix)))
       end
       |> String.trim_trailing(),
       "}"
@@ -567,7 +558,8 @@ defmodule Kojin.Rust.Fn do
     join_content(
       [
         if String.length(fun.doc) > 0 do
-          "#{fun.doc}" |> String.trim_trailing()
+          "#{fun.doc}"
+          |> String.trim_trailing()
         else
           "TODO: document #{fun.name}"
         end,
@@ -583,7 +575,7 @@ defmodule Kojin.Rust.Fn do
   extra option `[visibility: :pub]`
   """
   def pub_fun([name, doc, parms, return, return_doc]),
-    do: pub_fun(name, doc, parms, return, return_doc)
+      do: pub_fun(name, doc, parms, return, return_doc)
 
   def pub_fun([name, doc, parms, opts]) when is_list(opts), do: pub_fun(name, doc, parms, opts)
 
@@ -594,10 +586,10 @@ defmodule Kojin.Rust.Fn do
   @spec pub_fun(binary | atom, binary, list(Parm.t()), list) :: Fn.t()
 
   def pub_fun(name, doc, parms, rest) when is_binary(name),
-    do: pub_fun(String.to_atom(name), doc, parms, rest)
+      do: pub_fun(String.to_atom(name), doc, parms, rest)
 
   def pub_fun(name, doc, parms, return) when not is_list(return),
-    do: pub_fun(name, doc, parms, return: return)
+      do: pub_fun(name, doc, parms, return: return)
 
   def pub_fun(name, doc, parms, opts) when is_list(opts) do
     fun(name, doc, parms, Keyword.merge(opts, visibility: :pub))
@@ -606,7 +598,7 @@ defmodule Kojin.Rust.Fn do
   @spec pub_fun(binary | atom, binary, list(Parm.t()), binary | atom | Type.t(), binary) ::
           Kojin.Rust.Fn.t()
   def pub_fun(name, doc, parms, return, return_doc),
-    do: pub_fun(name, doc, parms, return: return, return_doc: return_doc)
+      do: pub_fun(name, doc, parms, return: return, return_doc: return_doc)
 
   defimpl(String.Chars, do: def(to_string(fun), do: join_content([Fn.doc(fun), Fn.code(fun)])))
 

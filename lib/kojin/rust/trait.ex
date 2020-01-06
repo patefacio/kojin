@@ -17,6 +17,7 @@ defmodule Kojin.Rust.Trait do
     field(:functions, list(Fn.t()), default: [])
     field(:visibility, atom, default: :private)
     field(:associated_types, list(), default: [])
+    field(:super_traits, list(Trait | binary | atom), default: [])
   end
 
   @doc """
@@ -70,13 +71,13 @@ defmodule Kojin.Rust.Trait do
   def trait(name, doc \\ nil, functions \\ [], opts \\ [])
 
   def trait(name, doc, functions, opts) when is_binary(name),
-    do: _trait(nil, name, doc, functions, opts)
+      do: _trait(nil, name, doc, functions, opts)
 
   def trait(name, doc, functions, opts) when is_atom(name),
-    do: _trait(name, cap_camel(name), doc, functions, opts)
+      do: _trait(name, cap_camel(name), doc, functions, opts)
 
   defp _trait(id, name, doc, functions, opts) do
-    defaults = [visibility: :private, associated_types: []]
+    defaults = [visibility: :private, associated_types: [], super_traits: []]
     opts = Kojin.check_args(defaults, opts)
 
     %Trait{
@@ -85,31 +86,55 @@ defmodule Kojin.Rust.Trait do
       doc: doc || "TODO: Document trait #{name}",
       functions: Enum.map(functions, fn fun -> Kojin.Rust.Fn.fun(fun) end),
       associated_types:
-        Enum.map(opts[:associated_types], fn at ->
-          Kojin.Rust.AssociatedType.associated_type(at)
-        end),
+        Enum.map(
+          opts[:associated_types],
+          fn at ->
+            Kojin.Rust.AssociatedType.associated_type(at)
+          end
+        ),
+      super_traits: opts[:super_traits],
       visibility: opts[:visibility]
     }
   end
 
-  def trait_name(trait), do: trait.name |> cap_camel
+  def pub_trait(name, doc \\ nil, functions \\ [], opts \\ []) do
+    trait(name, doc, functions, Keyword.merge(opts, visibility: :pub))
+  end
+
+  def trait_name(trait),
+      do: trait.name
+          |> cap_camel
+
+  def super_trait(t) when is_binary(t), do: t
+  def super_trait(%Trait{} = t) when is_binary(t), do: t.name
+  def super_trait(t) when is_atom(t), do: cap_camel(t)
 
   @spec code(Trait.t()) :: binary
   def code(%Trait{} = trait) do
     visibility = Kojin.Rust.visibility_decl(trait.visibility)
 
+    super_traits = if(!Enum.empty?(trait.super_traits)) do
+      ": " <> (trait.super_traits
+              |> Enum.map(fn st -> super_trait(st) end)
+              |> Enum.join(" + "))
+    else
+      ""
+    end
+
     [
       triple_slash_comment(trait.doc),
-      "#{visibility}trait #{trait_name(trait)} {",
+      "#{visibility}trait #{trait_name(trait)} #{super_traits}{",
       announce_section("associated types", trait.associated_types),
       trait.functions
-      |> Enum.map(fn fun ->
-        if(fun.body) do
-          "#{fun}"
-        else
-          "#{Fn.commented_signature(fun)};"
-        end
-      end)
+      |> Enum.map(
+           fn fun ->
+             if(fun.body) do
+               "#{fun}"
+             else
+               "#{Fn.commented_signature(fun)};"
+             end
+           end
+         )
       |> Enum.join("\n\n")
       |> indent_block,
       "}"

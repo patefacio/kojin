@@ -136,6 +136,7 @@ defmodule Kojin.Rust.Generic do
         ],
         [
           generic.type_parms
+          |> Enum.filter(fn tp -> tp.id != :self end)
           |> Enum.map(fn tp -> TypeParm.code(tp) end)
         ]
       ]
