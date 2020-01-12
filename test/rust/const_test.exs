@@ -9,13 +9,13 @@ defmodule ConstTest do
     assert dark_matter(to_string(c)) ==
              dark_matter("""
              ///  This is a foo
-             const FOO i32 = 234;
+             const FOO: i32 = 234;
              """)
 
     assert dark_matter(to_string(const(:goo, "A goobar", "Result<T,E>", 22))) ==
              dark_matter("""
              /// A goobar
-             const GOO Result<T,E> = 22; 
+             const GOO: Result<T,E> = 22;
              """)
   end
 end

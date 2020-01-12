@@ -4,15 +4,16 @@ defmodule Kojin.Rust.Module do
   """
 
   alias Kojin.Rust.{
-    TraitImpl,
-    TypeImpl,
-    TypeAlias,
+    Const,
+    Fn,
+    Module,
     SimpleEnum,
     Struct,
     Trait,
-    Module,
-    Uses,
-    Fn
+    TraitImpl,
+    TypeAlias,
+    TypeImpl,
+    Uses
   }
 
   import Kojin
@@ -30,6 +31,7 @@ defmodule Kojin.Rust.Module do
     field(:visibility, atom, default: :private)
     field(:doc, String.t())
     field(:type, atom, default: :file)
+    field(:consts, list(Const.t()), default: [])
     field(:enums, list(SimpleEnum.t()), default: [])
     field(:traits, list(Trait.t()), default: [])
     field(:functions, list(Fn.t()), default: [])
@@ -62,6 +64,7 @@ defmodule Kojin.Rust.Module do
 
     defaults = [
       type: default_type,
+      consts: [],
       enums: [],
       traits: [],
       functions: [],
@@ -82,6 +85,7 @@ defmodule Kojin.Rust.Module do
       type_name: cap_camel(name),
       doc: doc,
       type: opts[:type],
+      consts: opts[:consts],
       enums: opts[:enums],
       traits: opts[:traits],
       functions: opts[:functions],
@@ -133,6 +137,7 @@ defmodule Kojin.Rust.Module do
         announce_section("module uses", join_content(module.uses)),
         announce_section("mod decls", join_content(Module.mod_decls(module))),
         announce_section("type aliases", module.type_aliases, "\n"),
+        announce_section("constants", module.consts),
         announce_section("enums", module.enums),
         announce_section(
           "functions",

@@ -68,7 +68,7 @@ defmodule Kojin.Rust.TraitImpl do
   end
 
   def trait_impl(trait, type, doc, opts) when is_binary(trait),
-      do: trait_impl(Trait.trait(trait, "", []), type, doc, opts)
+    do: trait_impl(Trait.trait(trait, "", []), type, doc, opts)
 
   defimpl String.Chars do
     def to_string(%TraitImpl{} = trait_impl) do
@@ -76,9 +76,10 @@ defmodule Kojin.Rust.TraitImpl do
 
       trait = trait_impl.trait
 
-      functions = trait.functions
-                  |> Enum.filter(fn f -> !f.body end)
-                  |> Enum.map(fn f -> %{f | body: Map.get(trait_impl.bodies, f.name)} end)
+      functions =
+        trait.functions
+        |> Enum.filter(fn f -> !f.body end)
+        |> Enum.map(fn f -> %{f | body: Map.get(trait_impl.bodies, f.name)} end)
 
       type = trait_impl.type
 
@@ -97,7 +98,9 @@ defmodule Kojin.Rust.TraitImpl do
             "type aliases",
             Map.keys(trait_impl.associated_types)
             |> Enum.sort()
-            |> Enum.map(fn t -> "type #{cap_camel(t)} = #{Map.get(trait_impl.associated_types, t)};" end)
+            |> Enum.map(fn t ->
+              "type #{cap_camel(t)} = #{Map.get(trait_impl.associated_types, t)};"
+            end)
             |> Enum.join("\n")
           )
         end,

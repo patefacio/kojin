@@ -71,10 +71,10 @@ defmodule Kojin.Rust.Trait do
   def trait(name, doc \\ nil, functions \\ [], opts \\ [])
 
   def trait(name, doc, functions, opts) when is_binary(name),
-      do: _trait(nil, name, doc, functions, opts)
+    do: _trait(nil, name, doc, functions, opts)
 
   def trait(name, doc, functions, opts) when is_atom(name),
-      do: _trait(name, cap_camel(name), doc, functions, opts)
+    do: _trait(name, cap_camel(name), doc, functions, opts)
 
   defp _trait(id, name, doc, functions, opts) do
     defaults = [visibility: :private, associated_types: [], super_traits: []]
@@ -102,8 +102,9 @@ defmodule Kojin.Rust.Trait do
   end
 
   def trait_name(trait),
-      do: trait.name
-          |> cap_camel
+    do:
+      trait.name
+      |> cap_camel
 
   def super_trait(t) when is_binary(t), do: t
   def super_trait(%Trait{} = t) when is_binary(t), do: t.name
@@ -113,28 +114,28 @@ defmodule Kojin.Rust.Trait do
   def code(%Trait{} = trait) do
     visibility = Kojin.Rust.visibility_decl(trait.visibility)
 
-    super_traits = if(!Enum.empty?(trait.super_traits)) do
-      ": " <> (trait.super_traits
-              |> Enum.map(fn st -> super_trait(st) end)
-              |> Enum.join(" + "))
-    else
-      ""
-    end
+    super_traits =
+      if(!Enum.empty?(trait.super_traits)) do
+        ": " <>
+          (trait.super_traits
+           |> Enum.map(fn st -> super_trait(st) end)
+           |> Enum.join(" + "))
+      else
+        ""
+      end
 
     [
       triple_slash_comment(trait.doc),
       "#{visibility}trait #{trait_name(trait)} #{super_traits}{",
       announce_section("associated types", trait.associated_types),
       trait.functions
-      |> Enum.map(
-           fn fun ->
-             if(fun.body) do
-               "#{fun}"
-             else
-               "#{Fn.commented_signature(fun)};"
-             end
-           end
-         )
+      |> Enum.map(fn fun ->
+        if(fun.body) do
+          "#{fun}"
+        else
+          "#{Fn.commented_signature(fun)};"
+        end
+      end)
       |> Enum.join("\n\n")
       |> indent_block,
       "}"

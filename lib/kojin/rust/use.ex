@@ -51,6 +51,10 @@ defmodule Kojin.Rust.Use do
     }
   end
 
+  def pub_use(args) when is_list(args), do: %Use{use_(args) | visibility: :pub}
+  def pub_use(%Rust.Use{} = use), do: %Use{use_(use) | visibility: :pub}
+  def pub_use(path_name, opts \\ []), do: %Use{use_(path_name, opts) | visibility: :pub}
+
   defimpl String.Chars do
     def to_string(use) do
       visibility = Rust.visibility_decl(use.visibility)

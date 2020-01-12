@@ -32,12 +32,17 @@ defmodule Kojin.Rust.Const do
 
   validates(:visibility, inclusion: Kojin.Rust.allowed_visibilities())
 
-  validates(:name,
-    by: [function: &Kojin.Rust.valid_name/1, message: "Const.name must be snake case"]
+  validates(
+    :name,
+    by: [
+      function: &Kojin.Rust.valid_name/1,
+      message: "Const.name must be snake case"
+    ]
   )
 
   def valid_name(name) do
-    Atom.to_string(name) |> Kojin.Id.is_snake()
+    Atom.to_string(name)
+    |> Kojin.Id.is_snake()
   end
 
   def const(name, doc, type, value, opts \\ []) do
@@ -68,6 +73,16 @@ defmodule Kojin.Rust.Const do
     result
   end
 
+  def const([name, doc, top, value]), do: const(name, doc, top, value)
+  def const([name, doc, top, value, opts]), do: const(name, doc, top, value, opts)
+  def const(%Const{} = const), do: const
+
+  def pub_const(%Const{} = const), do: %{const | visibility: :pub}
+  def pub_const(args) when is_list(args), do: %{const(args) | visibility: :pub}
+
+  def pub_const(name, doc, type, value, opts \\ []),
+    do: %{const(name, doc, type, value, opts) | visibility: :pub}
+
   def value_in_code(v) when is_binary(v), do: ~s("#{v}")
   def value_in_code(v), do: v
 
@@ -77,7 +92,7 @@ defmodule Kojin.Rust.Const do
 
     """
     #{String.trim(triple_slash_comment(const.doc))}
-    #{visibility}const #{shout(const.name)} #{const.type} = #{value};
+    #{visibility}const #{shout(const.name)}: #{const.type} = #{value};
     """
   end
 
