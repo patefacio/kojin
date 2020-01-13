@@ -13,7 +13,7 @@ defmodule Kojin.Rust.TypeParm do
   """
   typedstruct enforce: true do
     field(:id, atom)
-    field(:default_type, Type.t())
+    field(:default, Type.t())
     field(:bounds, Bounds.t())
     field(:name, binary())
   end
@@ -29,13 +29,13 @@ defmodule Kojin.Rust.TypeParm do
   def type_parm(id, opts) when is_atom(id) do
     Logger.debug("type parm name -> #{id} opts -> #{inspect(opts)}")
 
-    defaults = [default_type: nil, bounds: []]
+    defaults = [default: nil, bounds: []]
     opts = check_args(defaults, opts)
 
     %TypeParm{
       id: id,
       name: cap_camel(id),
-      default_type: Type.type(opts[:default_type]),
+      default: Type.type(opts[:default]),
       bounds: Bounds.bounds(opts[:bounds])
     }
   end
@@ -46,20 +46,20 @@ defmodule Kojin.Rust.TypeParm do
   end
 
   def code(type_parm) do
-    default_type =
-      if(type_parm.default_type == nil) do
+    default =
+      if(type_parm.default == nil) do
         ""
       else
-        " = #{type_parm.default_type}"
+        " = #{type_parm.default}"
       end
 
-    "#{type_parm.name}#{default_type}"
+    "#{type_parm.name}#{default}"
   end
 
   defimpl String.Chars do
     def to_string(type_parm) do
-      if type_parm.default_type do
-        "#{type_parm.name} = #{type_parm.default_type}"
+      if type_parm.default do
+        "#{type_parm.name} = #{type_parm.default}"
       else
         type_parm.name
       end

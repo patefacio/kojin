@@ -12,6 +12,7 @@ defmodule Kojin.Rust.TraitImpl do
   use TypedStruct
   alias Kojin.Rust.{Trait, TraitImpl, Type, Generic, Utils}
   import Kojin.{Id, Utils}
+  require Logger
 
   typedstruct enforce: true do
     field(:type, Type.t())
@@ -19,6 +20,7 @@ defmodule Kojin.Rust.TraitImpl do
     field(:doc, String.t())
     field(:generic, Generic.t())
     field(:bodies, map())
+    field(:generic_args, list())
     field(:associated_types, map())
   end
 
@@ -49,7 +51,7 @@ defmodule Kojin.Rust.TraitImpl do
 
   @spec trait_impl(Kojin.Rust.Trait.t(), Kojin.Rust.Type.t()) :: Kojin.Rust.TraitImpl.t()
   def trait_impl(%Trait{} = trait, %Type{} = type, doc, opts) do
-    defaults = [generic: nil, bodies: %{}, associated_types: %{}]
+    defaults = [generic: nil, bodies: %{}, generic_args: [], associated_types: %{}]
     opts = Kojin.check_args(defaults, opts)
 
     %TraitImpl{
@@ -62,6 +64,7 @@ defmodule Kojin.Rust.TraitImpl do
         else
           nil
         end,
+      generic_args: opts[:generic_args],
       bodies: opts[:bodies],
       associated_types: opts[:associated_types]
     }
@@ -79,7 +82,15 @@ defmodule Kojin.Rust.TraitImpl do
       functions =
         trait.functions
         |> Enum.filter(fn f -> !f.body end)
-        |> Enum.map(fn f -> %{f | body: Map.get(trait_impl.bodies, f.name)} end)
+        |> Enum.map(fn f ->
+          body = Map.get(trait_impl.bodies, f.name)
+
+          if(!body) do
+            Logger.warn("Body of `#{f.name}` not present in trait #{trait.name}")
+          end
+
+          %{f | body: body}
+        end)
 
       type = trait_impl.type
 
@@ -90,16 +101,35 @@ defmodule Kojin.Rust.TraitImpl do
           {"", ""}
         end
 
+      generic_args =
+        trait_impl.generic_args
+        |> Enum.join(", ")
+
+      generic_args =
+        if("" == generic_args) do
+          ""
+        else
+          "<#{generic_args}>"
+        end
+
       [
         if(trait_impl.doc, do: triple_slash_comment(trait_impl.doc)),
-        "impl#{generic} #{trait.name} for #{type}#{bounds_decl} {",
+        "impl#{generic} #{trait.name}#{generic_args} for #{type}#{bounds_decl} {",
         if(!Enum.empty?(trait_impl.associated_types)) do
           Utils.announce_section(
             "type aliases",
             Map.keys(trait_impl.associated_types)
             |> Enum.sort()
             |> Enum.map(fn t ->
-              "type #{cap_camel(t)} = #{Map.get(trait_impl.associated_types, t)};"
+              associated_type =
+                trait_impl.trait.associated_types
+                |> Enum.find(fn at -> at.id == "#{t}" end)
+
+              [
+                triple_slash_comment(associated_type.doc),
+                "type #{cap_camel(t)} = #{Map.get(trait_impl.associated_types, t)};"
+              ]
+              |> Enum.join("\n")
             end)
             |> Enum.join("\n")
           )

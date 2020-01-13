@@ -11,21 +11,35 @@ defmodule Kojin.Rust.TypeAlias do
   typedstruct enforce: true do
     field(:name, atom)
     field(:aliased, String.t())
+    field(:visibility, atom)
   end
 
   def type_alias(%TypeAlias{} = type_alias), do: type_alias
 
-  def type_alias(name, aliased, _opts \\ []) do
+  def type_alias(name, aliased, opts \\ []) do
+    defaults = [visibility: :pub]
+    opts = Kojin.check_args(defaults, opts)
+
     %TypeAlias{
       name: name,
-      aliased: aliased
+      aliased: aliased,
+      visibility: opts[:visibility]
     }
   end
 
   def type_alias([name, aliased]), do: type_alias(name, aliased)
 
+  def pub_type_alias(%TypeAlias{} = type_alias), do: %{type_alias | visibility: :pub}
+
+  def pub_type_alias(name, aliased, opts \\ []),
+    do: %{type_alias(name, aliased, opts) | visibility: :pub}
+
+  def pub_type_alias([name, aliased]), do: type_alias(name, aliased, visibility: :pub)
+
   defimpl String.Chars do
-    def to_string(type_alias),
-      do: "type #{Id.cap_camel(type_alias.name)} = #{type_alias.aliased};"
+    def to_string(type_alias) do
+      visibility = Kojin.Rust.visibility_decl(type_alias.visibility)
+      "#{visibility}type #{Id.cap_camel(type_alias.name)} = #{type_alias.aliased};"
+    end
   end
 end

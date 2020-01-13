@@ -3,7 +3,7 @@ defmodule Kojin.Rust.Trait do
   Rust _trait_ definition.
   """
 
-  alias Kojin.Rust.{Fn, Trait, ToCode}
+  alias Kojin.Rust.{Fn, Trait, ToCode, Generic}
   import Kojin.{Id, Utils, Rust.Utils}
   use TypedStruct
 
@@ -15,6 +15,7 @@ defmodule Kojin.Rust.Trait do
     field(:id, atom)
     field(:doc, String.t())
     field(:functions, list(Fn.t()), default: [])
+    field(:generic, Generic.t())
     field(:visibility, atom, default: :private)
     field(:associated_types, list(), default: [])
     field(:super_traits, list(Trait | binary | atom), default: [])
@@ -77,7 +78,7 @@ defmodule Kojin.Rust.Trait do
     do: _trait(name, cap_camel(name), doc, functions, opts)
 
   defp _trait(id, name, doc, functions, opts) do
-    defaults = [visibility: :private, associated_types: [], super_traits: []]
+    defaults = [generic: nil, visibility: :private, associated_types: [], super_traits: []]
     opts = Kojin.check_args(defaults, opts)
 
     %Trait{
@@ -85,6 +86,12 @@ defmodule Kojin.Rust.Trait do
       id: id,
       doc: doc || "TODO: Document trait #{name}",
       functions: Enum.map(functions, fn fun -> Kojin.Rust.Fn.fun(fun) end),
+      generic:
+        if(opts[:generic] != nil) do
+          Generic.generic(opts[:generic])
+        else
+          nil
+        end,
       associated_types:
         Enum.map(
           opts[:associated_types],
@@ -114,6 +121,13 @@ defmodule Kojin.Rust.Trait do
   def code(%Trait{} = trait) do
     visibility = Kojin.Rust.visibility_decl(trait.visibility)
 
+    {generic, bounds_decl} =
+      if(trait.generic) do
+        {Generic.code(trait.generic), Generic.bounds_decl(trait.generic)}
+      else
+        {"", ""}
+      end
+
     super_traits =
       if(!Enum.empty?(trait.super_traits)) do
         ": " <>
@@ -126,7 +140,7 @@ defmodule Kojin.Rust.Trait do
 
     [
       triple_slash_comment(trait.doc),
-      "#{visibility}trait #{trait_name(trait)} #{super_traits}{",
+      "#{visibility}trait #{trait_name(trait)}#{generic} #{super_traits}#{bounds_decl} {",
       announce_section("associated types", trait.associated_types),
       trait.functions
       |> Enum.map(fn fun ->
