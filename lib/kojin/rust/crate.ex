@@ -17,6 +17,7 @@ defmodule Kojin.Rust.CargoToml do
   def cargo_toml_content(%CargoToml{} = cargo_toml) do
     ~s"""
     [package]
+    edition = "2018"
     name = "#{cargo_toml.name}"
     version = "#{cargo_toml.version}"
     authors = [#{cargo_toml.authors |> Enum.join()}]
