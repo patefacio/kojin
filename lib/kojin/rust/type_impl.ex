@@ -10,6 +10,7 @@ defmodule Kojin.Rust.TypeImpl do
     field(:code_block, Kojin.CodeBlock.t())
     field(:doc, String.t() | nil, default: nil)
     field(:type_name, String.t())
+    field(:unit_tests, list(atom))
   end
 
   def type_impl(%TypeImpl{} = t), do: t
@@ -23,7 +24,7 @@ defmodule Kojin.Rust.TypeImpl do
     code_block_prefix = "#{type_name}"
     code_block = code_block("impl #{type}")
 
-    defaults = [doc: "Implementation for #{type}"]
+    defaults = [doc: "Implementation for #{type}", unit_tests: []]
     opts = Kojin.check_args(defaults, opts)
 
     %TypeImpl{
@@ -35,7 +36,8 @@ defmodule Kojin.Rust.TypeImpl do
           Fn.fun_with_tag_prefix(f, join_content([code_block_prefix, f.tag_prefix], "::"))
         end),
       code_block: code_block,
-      doc: opts[:doc]
+      doc: opts[:doc],
+      unit_tests: opts[:unit_tests]
     }
   end
 

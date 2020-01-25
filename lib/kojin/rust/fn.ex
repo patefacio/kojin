@@ -197,6 +197,7 @@ defmodule Kojin.Rust.Fn do
     - `tag_prefix`: A prefix for the code block tag to ensure unique in generated context
     - `visibility`: One of the visibility designations (`Kojin.Rust.allowed_visibilities`)
     - `body`: The body of the function
+    - `include_unit_test`: If set will include unit test similarly named
   """
   typedstruct do
     field(:name, atom, enforce: true)
@@ -212,6 +213,7 @@ defmodule Kojin.Rust.Fn do
     field(:body, String.t())
     field(:attrs, list(Attr.t()))
     field(:is_test, boolean)
+    field(:include_unit_test, boolean)
   end
 
   validates(:visibility, inclusion: Kojin.Rust.allowed_visibilities())
@@ -315,7 +317,8 @@ defmodule Kojin.Rust.Fn do
       body: nil,
       visibility: :private,
       attrs: [],
-      is_test: false
+      is_test: false,
+      include_unit_test: false
     ]
 
     opts = Kojin.check_args(defaults, opts)
@@ -348,7 +351,8 @@ defmodule Kojin.Rust.Fn do
       visibility: opts[:visibility],
       body: opts[:body],
       attrs: attrs,
-      is_test: opts[:is_test]
+      is_test: opts[:is_test],
+      include_unit_test: opts[:include_unit_test]
     }
 
     if(!Vex.valid?(result)) do

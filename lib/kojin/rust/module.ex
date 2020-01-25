@@ -4,6 +4,7 @@ defmodule Kojin.Rust.Module do
   """
 
   alias Kojin.Rust.{
+    Attr,
     Const,
     Fn,
     Module,
@@ -17,7 +18,7 @@ defmodule Kojin.Rust.Module do
   }
 
   import Kojin
-  import Kojin.{CodeBlock, Id, Utils, Rust, Rust.Utils}
+  import Kojin.{CodeBlock, Id, Utils, Rust, Rust.Utils, Rust.Fn}
   use TypedStruct
   use Vex.Struct
   require Logger
@@ -44,6 +45,7 @@ defmodule Kojin.Rust.Module do
     field(:has_non_inline_submodules, boolean)
     field(:code_block, Kojin.CodeBlock.t(), default: nil)
     field(:macro_uses, list(binary), default: [])
+    field(:attrs, list(Attr.t()))
   end
 
   def module(name, doc, opts \\ []) do
@@ -75,7 +77,8 @@ defmodule Kojin.Rust.Module do
       uses: [],
       type_aliases: [],
       macro_uses: [],
-      code_block: code_block("mod-def #{snake(name)}")
+      code_block: code_block("mod-def #{snake(name)}"),
+      attrs: []
     ]
 
     opts = Kojin.check_args(defaults, opts)
@@ -90,7 +93,7 @@ defmodule Kojin.Rust.Module do
       traits: opts[:traits],
       functions: opts[:functions],
       structs: opts[:structs],
-      impls: opts[:impls],
+      impls: impls(opts[:impls]),
       modules: submodules,
       file_name: "#{name}.rs",
       visibility: opts[:visibility],
@@ -99,9 +102,14 @@ defmodule Kojin.Rust.Module do
         Enum.map(opts[:type_aliases], fn type_alias -> TypeAlias.type_alias(type_alias) end),
       has_non_inline_submodules: has_non_inline_submodules,
       macro_uses: opts[:macro_uses],
-      code_block: opts[:code_block]
+      code_block: opts[:code_block],
+      attrs: opts[:attrs]
     }
   end
+
+  def ensure_is_impl(%TypeImpl{} = type_impl), do: type_impl
+  def ensure_is_impl(%TraitImpl{} = trait_impl), do: trait_impl
+  def impls(impls) when is_list(impls), do: Enum.map(impls, fn impl -> ensure_is_impl(impl) end)
 
   def all_modules(%Module{} = module) do
     Enum.reduce(
@@ -124,6 +132,41 @@ defmodule Kojin.Rust.Module do
   end
 
   def content(%Module{} = module) do
+    functions_with_unit_tests =
+      [
+        module.functions
+        |> Enum.filter(fn m -> m.include_unit_test end)
+        |> Enum.map(fn f -> f.name end),
+        module.impls
+        |> Enum.map(fn impl -> impl.unit_tests end)
+      ]
+      |> List.flatten()
+
+    submodules =
+      if(Enum.empty?(functions_with_unit_tests)) do
+        module.modules
+      else
+        [
+          module(
+            :unit_tests,
+            "Unit tests for #{module.name}",
+            attrs: [Attr.attr("cfg(test)")],
+            type: :inline,
+            functions:
+              functions_with_unit_tests
+              |> Enum.map(fn test_function ->
+                fun(
+                  "test_#{test_function}",
+                  "Unit test for `#{test_function}`",
+                  [],
+                  is_test: true
+                )
+              end)
+          )
+          | module.modules
+        ]
+      end
+
     join_content(
       [
         ## Include comments
@@ -154,12 +197,14 @@ defmodule Kojin.Rust.Module do
         ),
 
         ## Include Nested Modules
-        module.modules
+        submodules
         |> Enum.filter(fn module -> module.type == :inline end)
         |> Enum.map(fn module ->
           visibility = visibility_decl(module.visibility)
 
           join_content([
+            module.attrs
+            |> Enum.map(fn attr -> Attr.external(attr) end),
             "#{visibility}mod #{snake(module.name)} {",
             indent_block(content(module))
             |> String.trim_trailing(),

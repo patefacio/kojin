@@ -20,6 +20,7 @@ defmodule Kojin.Rust.TraitImpl do
     field(:doc, String.t())
     field(:generic, Generic.t())
     field(:bodies, map())
+    field(:unit_tests, list(atom))
     field(:generic_args, list())
     field(:associated_types, map())
   end
@@ -51,7 +52,14 @@ defmodule Kojin.Rust.TraitImpl do
 
   @spec trait_impl(Kojin.Rust.Trait.t(), Kojin.Rust.Type.t()) :: Kojin.Rust.TraitImpl.t()
   def trait_impl(%Trait{} = trait, %Type{} = type, doc, opts) do
-    defaults = [generic: nil, bodies: %{}, generic_args: [], associated_types: %{}]
+    defaults = [
+      generic: nil,
+      bodies: %{},
+      unit_tests: [],
+      generic_args: [],
+      associated_types: %{}
+    ]
+
     opts = Kojin.check_args(defaults, opts)
 
     %TraitImpl{
@@ -66,6 +74,7 @@ defmodule Kojin.Rust.TraitImpl do
         end,
       generic_args: opts[:generic_args],
       bodies: opts[:bodies],
+      unit_tests: opts[:unit_tests],
       associated_types: opts[:associated_types]
     }
   end

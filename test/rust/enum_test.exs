@@ -5,7 +5,6 @@ defmodule EnumTest do
   import Kojin.Rust.TupleVariant
 
   test "enum test" do
-    # TODO assert s
     e =
       enum(
         :color,
@@ -14,8 +13,10 @@ defmodule EnumTest do
         has_snake_conversions: true
       )
 
-    IO.puts(decl(e))
+    values = e.values
+    assert e.values == [red: "Red", green: "Green", blue: "Blue"]
+    assert e.doc == "The color choices"
+    assert String.contains?(decl(e), "pub fn from_snake")
 
-    tv(:color, 3)
   end
 end
