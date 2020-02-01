@@ -17,6 +17,5 @@ defmodule EnumTest do
     assert e.values == [red: "Red", green: "Green", blue: "Blue"]
     assert e.doc == "The color choices"
     assert String.contains?(decl(e), "pub fn from_snake")
-
   end
 end

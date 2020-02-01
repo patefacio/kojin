@@ -12,6 +12,7 @@ defmodule Kojin.Rust.TraitImpl do
   use TypedStruct
   alias Kojin.Rust.{Trait, TraitImpl, Type, Generic, Utils}
   import Kojin.{Id, Utils}
+  import Kojin.Rust.Utils
   require Logger
 
   typedstruct enforce: true do
@@ -23,6 +24,7 @@ defmodule Kojin.Rust.TraitImpl do
     field(:unit_tests, list(atom))
     field(:generic_args, list())
     field(:associated_types, map())
+    field(:test_module_name, String.t())
   end
 
   @doc """
@@ -57,7 +59,8 @@ defmodule Kojin.Rust.TraitImpl do
       bodies: %{},
       unit_tests: [],
       generic_args: [],
-      associated_types: %{}
+      associated_types: %{},
+      test_module_name: make_module_name("trait_impl_test_#{Kojin.Id.snake(trait.name)}")
     ]
 
     opts = Kojin.check_args(defaults, opts)
@@ -75,7 +78,8 @@ defmodule Kojin.Rust.TraitImpl do
       generic_args: opts[:generic_args],
       bodies: opts[:bodies],
       unit_tests: opts[:unit_tests],
-      associated_types: opts[:associated_types]
+      associated_types: opts[:associated_types],
+      test_module_name: opts[:test_module_name]
     }
   end
 

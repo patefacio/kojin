@@ -11,7 +11,7 @@ defmodule Kojin.Rust.Attr do
   Models a rust attribute
   """
   typedstruct do
-    field(:id, atom())
+    field(:id, atom() | String.t())
     field(:value, String.t() | list(Attr.t()))
   end
 
@@ -30,8 +30,10 @@ defmodule Kojin.Rust.Attr do
 
   """
   def attr(%Attr{} = attr), do: attr
+  def attr(:cfg_test), do: attr("cfg(test)", nil)
+  def attr(id, value \\ nil)
 
-  def attr(id, value \\ nil) do
+  def attr(id, value) when is_atom(id) or is_binary(id) do
     %Attr{
       id: id,
       value: value
@@ -55,7 +57,9 @@ defmodule Kojin.Rust.Attr do
   def and_(items) when is_list(items) do
     %Attr{
       id: :__and,
-      value: items |> Enum.map(fn item -> attr(item) end)
+      value:
+        items
+        |> Enum.map(fn item -> attr(item) end)
     }
   end
 

@@ -11,6 +11,7 @@ defmodule Kojin.Rust.TypeImpl do
     field(:doc, String.t() | nil, default: nil)
     field(:type_name, String.t())
     field(:unit_tests, list(atom))
+    field(:test_module_name, String.t())
   end
 
   def type_impl(%TypeImpl{} = t), do: t
@@ -20,11 +21,20 @@ defmodule Kojin.Rust.TypeImpl do
 
   def type_impl(type, functions \\ [], opts \\ []) do
     type = Type.type(type)
-    type_name = type.base |> cap_camel
+
+    type_name =
+      type.base
+      |> cap_camel
+
     code_block_prefix = "#{type_name}"
     code_block = code_block("impl #{type}")
 
-    defaults = [doc: "Implementation for #{type}", unit_tests: []]
+    defaults = [
+      doc: "Implementation for #{type}",
+      unit_tests: [],
+      test_module_name: make_module_name("type_impl_test_#{type_name}")
+    ]
+
     opts = Kojin.check_args(defaults, opts)
 
     %TypeImpl{
@@ -37,7 +47,8 @@ defmodule Kojin.Rust.TypeImpl do
         end),
       code_block: code_block,
       doc: opts[:doc],
-      unit_tests: opts[:unit_tests]
+      unit_tests: opts[:unit_tests],
+      test_module_name: opts[:test_module_name]
     }
   end
 
@@ -70,7 +81,9 @@ defmodule Kojin.Rust.TypeImpl do
       |> String.replace(~r/\\s+/, "")
   """
   def code(impl) do
-    tname = impl.type.base |> cap_camel
+    tname =
+      impl.type.base
+      |> cap_camel
 
     functions =
       impl.functions
@@ -86,19 +99,23 @@ defmodule Kojin.Rust.TypeImpl do
           String.trim_trailing(text(impl.code_block)),
           announce_section(
             "pub functions",
-            functions |> Enum.filter(fn f -> f.visibility == :pub end)
+            functions
+            |> Enum.filter(fn f -> f.visibility == :pub end)
           ),
           announce_section(
             "pub(crate) functions",
-            functions |> Enum.filter(fn f -> f.visibility == :pub_crate end)
+            functions
+            |> Enum.filter(fn f -> f.visibility == :pub_crate end)
           ),
           announce_section(
             "private functions",
-            functions |> Enum.filter(fn f -> f.visibility == :private end)
+            functions
+            |> Enum.filter(fn f -> f.visibility == :private end)
           ),
           announce_section(
             "pub(self) functions",
-            functions |> Enum.filter(fn f -> f.visibility == :pub_self end)
+            functions
+            |> Enum.filter(fn f -> f.visibility == :pub_self end)
           )
         ],
         "\n\n"

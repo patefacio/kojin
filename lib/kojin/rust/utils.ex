@@ -28,4 +28,11 @@ defmodule Kojin.Rust.Utils do
       """
     end
   end
+
+  def make_module_name(text) do
+    text
+    |> String.replace("<", "_")
+    |> String.replace(">", "_")
+    |> Kojin.Id.snake()
+  end
 end

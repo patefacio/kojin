@@ -15,7 +15,7 @@ defmodule Kojin.Rust.Module do
     TypeAlias,
     TypeImpl,
     Uses
-  }
+    }
 
   import Kojin
   import Kojin.{CodeBlock, Id, Utils, Rust, Rust.Utils, Rust.Fn}
@@ -44,7 +44,8 @@ defmodule Kojin.Rust.Module do
     field(:type_aliases, list(TypeAlias.t()), default: [])
     field(:has_non_inline_submodules, boolean)
     field(:code_block, Kojin.CodeBlock.t(), default: nil)
-    field(:macro_uses, list(binary), default: [])
+    field(:macro_uses, list(binary | atom), default: [])
+    field(:test_macro_uses, list(binary | atom), default: [])
     field(:attrs, list(Attr.t()))
   end
 
@@ -77,6 +78,7 @@ defmodule Kojin.Rust.Module do
       uses: [],
       type_aliases: [],
       macro_uses: [],
+      test_macro_uses: [],
       code_block: code_block("mod-def #{snake(name)}"),
       attrs: []
     ]
@@ -102,6 +104,7 @@ defmodule Kojin.Rust.Module do
         Enum.map(opts[:type_aliases], fn type_alias -> TypeAlias.type_alias(type_alias) end),
       has_non_inline_submodules: has_non_inline_submodules,
       macro_uses: opts[:macro_uses],
+      test_macro_uses: opts[:test_macro_uses],
       code_block: opts[:code_block],
       attrs: opts[:attrs]
     }
@@ -125,10 +128,12 @@ defmodule Kojin.Rust.Module do
   def mod_decls(%Module{} = module) do
     module.modules
     |> Enum.filter(fn module -> module.type != :inline end)
-    |> Enum.map(fn module ->
-      visibility = visibility_decl(module.visibility)
-      "#{visibility}mod #{snake(module.name)};"
-    end)
+    |> Enum.map(
+         fn module ->
+           visibility = visibility_decl(module.visibility)
+           "#{visibility}mod #{snake(module.name)};"
+         end
+       )
   end
 
   def content(%Module{} = module) do
@@ -136,11 +141,21 @@ defmodule Kojin.Rust.Module do
       [
         module.functions
         |> Enum.filter(fn m -> m.include_unit_test end)
-        |> Enum.map(fn f -> f.name end),
+        |> Enum.map(fn f -> {"test_#{module.name}", f.name} end),
         module.impls
-        |> Enum.map(fn impl -> impl.unit_tests end)
+        |> Enum.map(
+             fn impl ->
+               Enum.map(
+                 impl.unit_tests,
+                 fn unit_test_name ->
+                   {impl.test_module_name, unit_test_name}
+                 end
+               )
+             end
+           )
       ]
       |> List.flatten()
+      |> Enum.group_by(fn {module_name, function_name} -> module_name end)
 
     submodules =
       if(Enum.empty?(functions_with_unit_tests)) do
@@ -152,16 +167,43 @@ defmodule Kojin.Rust.Module do
             "Unit tests for #{module.name}",
             attrs: [Attr.attr("cfg(test)")],
             type: :inline,
-            functions:
-              functions_with_unit_tests
-              |> Enum.map(fn test_function ->
-                fun(
-                  "test_#{test_function}",
-                  "Unit test for `#{test_function}`",
-                  [],
-                  is_test: true
-                )
-              end)
+            modules: functions_with_unit_tests
+                     |> Enum.filter(fn {module_name, functions} -> module_name != nil end)
+                     |> Enum.map(
+                          fn {module_name, functions} ->
+                            module(
+                              module_name,
+                              "Tests",
+                              functions: Enum.map(
+                                functions,
+                                fn {_, function} -> fun(
+                                                      "test_#{function}",
+                                                      "Unit test for `#{function}`",
+                                                      [],
+                                                      is_test: true
+                                                    )
+                                end
+                              ),
+                            type: :inline
+                            )
+                          end
+                        ),
+
+            #            functions:
+            #              functions_with_unit_tests
+            #              |> Enum.filter(fn {module_name, functions} -> module_name == nil end)
+            #              |> Enum.map(fn {module_name, functions} -> functions end)
+            #              |> Enum.map(
+            #                   fn [nil, test_function] ->
+            #                   IO.puts "MN TF -> #{inspect test_function}"
+            #                     fun(
+            #                       "test_#{test_function}",
+            #                       "Unit test for `#{test_function}`",
+            #                       [],
+            #                       is_test: true
+            #                     )
+            #                   end
+            #                 )
           )
           | module.modules
         ]
@@ -175,6 +217,17 @@ defmodule Kojin.Rust.Module do
           "macro-use imports",
           join_content(
             Enum.map(module.macro_uses, fn mu -> "#[macro_use]\nextern crate #{mu};" end)
+          )
+        ),
+        announce_section(
+          "test-macro-use imports",
+          join_content(
+            Enum.map(
+              module.test_macro_uses,
+              fn mu ->
+                "#[cfg(test)]\n#[macro_use]\nextern crate #{mu};"
+              end
+            )
           )
         ),
         announce_section("module uses", join_content(module.uses)),
@@ -199,18 +252,22 @@ defmodule Kojin.Rust.Module do
         ## Include Nested Modules
         submodules
         |> Enum.filter(fn module -> module.type == :inline end)
-        |> Enum.map(fn module ->
-          visibility = visibility_decl(module.visibility)
+        |> Enum.map(
+             fn module ->
+               visibility = visibility_decl(module.visibility)
 
-          join_content([
-            module.attrs
-            |> Enum.map(fn attr -> Attr.external(attr) end),
-            "#{visibility}mod #{snake(module.name)} {",
-            indent_block(content(module))
-            |> String.trim_trailing(),
-            "}"
-          ])
-        end),
+               join_content(
+                 [
+                   module.attrs
+                   |> Enum.map(fn attr -> Attr.external(attr) end),
+                   "#{visibility}mod #{snake(module.name)} {",
+                   indent_block(content(module))
+                   |> String.trim_trailing(),
+                   "}"
+                 ]
+               )
+             end
+           ),
         text(module.code_block)
       ],
       "\n\n"
@@ -220,10 +277,10 @@ defmodule Kojin.Rust.Module do
   def inline_children(%Module{} = module) do
     module.modules
     |> Enum.reduce(
-      %{},
-      fn module, acc ->
-        Map.put(acc, module.name, {module.type, inline_children(module)})
-      end
-    )
+         %{},
+         fn module, acc ->
+           Map.put(acc, module.name, {module.type, inline_children(module)})
+         end
+       )
   end
 end

@@ -279,7 +279,7 @@ defmodule Kojin.Rust.Fn do
     - `generic`: Details of generics of function
     - `consts`: List of constants of the function
     - `code_block_prefix`: Prepended to function name in code block tag
-    - `is_test`: If set adds _cfg(test)_ attribute
+    - `is_test`: If set adds _test_ attribute
 
   ## Examples
 
@@ -333,10 +333,11 @@ defmodule Kojin.Rust.Fn do
 
     attrs =
       if(opts[:is_test]) do
-        [Attr.attr("cfg(test)") | opts[:attrs]]
+        [Attr.attr("test") | opts[:attrs]]
       else
         opts[:attrs]
       end
+      |> Enum.map(fn attr -> Attr.attr(attr) end)
 
     result = %Fn{
       name: name,
@@ -434,7 +435,7 @@ defmodule Kojin.Rust.Fn do
       ...> Fn.code(Fn.fun(:f, "Simple function", [], is_test: true))
       ...> |> Kojin.dark_matter
       ~s'''
-      #[cfg(test)]
+      #[test]
       fn f() {
         // α <fn f>
         // ω <fn f>
