@@ -1,21 +1,20 @@
 # Kojin
 
-**TODO: Add description**
+Support for code generation.
 
-## Installation
+Initial focus on modeling plain old data and generating rust. 
+Based on previous tools that became unusable after
+Dart 1.0 moved to Dart 2.0 and switched from a more traditional scripting language
+with fast startup to an AOT type language with very slow startup in the case of
+code changes. There are solutions to make Dart 2.0 startup quickly if your code
+is stable - but if you have an iteration cycle of change code, run, change code
+run, etc - that cycle time grew to be unmanageable due to startup and ahead
+of time compilation.
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `kojin` to your list of dependencies in `mix.exs`:
+- [ebisu](https://github.com/patefacio/ebisu): The core, shared library
+- [ebisu-pod](https://github.com/patefacio/ebisu_pod): Support for modeling plain old data in native
+    dart with IDL like definitions
+- [ebisu-cpp](https://github.com/patefacio/ebisu_cpp): Support for generating C++
+- [ebisu-rs](https://github.com/patefacio/ebisu_rs)]: Support for generating Rust
 
-```elixir
-def deps do
-  [
-    {:kojin, "~> 0.1.0"}
-  ]
-end
-```
-
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at [https://hexdocs.pm/kojin](https://hexdocs.pm/kojin).
 
