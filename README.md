@@ -18,3 +18,4 @@ of time compilation.
 - [ebisu-rs](https://github.com/patefacio/ebisu_rs)]: Support for generating Rust
 
 
+The general idea: This [script](bin/tax_sample.exs) prints this [rust code](notes/tax_sample.md).
