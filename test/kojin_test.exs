@@ -6,6 +6,7 @@ defmodule KojinTest do
   doctest Kojin.Pod.EnumValue
   doctest Kojin.Pod.PodEnum
   doctest Kojin.Pod.PodArray
+  doctest Kojin.Pod.PodMap
   doctest Kojin.Pod.PodField
   doctest Kojin.Pod.PodType
   doctest Kojin.Pod.PodTypeRef

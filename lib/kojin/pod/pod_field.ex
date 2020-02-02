@@ -6,7 +6,7 @@ defmodule Kojin.Pod.PodField do
   """
 
   use TypedStruct
-  alias Kojin.Pod.{PodField, PodType, PodArray, PodTypeRef, PodTypes}
+  alias Kojin.Pod.{PodField, PodType, PodArray, PodMap, PodTypeRef, PodTypes}
   # use Vex.Struct
 
   @typedoc """
@@ -15,7 +15,7 @@ defmodule Kojin.Pod.PodField do
   typedstruct enforce: true do
     field(:id, atom)
     field(:doc, String.t())
-    field(:type, PodType.t() | PodTypeRef.t() | PodArray.t())
+    field(:type, PodType.t() | PodTypeRef.t() | PodArray.t() | PodMap.t())
     field(:optional?, boolean())
     field(:default_value, any())
   end
@@ -134,6 +134,7 @@ defmodule Kojin.Pod.PodField do
   def pod_field(id, doc, %PodType{} = type), do: pod_field(id, doc, type: type)
   def pod_field(id, doc, %PodTypeRef{} = type), do: pod_field(id, doc, type: type)
   def pod_field(id, doc, %PodArray{} = type), do: pod_field(id, doc, type: type)
+  def pod_field(id, doc, %PodMap{} = type), do: pod_field(id, doc, type: type)
 end
 
 defimpl String.Chars, for: Kojin.PodField do

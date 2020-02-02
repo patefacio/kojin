@@ -30,7 +30,7 @@ defmodule Kojin.Pod.PodArray do
       }
 
   """
-  @spec array_of(Kojin.Pod.PodType.t()) :: Kojin.Pod.PodArray.t()
+  @spec array_of(PodType.t()) :: PodArray.t()
   def array_of(%PodType{} = item_type) do
     %Kojin.Pod.PodArray{item_type: item_type}
   end
@@ -52,13 +52,14 @@ defmodule Kojin.Pod.PodArray do
       }
 
   """
+  @spec array_of(atom) :: PodArray.t()
   def array_of(item_type) when is_atom(item_type), do: array_of(PodTypes.pod_type(item_type))
 
-  def array_of(%PodTypeRef{} = pod_type_ref) do
-    %Kojin.Pod.PodArray{item_type: pod_type_ref}
-  end
+  @spec array_of(PodTypeRef.t()) :: PodArray.t()
+  def array_of(%PodTypeRef{} = pod_type_ref), do: %PodArray{item_type: pod_type_ref}
 
+  @spec array_of(PodArray.t()) :: PodArray.t()
   def array_of(%PodArray{} = pod_array) do
-    %Kojin.Pod.PodArray{item_type: pod_array}
+    %PodArray{item_type: pod_array}
   end
 end

@@ -1,6 +1,6 @@
 defmodule Kojin.PodRust.PodPackageToModule do
   use TypedStruct
-  alias Kojin.Pod.{PodPackageSet, PodPackage, PodType, PodTypeRef, PodTypes, PodArray}
+  alias Kojin.Pod.{PodPackageSet, PodPackage, PodType, PodTypeRef, PodTypes, PodArray, PodMap}
   alias Kojin.Rust.{SimpleEnum, Struct, Module, Field, Type, TypeAlias}
   alias Kojin.PodRust.PodPackageToModule
 
@@ -52,99 +52,88 @@ defmodule Kojin.PodRust.PodPackageToModule do
 
     rs_enums =
       pod_package.pod_enums
-      |> Enum.map(
-           fn pe ->
-             enum_type_name = Id.cap_camel(pe.id)
-             enum_first_val_name = Id.cap_camel(List.first(pe.values).id)
-             body = "#{enum_type_name}::#{enum_first_val_name}"
+      |> Enum.map(fn pe ->
+        enum_type_name = Id.cap_camel(pe.id)
+        enum_first_val_name = Id.cap_camel(List.first(pe.values).id)
+        body = "#{enum_type_name}::#{enum_first_val_name}"
 
-             return_doc =
-               "Returns the first value of type\n            `#{enum_type_name}` -> `#{body}`."
-
-             SimpleEnum.enum(
-               pe.id,
-               pe.doc,
-               pe.values
-               |> Enum.map(fn ev -> {ev.id, ev.doc} end),
-               visibility: :pub,
-               derivables: Kojin.Rust.enum_common_derivables(),
-               trait_impls: [
-                 Kojin.Rust.TraitImpl.trait_impl(
-                   default_trait,
-                   enum_type_name,
-                   nil,
-                   bodies: %{
-                     default: body
-                   }
-                 )
-               ],
-               has_snake_conversions: get_in(pe.properties, [:rust, :has_snake_conversions])
-             )
-           end
-         )
+        SimpleEnum.enum(
+          pe.id,
+          pe.doc,
+          pe.values
+          |> Enum.map(fn ev -> {ev.id, ev.doc} end),
+          visibility: :pub,
+          derivables: Kojin.Rust.enum_common_derivables(),
+          trait_impls: [
+            Kojin.Rust.TraitImpl.trait_impl(
+              default_trait,
+              enum_type_name,
+              nil,
+              bodies: %{
+                default: body
+              }
+            )
+          ],
+          has_snake_conversions: get_in(pe.properties, [:rust, :has_snake_conversions])
+        )
+      end)
 
     rs_structs =
       pod_package.pod_objects
-      |> Enum.map(
-           fn po ->
-             Struct.struct(
-               po.id,
-               po.doc,
-               po.fields
-               |> Enum.map(
-                    fn f ->
-                      rust_type =
-                        if(f.optional?) do
-                          "Option<#{pod_type_to_rust_type(f.type)}>"
-                        else
-                          pod_type_to_rust_type(f.type)
-                        end
+      |> Enum.map(fn po ->
+        Struct.struct(
+          po.id,
+          po.doc,
+          po.fields
+          |> Enum.map(fn f ->
+            rust_type =
+              if(f.optional?) do
+                "Option<#{pod_type_to_rust_type(f.type)}>"
+              else
+                pod_type_to_rust_type(f.type)
+              end
 
-                      Field.field(f.id, rust_type, f.doc, visibility: :pub)
-                    end
-                  ),
-               visibility: :pub,
-               derivables:
-                 (Kojin.Rust.struct_common_derivables() ++
-                  get_in(
-                    po,
-                    [
-                      Access.key(:properties, %{}),
-                      Access.key(:rust, %{}),
-                      Access.key(:derivables, [])
-                    ]
-                  ))
-                 |> MapSet.new()
-                 |> Enum.to_list()
-             )
-           end
-         )
+            Field.field(f.id, rust_type, f.doc, visibility: :pub)
+          end),
+          visibility: :pub,
+          derivables:
+            (Kojin.Rust.struct_common_derivables() ++
+               get_in(
+                 po,
+                 [
+                   Access.key(:properties, %{}),
+                   Access.key(:rust, %{}),
+                   Access.key(:derivables, [])
+                 ]
+               ))
+            |> MapSet.new()
+            |> Enum.to_list()
+        )
+      end)
 
     split_refs =
       PodPackage.all_ref_types(pod_package)
-      |> Enum.map(
-           fn type ->
-             type_id = type.type_id
-             found = PodPackageSet.find_item_id(pod_package_set, type_id)
+      |> Enum.map(fn type ->
+        type_id = type.type_id
+        found = PodPackageSet.find_item_id(pod_package_set, type_id)
 
-             if(found != nil) do
-               {_item_id, [{package_id, _item} | _rest]} =
-                 PodPackageSet.find_item_id(pod_package_set, type_id)
+        if(found != nil) do
+          {_item_id, [{package_id, _item} | _rest]} =
+            PodPackageSet.find_item_id(pod_package_set, type_id)
 
-               if(package_id == pod_package.id) do
-                 nil
-               else
-                 {:use, "crate::#{package_id}::#{Id.cap_camel(type_id)}"}
-               end
-             else
-               if(Enum.member?(pod_package_set.predefined_types, type_id)) do
-                 {:use, "crate::#{Id.cap_camel(type_id)}"}
-               else
-                 {:missing, Id.cap_camel(type_id)}
-               end
-             end
-           end
-         )
+          if(package_id == pod_package.id) do
+            nil
+          else
+            {:use, "crate::#{package_id}::#{Id.cap_camel(type_id)}"}
+          end
+        else
+          if(Enum.member?(pod_package_set.predefined_types, type_id)) do
+            {:use, "crate::#{Id.cap_camel(type_id)}"}
+          else
+            {:missing, Id.cap_camel(type_id)}
+          end
+        end
+      end)
 
     of_interest =
       split_refs
@@ -154,8 +143,9 @@ defmodule Kojin.PodRust.PodPackageToModule do
       of_interest
       |> Enum.filter(fn {type, _value} -> type == :missing end)
       |> Enum.map(fn {type, value} ->
-      IO.puts "Need a time for #{inspect type} #{inspect value}"
-        TypeAlias.type_alias(value, "i32") end)
+        IO.puts("Need a time for #{inspect(type)} #{inspect(value)}")
+        TypeAlias.type_alias(value, "i32")
+      end)
       |> Enum.sort()
 
     date_type = PodTypes.pod_type(:date)
@@ -167,9 +157,9 @@ defmodule Kojin.PodRust.PodPackageToModule do
       else
         []
       end ++
-      (of_interest
-       |> Enum.filter(fn {type, _value} -> type == :use end)
-       |> Enum.map(fn {_type, value} -> value end))
+        (of_interest
+         |> Enum.filter(fn {type, _value} -> type == :use end)
+         |> Enum.map(fn {_type, value} -> value end))
 
     %PodPackageToModule{
       pod_package_set: pod_package_set,
@@ -209,6 +199,11 @@ defmodule Kojin.PodRust.PodPackageToModule do
   def pod_type_to_rust_type(%PodArray{} = pod_array) do
     referred_type = pod_type_to_rust_type(pod_array.item_type)
     Type.type("Vec<#{referred_type}>")
+  end
+
+  def pod_type_to_rust_type(%PodMap{} = pod_map) do
+    referred_type = pod_type_to_rust_type(pod_map.value_type)
+    Type.type("BTreeMap<String, #{referred_type}>")
   end
 
   def to_module(%PodPackageToModule{} = pod_package_to_module) do

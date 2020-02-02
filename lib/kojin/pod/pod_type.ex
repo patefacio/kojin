@@ -190,6 +190,7 @@ defmodule Kojin.Pod.PodTypes do
   def pod_type(%Kojin.Pod.PodType{} = pod_type), do: pod_type
   def pod_type(%Kojin.Pod.PodTypeRef{} = pod_type_ref), do: pod_type_ref
   def pod_type(%Kojin.Pod.PodArray{} = pod_array), do: pod_array
+  def pod_type(%Kojin.Pod.PodMap{} = pod_map), do: pod_map
   def pod_type(:string), do: @std_types.string
   def pod_type(:int64), do: @std_types.int64
   def pod_type(:int32), do: @std_types.int32
@@ -222,4 +223,5 @@ defmodule Kojin.Pod.PodTypes do
   def ref_type(%Kojin.Pod.PodType{} = _pod_type), do: nil
   def ref_type(%Kojin.Pod.PodTypeRef{} = pod_type_ref), do: pod_type_ref
   def ref_type(%Kojin.Pod.PodArray{} = pod_array), do: ref_type(pod_array.item_type)
+  def ref_type(%Kojin.Pod.PodMap{} = pod_map), do: ref_type(pod_map.value_type)
 end
