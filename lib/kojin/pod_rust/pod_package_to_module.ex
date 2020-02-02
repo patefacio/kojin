@@ -1,3 +1,5 @@
+require Logger
+
 defmodule Kojin.PodRust.PodPackageToModule do
   use TypedStruct
   alias Kojin.Pod.{PodPackageSet, PodPackage, PodType, PodTypeRef, PodTypes, PodArray, PodMap}
@@ -143,7 +145,7 @@ defmodule Kojin.PodRust.PodPackageToModule do
       of_interest
       |> Enum.filter(fn {type, _value} -> type == :missing end)
       |> Enum.map(fn {type, value} ->
-        IO.puts("Need a time for #{inspect(type)} #{inspect(value)}")
+        Logger.info("Need a type for #{inspect(type)} #{inspect(value)}")
         TypeAlias.type_alias(value, "i32")
       end)
       |> Enum.sort()
