@@ -153,12 +153,20 @@ defmodule Kojin.PodRust.PodPackageToModule do
     date_type = PodTypes.pod_type(:date)
     uses_date = Enum.any?(PodPackage.all_types(pod_package), fn {_pkg, t} -> t == date_type end)
 
+    uses_map =
+      PodPackage.all_field_types(pod_package)
+      |> Enum.any?(fn type -> PodTypes.is_pod_map?(type) end)
+
     rs_uses =
-      if(uses_date) do
-        ["crate::Date"]
-      else
-        []
-      end ++
+      ([
+         if(uses_date) do
+           "crate::Date"
+         end,
+         if(uses_map) do
+           "std::collections::BTreeMap"
+         end
+       ]
+       |> Enum.reject(&is_nil/1)) ++
         (of_interest
          |> Enum.filter(fn {type, _value} -> type == :use end)
          |> Enum.map(fn {_type, value} -> value end))

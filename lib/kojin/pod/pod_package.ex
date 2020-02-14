@@ -192,4 +192,17 @@ defmodule Kojin.Pod.PodPackage do
       )
     end)
   end
+
+  @spec all_field_types(PodPackage.t()) :: list(PodPackage.t())
+  def all_field_types(%PodPackage{} = pod_package) do
+    pod_package.pod_objects
+    |> Enum.reduce(MapSet.new(), fn pod_object, acc ->
+      MapSet.union(
+        acc,
+        pod_object.fields
+        |> Enum.map(fn field -> field.type end)
+        |> MapSet.new()
+      )
+    end)
+  end
 end

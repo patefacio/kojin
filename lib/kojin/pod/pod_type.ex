@@ -224,4 +224,10 @@ defmodule Kojin.Pod.PodTypes do
   def ref_type(%Kojin.Pod.PodTypeRef{} = pod_type_ref), do: pod_type_ref
   def ref_type(%Kojin.Pod.PodArray{} = pod_array), do: ref_type(pod_array.item_type)
   def ref_type(%Kojin.Pod.PodMap{} = pod_map), do: ref_type(pod_map.value_type)
+
+  def is_pod_map?(%Kojin.Pod.PodMap{} = _), do: true
+  def is_pod_map?(_), do: false
+
+  def is_pod_array?(%Kojin.Pod.PodArray{} = _), do: true
+  def is_pod_array?(_), do: false
 end
