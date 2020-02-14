@@ -1,0 +1,6 @@
+fn foo_bar() {
+  this_is_sample_data = 1;
+
+  // α <sample_identifier>
+  // ω <sample_identifier>
+}
