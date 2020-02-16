@@ -115,6 +115,28 @@ defmodule Kojin.Id do
   def snake(text) when is_binary(text), do: snake(words(text))
   def snake(text) when is_atom(text), do: snake(Atom.to_string(text))
 
+  def upcaseFirst(<<first::utf8, rest::binary>>), do: String.upcase(<<first::utf8>>) <> rest
+
+  @doc """
+  Convert to snake case.
+
+  ## Examples
+
+      iex> Kojin.Id.cap_snake(:foo_bar_goo)
+      "Foo_bar_goo"
+
+      iex> Kojin.Id.cap_snake("FooBarGoo")
+      "Foo_bar_goo"
+
+      iex> Kojin.Id.cap_snake("fooBarGoo")
+      "Foo_bar_goo"
+
+  """
+
+  def cap_snake(words) when is_list(words), do: upcaseFirst(snake(words))
+  def cap_snake(text) when is_binary(text), do: cap_snake(words(text))
+  def cap_snake(text) when is_atom(text), do: cap_snake(Atom.to_string(text))
+
   @doc """
   Convert to shout case.
 
