@@ -25,7 +25,7 @@ defmodule ModuleTest do
         fun(:t_f, "Some trait function", [], return: :i32, return_doc: "A number")
       ])
 
-    trait_impl = trait_impl(t, :i64, "impl of trait", unit_tests: [:t_f])
+    trait_impl = trait_impl(t, :i64, doc: "impl of trait", unit_tests: [:t_f])
     type_impl = type_impl(:foo, [], unit_tests: [:foo])
 
     m =

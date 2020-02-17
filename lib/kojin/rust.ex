@@ -54,6 +54,7 @@ defmodule Kojin.Rust do
   # Common derivables for generated structs
   @enum_common_derivables [
     :clone,
+    :copy,
     :debug,
     :deserialize,
     :partial_eq,

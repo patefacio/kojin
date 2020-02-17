@@ -40,22 +40,24 @@ defmodule Kojin.Rust.TraitImpl do
       ...> |> dark_matter()
       import Kojin
       ~s[
+        ///  Implementation of ThirdPartyTrait for i32
         impl ThirdPartyTrait for i32 {
         }
       ]
       |> dark_matter()
 
   """
-  def trait_impl(trait, type, doc \\ nil, opts \\ [])
+  def trait_impl(trait, type, opts \\ [])
 
-  def trait_impl(trait, type, doc, opts) when is_atom(type) or is_binary(type) do
-    trait_impl(trait, Type.type(type), doc, opts)
+  def trait_impl(trait, type, opts) when is_atom(type) or is_binary(type) do
+    trait_impl(trait, Type.type(type), opts)
   end
 
   @spec trait_impl(Kojin.Rust.Trait.t(), Kojin.Rust.Type.t()) :: Kojin.Rust.TraitImpl.t()
-  def trait_impl(%Trait{} = trait, %Type{} = type, doc, opts) do
+  def trait_impl(%Trait{} = trait, %Type{} = type, opts) do
     defaults = [
       generic: nil,
+      doc: "Implementation of #{trait.name} for #{type}",
       bodies: %{},
       unit_tests: [],
       generic_args: [],
@@ -68,7 +70,7 @@ defmodule Kojin.Rust.TraitImpl do
     %TraitImpl{
       type: type,
       trait: trait,
-      doc: doc,
+      doc: opts[:doc],
       generic:
         if(opts[:generic] != nil) do
           Generic.generic(opts[:generic])
@@ -83,8 +85,8 @@ defmodule Kojin.Rust.TraitImpl do
     }
   end
 
-  def trait_impl(trait, type, doc, opts) when is_binary(trait),
-    do: trait_impl(Trait.trait(trait, "", []), type, doc, opts)
+  def trait_impl(trait, type, opts) when is_binary(trait),
+    do: trait_impl(Trait.trait(trait, "", []), type, opts)
 
   defimpl String.Chars do
     def to_string(%TraitImpl{} = trait_impl) do

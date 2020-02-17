@@ -13,7 +13,7 @@ defmodule Kojin.Utils do
 
   """
   @spec comment(binary, binary) :: binary
-  def comment(text, opener) do
+  def comment(text, opener) when is_binary(text) do
     if text == nil do
       text
     else
@@ -39,7 +39,7 @@ defmodule Kojin.Utils do
       "///  Multi-line\\n///  \\t-1 first\\n///  \\t-2 second"
   """
   @spec triple_slash_comment(binary) :: binary
-  def triple_slash_comment(text) do
+  def triple_slash_comment(text) when is_binary(text) do
     comment(text, "///  ")
   end
 

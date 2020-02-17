@@ -3,7 +3,7 @@ require Logger
 defmodule Kojin.PodRust.PodPackageToModule do
   use TypedStruct
   alias Kojin.Pod.{PodPackageSet, PodPackage, PodType, PodTypeRef, PodTypes, PodArray, PodMap}
-  alias Kojin.Rust.{SimpleEnum, Struct, Module, Field, Type, TypeAlias}
+  alias Kojin.Rust.{SimpleEnum, Struct, Module, Field, Type, TypeAlias, Use}
   alias Kojin.PodRust.PodPackageToModule
 
   @pod_string PodTypes.pod_type(:string)
@@ -70,7 +70,6 @@ defmodule Kojin.PodRust.PodPackageToModule do
             Kojin.Rust.TraitImpl.trait_impl(
               default_trait,
               enum_type_name,
-              nil,
               bodies: %{
                 default: body
               }
@@ -169,7 +168,7 @@ defmodule Kojin.PodRust.PodPackageToModule do
        |> Enum.reject(&is_nil/1)) ++
         (of_interest
          |> Enum.filter(fn {type, _value} -> type == :use end)
-         |> Enum.map(fn {_type, value} -> value end))
+         |> Enum.map(fn {_type, value} -> Use.pub_use(value) end))
 
     %PodPackageToModule{
       pod_package_set: pod_package_set,
