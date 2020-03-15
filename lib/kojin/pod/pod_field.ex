@@ -7,6 +7,7 @@ defmodule Kojin.Pod.PodField do
 
   use TypedStruct
   alias Kojin.Pod.{PodField, PodType, PodArray, PodMap, PodTypeRef, PodTypes}
+
   # use Vex.Struct
 
   @typedoc """

@@ -28,6 +28,9 @@ defmodule KojinTest do
   doctest Kojin.Rust.Utils
   doctest Kojin.Rust.Use
   doctest Kojin.Rust.Uses
+  doctest Kojin.Sql.SqlType
+  doctest Kojin.Sql.Dql.Query
+
   doctest Kojin.Utils
 
   @delimiters %{open: "// α", close: "// ω"}

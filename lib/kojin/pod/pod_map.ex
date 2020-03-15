@@ -1,5 +1,5 @@
 defmodule Kojin.Pod.PodMap do
-  @modulespec """
+  @moduledoc """
   Represents a map keyed by string and some other `Kojin.Pod.PodType`
   """
   use TypedStruct

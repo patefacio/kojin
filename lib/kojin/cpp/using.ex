@@ -22,7 +22,6 @@ defmodule Kojin.Cpp.UsingDirective do
       "use #{cap_snake(using_directive.lhs)}_t = #{using_directive.rhs};"
     end
   end
-
 end
 
 #######
@@ -41,7 +40,7 @@ defmodule Kojin.Cpp.UsingDeclaration do
 
   defimpl String.Chars do
     def to_string(%UsingDeclaration{} = using_declaration) do
-    "use #{cap_snake(using_declaration.qualified_name)};"
+      "use #{cap_snake(using_declaration.qualified_name)};"
     end
   end
 end

@@ -1,4 +1,4 @@
 {
-    "editor.formatOnSave": true,
-    "workbench.colorTheme": "BraveLove",
+    "editor.formatOnSave": false,
+    "workbench.colorTheme": "BraveLove"
 }

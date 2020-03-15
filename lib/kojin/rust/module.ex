@@ -111,7 +111,7 @@ defmodule Kojin.Rust.Module do
   end
 
   def pub_module(name, doc, opts \\ []) when is_binary(doc),
-      do: module(name, doc, Keyword.merge(opts, visibility: :pub))
+    do: module(name, doc, Keyword.merge(opts, visibility: :pub))
 
   def ensure_is_impl(%TypeImpl{} = type_impl), do: type_impl
   def ensure_is_impl(%TraitImpl{} = trait_impl), do: trait_impl
