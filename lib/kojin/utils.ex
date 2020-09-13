@@ -12,11 +12,25 @@ defmodule Kojin.Utils do
       "// this is a test"
 
   """
-  @spec comment(binary, binary) :: binary
+
+  @default_comment_opts [opener: :line]
+
+  @doc ~s"""
+  Wraps `text` in comment prefix.
+
+  ## Examples
+
+      iex> Kojin.Utils.comment("some text", "...  ")
+      "...  some text"
+  """
+  @spec comment(binary | nil, binary | list()) :: binary
+  def comment(text, opts \\ @default_comment_opts)
+  def comment(nil, _opts), do: nil
+  def comment(text, [opener: :line]), do: comment(text, "//  ")
+  def comment(text, [opener: :triple_slash]), do: comment(text, "///  ")
+  def comment(text, [opener: :script]), do: comment(text, "#  ")
+
   def comment(text, opener) when is_binary(text) do
-    if text == nil do
-      text
-    else
       result =
         text
         |> String.replace(~r/(?:\r|\n)+$/, "")
@@ -24,7 +38,6 @@ defmodule Kojin.Utils do
         |> Enum.join("\n#{opener}")
 
       "#{opener}#{result}"
-    end
   end
 
   @doc ~s"""
@@ -39,9 +52,7 @@ defmodule Kojin.Utils do
       "///  Multi-line\\n///  \\t-1 first\\n///  \\t-2 second"
   """
   @spec triple_slash_comment(binary) :: binary
-  def triple_slash_comment(text) when is_binary(text) do
-    comment(text, "///  ")
-  end
+  def triple_slash_comment(text), do: comment(text, opener: :triple_slash)
 
   @doc ~s"""
   Wrap `text` in script-like comment.
@@ -55,9 +66,7 @@ defmodule Kojin.Utils do
       "#  Multi-line\\n#  \\t-1 first\\n#  \\t-2 second"
   """
   @spec script_comment(binary) :: binary
-  def script_comment(text) do
-    comment(text, "#  ")
-  end
+  def script_comment(text), do: comment(text, opener: :script)
 
   @doc """
   Indent `text` with text `options.indent` (default "  ").
@@ -83,7 +92,7 @@ defmodule Kojin.Utils do
 
   ## Examples
 
-    Empty strings and nil filtered: 
+    Empty strings and nil filtered:
 
       iex> Kojin.Utils.join_content(["a", "", "c", nil])
       "a\\nc"
