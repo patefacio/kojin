@@ -58,8 +58,8 @@ defmodule Kojin.Rust.Field do
       ~s{
       ///  Age
       pub(crate) age: i32
-      } |> String.trim      
-    
+      } |> String.trim
+
   """
   @spec field(atom | binary, atom | Type.t(), binary, list) :: Field.t()
   def field(name, type, doc \\ "TODO: Comment field", opts \\ [])
@@ -94,8 +94,8 @@ defmodule Kojin.Rust.Field do
       ~s{
       ///  Age
       pub(crate) age: i32
-      } |> String.trim      
-    
+      } |> String.trim
+
   """
   def field([name, type, doc, opts]), do: Field.field(name, type, doc, opts)
   def field([name, type, doc]), do: Field.field(name, type, doc)
@@ -111,34 +111,20 @@ defmodule Kojin.Rust.Field do
       ~s{
       ///  The Bank Account
       pub bank_account: BankAccount
-      } |> String.trim   
-    
+      } |> String.trim
+
       iex> import Kojin.Rust.Field
       ...> id_field([:bank_account, "The Bank Account"]) |> String.Chars.to_string
       ~s{
       ///  The Bank Account
       pub bank_account: BankAccount
-      } |> String.trim   
+      } |> String.trim
   """
   def id_field(id, doc, opts \\ [])
 
   def id_field(id, doc, opts), do: field(id, id, doc, opts)
   def id_field([id, doc, opts]), do: field(id, id, doc, opts)
   def id_field([id, doc]), do: field(id, id, doc, [])
-
-  @doc """
-  Creates a _public_ field by forwarding to `Kojin.Rust.Field.field` with
-  extra option `[visibility: :pub]`
-  """
-  @spec pub_field(atom | binary, atom | Type.t(), binary, list) :: Field.t()
-  def pub_field(name, type, doc \\ "TODO: Comment field", opts \\ [])
-      when (is_binary(name) or is_atom(name)) and is_binary(doc) do
-    field(name, type, doc, Keyword.merge(opts, visibility: :pub))
-  end
-
-  def pub_field([name, type, doc, opts]), do: Field.pub_field(name, type, doc, opts)
-  def pub_field([name, type, doc]), do: Field.pub_field(name, type, doc)
-  def pub_field([name, type]), do: Field.pub_field(name, type)
 
   defimpl String.Chars do
     def to_string(field) do

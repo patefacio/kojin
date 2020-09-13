@@ -32,7 +32,6 @@ defmodule Kojin.Sql.Dql.Query do
 
   """
   def query(result_columns, table, opts \\ []) when is_list(result_columns) do
-
     defaults = [
       joins: [],
       group_by: [],

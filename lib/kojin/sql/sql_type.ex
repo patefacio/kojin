@@ -4,14 +4,14 @@ defmodule Kojin.Sql.SqlType do
   alias Kojin.Sql.SqlType
 
   @sql_types [
-               :int,
-               :double,
-               :date,
-               :timestamp,
-               :char,
-               :varchar,
-               :boolean
-             ]
+    :int,
+    :double,
+    :date,
+    :timestamp,
+    :char,
+    :varchar,
+    :boolean
+  ]
 
   typedstruct enforce: true do
     field(:type, atom())
@@ -42,7 +42,7 @@ defmodule Kojin.Sql.SqlType do
   """
   @spec sql_type(atom, list) :: SqlType.t()
   def sql_type(type, opts \\ []) do
-    if((type not in @sql_types)) do
+    if(type not in @sql_types) do
       raise("Type `#{type}` not supported")
     end
 
