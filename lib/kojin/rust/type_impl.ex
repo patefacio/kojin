@@ -2,11 +2,13 @@ defmodule Kojin.Rust.TypeImpl do
   use TypedStruct
   import Kojin.{Id, Utils, CodeBlock, Rust.Utils}
 
-  alias Kojin.Rust.{Type, ToCode, TypeImpl, Fn}
+  alias Kojin.Rust.{Type, ToCode, TypeImpl, Fn, Generic}
 
   typedstruct do
     field(:type, Type.t(), enforce: true)
     field(:functions, list(Fn.t()), default: [])
+    field(:generic, Generic.t())
+    field(:generic_args, list())
     field(:code_block, Kojin.CodeBlock.t())
     field(:doc, String.t() | nil, default: nil)
     field(:type_name, String.t())
@@ -31,6 +33,8 @@ defmodule Kojin.Rust.TypeImpl do
 
     defaults = [
       doc: "Implementation for #{type}",
+      generic: nil,
+      generic_args: [],
       unit_tests: [],
       test_module_name: make_module_name("type_impl_test_#{type_name}")
     ]
@@ -40,6 +44,12 @@ defmodule Kojin.Rust.TypeImpl do
     %TypeImpl{
       type: type,
       type_name: type_name,
+      generic:         if(opts[:generic] != nil) do
+        Generic.generic(opts[:generic])
+      else
+        nil
+      end,
+      generic_args: opts[:generic_args],
       functions:
         functions
         |> Enum.map(fn f ->
@@ -58,29 +68,49 @@ defmodule Kojin.Rust.TypeImpl do
   ## Examples
 
       iex> import Kojin.Rust.{Fn, TypeImpl}
-      ...> Kojin.Rust.TypeImpl.code(type_impl(:my_struct, [ fun(:f, "Function does f")]))
-      ...> |> String.replace(~r/\\s+/, "")
-      ~s'''
-      ///  Implementation for MyStruct
-      impl MyStruct {
-        // α <impl MyStruct>
-        // ω <impl MyStruct>
-        
-        ////////////////////////////////////////////////////////////////////////////////////
-        //--- private functions ---
-        ////////////////////////////////////////////////////////////////////////////////////
-        
-        /// Function does f
-        fn f() {
-          // α <MyStruct(fn f)>
-          // ω <MyStruct(fn f)>
+      ...> import Kojin
+      ...> Kojin.Rust.TypeImpl.code(type_impl(:my_struct, [ fun(:f, "Function does f") ],
+      ...>  generic: [ lifetimes: [:b]], generic_args: [ "X", :Y ]))
+      ...> |> dark_matter()
+      import Kojin
+      ~s[
+        ///Implementation for MyStruct
+        impl<'b> MyStruct<X, Y> {
+          // α <impl MyStruct>
+          // ω <impl MyStruct>
+          ////////////////////////////////////////////////////////////////////////////////////
+          //--- private functions ---
+          ////////////////////////////////////////////////////////////////////////////////////
+          /// Function does f
+          fn f() {
+            // α <MyStruct(fn f)>
+            // ω <MyStruct(fn f)>
+          }
         }
-        
-      }
-      ''' 
-      |> String.replace(~r/\\s+/, "")
+      ]
+      |> dark_matter
+
   """
-  def code(impl) do
+  def code(impl = %TypeImpl{}) do
+
+    {generic, bounds_decl} =
+      if(impl.generic) do
+        {Generic.code(impl.generic), Generic.bounds_decl(impl.generic)}
+      else
+        {"", ""}
+      end
+
+    generic_args =
+      impl.generic_args
+      |> Enum.join(", ")
+
+    generic_args =
+      if("" == generic_args) do
+        ""
+      else
+        "<#{generic_args}>"
+      end
+
     tname =
       impl.type.base
       |> cap_camel
@@ -92,7 +122,7 @@ defmodule Kojin.Rust.TypeImpl do
     [
       join_content([
         String.trim(triple_slash_comment(impl.doc)),
-        "impl #{tname} {"
+        "impl#{generic} #{tname}#{generic_args}#{bounds_decl} {"
       ]),
       join_content(
         [

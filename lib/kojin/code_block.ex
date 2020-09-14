@@ -7,7 +7,7 @@ defmodule Kojin.CodeBlock do
   @script_delimiters %{open: "# α", close: "# ω"}
 
   @doc """
-  Return the common delimiters for script languages (`# α\\n   ...   \\n# ω`) 
+  Return the common delimiters for script languages (`# α\\n   ...   \\n# ω`)
   """
   def script_delimiters(), do: @script_delimiters
 
@@ -92,7 +92,7 @@ defmodule Kojin.CodeBlock do
         ~s{
         // α <sample_tag>
         // ω <sample_tag>
-        } |> String.trim_leading 
+        } |> String.trim_leading
 
         iex> import Kojin.CodeBlock
         ...> text(code_block(:sample_tag, tag_prefix: "Nested::"))
@@ -125,7 +125,7 @@ defmodule Kojin.CodeBlock do
         A footer
         } |> String.trim_leading
   """
-  def text(code_block) do
+  def text(code_block=%CodeBlock{}) do
     tag =
       if(code_block.tag_prefix) do
         "#{code_block.tag_prefix}(#{code_block.tag})"

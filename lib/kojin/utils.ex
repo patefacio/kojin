@@ -150,7 +150,7 @@ defmodule Kojin.Utils do
 
   def announce_file(:wrote_new, path, stat), do: announce_file("Wrote New:", path, stat)
 
-  @spec announce_file(binary, binary, File.Stat.t()) :: binary
+  @spec announce_file(binary, binary, File.Stat.t() | nil) :: binary
   def announce_file(status, path, stat) when is_binary(status) do
     stat =
       if(stat == nil) do

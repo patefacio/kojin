@@ -19,21 +19,30 @@ defmodule Kojin do
 
       iex> Kojin._split("
       ...> generated prefix text
-      ...> // α <block_name>
+      ...> // α <block_name<foo>>
       ...> hand written text to preserve
-      ...> // ω <block_name>
+      ...> // ω <block_name<foo>>
       ...> generated postfix text
       ...> ", %{open: "// α", close: "// ω"})
-      %{ "block_name" => "\\n // α <block_name>\\n hand written text to preserve\\n // ω <block_name>" }
+      %{ "block_name<foo>" => "\\n // α <block_name<foo>>\\n hand written text to preserve\\n // ω <block_name<foo>>" }
+
+      iex> Kojin._split("
+      ...> generated prefix text
+      ...> // α `block_name`
+      ...> hand written text to preserve
+      ...> // ω `block_name`
+      ...> generated postfix text
+      ...> ", %{open: "// α", close: "// ω"})
+      %{ "block_name" => "\\n // α `block_name`\\n hand written text to preserve\\n // ω `block_name`" }
   """
   def _split(text, delimiters) do
     open = delimiters[:open]
 
-    # Capture label in angle brackets and all text non-greedy, bounded by close
-    prefixed_body = "<(.*?)>.*?"
+    # Capture label in angle brackets and all text greedy to end of line, bounded by close
+    prefixed_body = "[<`]([^\n]*)[>`].*?"
 
     close = delimiters[:close]
-    splitter = ~r{\n?[^\S\r\n]*?#{open}\s+#{prefixed_body}#{close}\s+<\1>}s
+    splitter = ~r{\n?[^\S\r\n]*?#{open}\s+#{prefixed_body}#{close}\s+[<`]\1[>`]}s
 
     Regex.scan(splitter, text)
     |> Enum.map(fn [matched, label] -> {label, matched} end)
