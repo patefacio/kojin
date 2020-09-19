@@ -48,9 +48,9 @@ defmodule Kojin.Rust.CrateGenerator do
 
   @spec generate_crate(Kojin.Rust.Crate.t(), binary) :: any
   def generate_crate(%Crate{} = crate, crate_path) do
-    generate_spec = crate_generate_spec(crate, crate_path)
+    crate_generate_spec = crate_generate_spec(crate, crate_path)
 
-    %{tmp_path: tmp_path, crate_path: crate_path} = generate_spec
+    %{tmp_path: tmp_path, crate_path: crate_path} = crate_generate_spec
 
     is_using_tmp = tmp_path != nil
 
@@ -75,7 +75,7 @@ defmodule Kojin.Rust.CrateGenerator do
 
     generated_files =
       (written_toml ++
-         (generate_spec
+         (crate_generate_spec
           |> module_generate_spec(crate.root_module)
           |> generate_module()))
       |> List.flatten()

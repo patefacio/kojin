@@ -3,6 +3,8 @@ defmodule Kojin.Utils do
   Utility functions for general code generation.
   """
 
+  @default_comment_opts [opener: :line]
+
   @doc ~s"""
   Split lines of `text`, prepend `opener` text to each line and return the joined comment text.
 
@@ -11,17 +13,8 @@ defmodule Kojin.Utils do
       iex> Kojin.Utils.comment("this is a test", "// ")
       "// this is a test"
 
-  """
-
-  @default_comment_opts [opener: :line]
-
-  @doc ~s"""
-  Wraps `text` in comment prefix.
-
-  ## Examples
-
-      iex> Kojin.Utils.comment("some text", "...  ")
-      "...  some text"
+      iex> Kojin.Utils.comment("Line 1\\nLine 2", "// ")
+      "// Line 1\\n// Line 2"
   """
   @spec comment(binary | nil, binary | list()) :: binary
   def comment(text, opts \\ @default_comment_opts)
@@ -74,7 +67,7 @@ defmodule Kojin.Utils do
   """
   def indent_block(text, options \\ [])
 
-  def indent_block(text, _) when text == nil, do: nil
+  def indent_block(nil, _), do: nil
 
   def indent_block(text, options) do
     defaults = [indent: "  "]
