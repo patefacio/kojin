@@ -19,18 +19,18 @@ defmodule Kojin.Utils do
   @spec comment(binary | nil, binary | list()) :: binary
   def comment(text, opts \\ @default_comment_opts)
   def comment(nil, _opts), do: nil
-  def comment(text, [opener: :line]), do: comment(text, "//  ")
-  def comment(text, [opener: :triple_slash]), do: comment(text, "///  ")
-  def comment(text, [opener: :script]), do: comment(text, "#  ")
+  def comment(text, opener: :line), do: comment(text, "//  ")
+  def comment(text, opener: :triple_slash), do: comment(text, "///  ")
+  def comment(text, opener: :script), do: comment(text, "#  ")
 
   def comment(text, opener) when is_binary(text) do
-      result =
-        text
-        |> String.replace(~r/(?:\r|\n)+$/, "")
-        |> String.split("\n")
-        |> Enum.join("\n#{opener}")
+    result =
+      text
+      |> String.replace(~r/(?:\r|\n)+$/, "")
+      |> String.split("\n")
+      |> Enum.join("\n#{opener}")
 
-      "#{opener}#{result}"
+    "#{opener}#{result}"
   end
 
   @doc ~s"""

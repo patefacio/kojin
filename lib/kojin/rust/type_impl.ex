@@ -44,11 +44,12 @@ defmodule Kojin.Rust.TypeImpl do
     %TypeImpl{
       type: type,
       type_name: type_name,
-      generic:         if(opts[:generic] != nil) do
-        Generic.generic(opts[:generic])
-      else
-        nil
-      end,
+      generic:
+        if(opts[:generic] != nil) do
+          Generic.generic(opts[:generic])
+        else
+          nil
+        end,
       generic_args: opts[:generic_args],
       functions:
         functions
@@ -92,7 +93,6 @@ defmodule Kojin.Rust.TypeImpl do
 
   """
   def code(impl = %TypeImpl{}) do
-
     {generic, bounds_decl} =
       if(impl.generic) do
         {Generic.code(impl.generic), Generic.bounds_decl(impl.generic)}

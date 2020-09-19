@@ -1,5 +1,4 @@
 defmodule Kojin.Sql.Ddl.Column do
-
   use TypedStruct
 
   alias Kojin.Sql.SqlType
@@ -12,8 +11,7 @@ defmodule Kojin.Sql.Ddl.Column do
     field(:foreign_key, binary | nil)
   end
 
-
-    @doc """
+  @doc """
   Creates a `Kojin.Sql.Column` from `name`, `type` and options including
   - `indices`: A list of index names, defined on the table, that the column belongs
   - `foreign_key_column`: A foreign_key constraint
@@ -34,8 +32,7 @@ defmodule Kojin.Sql.Ddl.Column do
 
   """
   def column(name, %SqlType{} = type, opts \\ []) do
-
-    defaults = [ index: nil, foreign_key: nil ]
+    defaults = [index: nil, foreign_key: nil]
 
     opts = Kojin.check_args(defaults, opts)
 
@@ -46,6 +43,4 @@ defmodule Kojin.Sql.Ddl.Column do
       foreign_key: opts[:foreign_key]
     }
   end
-
 end
-

@@ -1,5 +1,4 @@
 defmodule Kojin.Sql.Ddl.Table do
-
   use TypedStruct
 
   alias Kojin.Sql.Ddl.{Column, Table}
@@ -12,8 +11,7 @@ defmodule Kojin.Sql.Ddl.Table do
   end
 
   def table(columns, opts \\ []) do
-
-    defaults = [ owner: nil, foreign_keys: [], indices: []]
+    defaults = [owner: nil, foreign_keys: [], indices: []]
 
     opts = Kojin.check_args(defaults, opts)
 

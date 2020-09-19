@@ -9,7 +9,10 @@ defmodule Kojin.Rust.ModuleGenerateSpec do
     field(:module_relative_path, String.t())
   end
 
-  def module_generate_spec(
+  @doc """
+  Returns flattened list of ModuleGenerateSpec instances for all modules recursively.
+  """
+  def module_generate_specs(
         %CrateGenerateSpec{} = crate_generate_spec,
         %Module{} = module,
         parent_module_generate_spec \\ nil
@@ -35,12 +38,21 @@ defmodule Kojin.Rust.ModuleGenerateSpec do
         "src/lib.rs"
       end
 
-    %ModuleGenerateSpec{
+    mgs = %ModuleGenerateSpec{
       crate_generate_spec: crate_generate_spec,
       parent_module_generate_spec: parent_module_generate_spec,
       module: module,
       module_relative_path: module_relative_path
     }
+
+    [
+      mgs
+      | module.modules
+        |> Enum.map(fn m ->
+          ModuleGenerateSpec.module_generate_specs(crate_generate_spec, m, mgs)
+        end)
+        |> List.flatten()
+    ]
   end
 end
 
@@ -88,22 +100,8 @@ defmodule Kojin.Rust.ModuleGenerator do
         # Logger.info("Generating module `#{module.name}` -> #{inspect(written)}")
       end
 
-    submodules =
-      module.modules
-      |> Enum.reduce([], fn submodule, acc ->
-        [
-          ModuleGenerateSpec.module_generate_spec(
-            crate_generate_spec,
-            submodule,
-            module_generate_spec
-          )
-          |> generate_module()
-          | acc
-        ]
-      end)
-
     if(written != nil) do
-      [written | submodules]
+      [written]
     else
       []
     end

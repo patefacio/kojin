@@ -125,7 +125,7 @@ defmodule Kojin.CodeBlock do
         A footer
         } |> String.trim_leading
   """
-  def text(code_block=%CodeBlock{}) do
+  def text(code_block = %CodeBlock{}) do
     tag =
       if(code_block.tag_prefix) do
         "#{code_block.tag_prefix}(#{code_block.tag})"
