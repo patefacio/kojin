@@ -57,7 +57,11 @@ defmodule Kojin.Rust do
     :copy,
     :debug,
     :deserialize,
+    :eq,
+    :hash,
+    :ord,
     :partial_eq,
+    :partial_ord,
     :serialize
   ]
 
