@@ -117,7 +117,7 @@ defmodule Kojin.Rust.TypeImpl do
 
     functions =
       impl.functions
-      |> Enum.sort()
+      |> Enum.sort(fn a, b -> {a.visibility, a.name} <= {b.visibility, b.name} end)
 
     [
       join_content([
