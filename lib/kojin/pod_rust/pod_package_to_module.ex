@@ -82,6 +82,25 @@ defmodule Kojin.PodRust.PodPackageToModule do
     rs_structs =
       pod_package.pod_objects
       |> Enum.map(fn po ->
+        modeled_derivables =
+          get_in(
+            po,
+            [
+              Access.key(:properties, %{}),
+              Access.key(:rust, %{}),
+              Access.key(:derivables, [])
+            ]
+          )
+
+        IO.puts("#{po.id} MODELED DERIVABLES -> #{inspect(modeled_derivables)}")
+
+        derivables =
+          if Enum.empty?(modeled_derivables) do
+            Kojin.Rust.struct_common_derivables()
+          else
+            modeled_derivables
+          end
+
         Struct.struct(
           po.id,
           po.doc,
@@ -98,15 +117,7 @@ defmodule Kojin.PodRust.PodPackageToModule do
           end),
           visibility: :pub,
           derivables:
-            (Kojin.Rust.struct_common_derivables() ++
-               get_in(
-                 po,
-                 [
-                   Access.key(:properties, %{}),
-                   Access.key(:rust, %{}),
-                   Access.key(:derivables, [])
-                 ]
-               ))
+            derivables
             |> MapSet.new()
             |> Enum.to_list()
         )
