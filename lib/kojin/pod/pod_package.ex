@@ -57,6 +57,7 @@ defmodule Kojin.Pod.PodPackage do
                       doc: "Abcissa",
                       id: :x,
                       optional?: false,
+                      properties: %{},
                       type: %Kojin.Pod.PodType{
                         doc: "32 bit integer",
                         id: :int32,
@@ -69,6 +70,7 @@ defmodule Kojin.Pod.PodPackage do
                       doc: "Ordinate",
                       id: :y,
                       optional?: false,
+                      properties: %{},
                       type: %Kojin.Pod.PodType{
                         doc: "32 bit integer",
                         id: :int32,
@@ -89,6 +91,7 @@ defmodule Kojin.Pod.PodPackage do
                       doc: "Abcissa",
                       id: :x,
                       optional?: false,
+                      properties: %{},
                       type: %Kojin.Pod.PodType{
                         doc: "32 bit integer",
                         id: :int32,
@@ -101,6 +104,7 @@ defmodule Kojin.Pod.PodPackage do
                       doc: "Ordinate",
                       id: :y,
                       optional?: false,
+                      properties: %{},
                       type: %Kojin.Pod.PodType{
                         doc: "32 bit integer",
                         id: :int32,

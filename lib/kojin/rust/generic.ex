@@ -83,11 +83,41 @@ defmodule Kojin.Rust.Generic do
     field(:lifetimes, list(char()), default: [])
   end
 
+  @doc """
+  Creates a `Generic` from lifetimes and type parms
+
+  ## Examples
+
+    Generic of nil has no lifetimes or parms.
+
+      iex> import Kojin.Rust.Generic
+      ...> g = generic(nil)
+      ...> {g.lifetimes, g.type_parms}
+      {[], []}
+
+
+    Generic of empty list of options has no lifetimes or parms.
+
+      iex> import Kojin.Rust.Generic
+      ...> generic(nil) == generic([])
+      true
+
+    Generic with lifetimes and options has corresponding fields.
+
+      iex> import Kojin.Rust.Generic
+      ...> generic(lifetimes: [:a,:b], type_parms: [:T1,:T2])
+      ...> |> String.Chars.to_string()
+      "<'a, 'b, T1, T2>"
+
+
+  """
+  @spec generic(nil) :: Generic.t()
+  def generic(nil), do: generic([])
+
+  @spec generic(Kojin.Rust.Generic.t()) :: Kojin.Rust.Generic.t()
   def generic(%Generic{} = generic), do: generic
 
-  @doc """
-  Creates generic when given type parms plus additional options
-  """
+  @spec generic(list) :: Generic.t()
   def generic(opts) when is_list(opts) do
     Logger.debug("Generic Opts -> #{inspect(opts)}")
     opts = check_args([type_parms: [], lifetimes: []], opts)
@@ -125,6 +155,8 @@ defmodule Kojin.Rust.Generic do
       ""
     end
   end
+
+  def code([]), do: code(generic([]))
 
   def code(%Generic{} = generic) do
     [

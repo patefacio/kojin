@@ -10,6 +10,8 @@ defmodule Kojin.Rust.Field do
   alias Kojin.Utils
   import Utils
 
+  @valid_accesses [:ro, :ro_ref, :rw, :rw_ref, :ia]
+
   @typedoc """
   A *field* of a _struct_.
 
@@ -22,6 +24,7 @@ defmodule Kojin.Rust.Field do
     field(:name, atom)
     field(:doc, String.t(), enforce: false)
     field(:type, Type.t())
+    field(:access, atom | nil)
     field(:visibility, atom, default: :pub)
   end
 
@@ -66,14 +69,32 @@ defmodule Kojin.Rust.Field do
       when (is_binary(name) or is_atom(name)) and is_binary(doc) do
     alias Kojin.Rust.Type
 
-    defaults = [visibility: :pub]
-    opts = Kojin.check_args(defaults, opts)
+    name = Kojin.require_snake(name)
+    defaults = [visibility: :pub, access: nil]
+    merged_opts = Kojin.check_args(defaults, opts)
+
+    visibility =
+      case merged_opts[:access] do
+        # All valid accesses are trying to limit access for encapsulation
+        # In this case default visibility should not be :pub, but rather
+        # :private or whatever is specified. For example, access of :ro
+        # with no supplied :visibility should give :private. access of :ro
+        # with :pub_crate specified should give :pub_crate.
+        access when access in @valid_accesses ->
+          opts[:visibility] || :private
+
+        nil ->
+          # No access specified use provided or :pub merged default
+          merged_opts[:visibility]
+          # _ -> {:error, "Field `access` must be one of (#{@valid_accesses |> Enum.join(", ")})"}
+      end
 
     %Field{
       name: name,
       doc: doc,
       type: Type.type(type),
-      visibility: opts[:visibility]
+      access: merged_opts[:access],
+      visibility: visibility
     }
   end
 

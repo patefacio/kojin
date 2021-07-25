@@ -53,7 +53,7 @@ defmodule Kojin.Rust.TraitImpl do
     trait_impl(trait, Type.type(type), opts)
   end
 
-  @spec trait_impl(Kojin.Rust.Trait.t(), Kojin.Rust.Type.t()) :: Kojin.Rust.TraitImpl.t()
+  @spec trait_impl(Trait.t(), Type.t(), list()) :: TraitImpl.t()
   def trait_impl(%Trait{} = trait, %Type{} = type, opts) do
     defaults = [
       generic: nil,
@@ -75,7 +75,7 @@ defmodule Kojin.Rust.TraitImpl do
         if(opts[:generic] != nil) do
           Generic.generic(opts[:generic])
         else
-          nil
+          trait.generic
         end,
       generic_args: opts[:generic_args],
       bodies: opts[:bodies],
@@ -85,8 +85,13 @@ defmodule Kojin.Rust.TraitImpl do
     }
   end
 
+  @spec trait_impl(binary(), Type.t(), list()) :: TraitImpl.t()
   def trait_impl(trait, type, opts) when is_binary(trait),
     do: trait_impl(Trait.trait(trait, "", []), type, opts)
+
+  @spec trait_impl(Trait.t(), binary | atom(), list()) :: TraitImpl.t()
+  def trait_impl(%Trait{} = trait, type, opts) when is_binary(type) or is_atom(type),
+    do: trait_impl(trait, Type.type(type), opts)
 
   defimpl String.Chars do
     def to_string(%TraitImpl{} = trait_impl) do
@@ -116,8 +121,17 @@ defmodule Kojin.Rust.TraitImpl do
           {"", ""}
         end
 
-      generic_args =
-        trait_impl.generic_args
+      generic_args = trait_impl.generic_args
+        |> Enum.map(fn generic_arg ->
+          case generic_arg do
+            :a -> "'a"
+            :b -> "'b"
+            :c -> "'c"
+            :d -> "'d"
+            :static -> "'static"
+            _ -> "#{generic_arg}"
+          end
+        end)
         |> Enum.join(", ")
 
       generic_args =

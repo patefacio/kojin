@@ -10,7 +10,7 @@ defmodule Kojin.Rust.Parm do
   A rust function parm.
   """
   typedstruct do
-    field(:name, atom, enforce: true)
+    field(:name, atom | String.t(), enforce: true)
     field(:type, Type.t(), enforce: true, default: :double)
     field(:doc, String.t())
     field(:mut, boolean(), default: false)
@@ -116,6 +116,8 @@ defmodule Kojin.Rust.Parm do
 
   def parm(name, type, opts) do
     defaults = [mut: false, doc: "TODO: Comment #{name}"]
+
+    Kojin.require_snake(name)
     opts = Kojin.check_args(defaults, opts)
 
     result = %Parm{
@@ -181,6 +183,8 @@ defmodule Kojin.Rust.Fn do
   import Kojin.{CodeBlock, Id, Utils, Rust.Type}
   alias Kojin.CodeBlock
   alias Kojin.Rust.{Fn, Generic, Parm, ToCode, Type, Attr}
+
+  @type parm_list_spec() :: list(Parm.t() | :self | :self_ref | :self_mref)
 
   @typedoc """
   A rust function.
@@ -297,7 +301,8 @@ defmodule Kojin.Rust.Fn do
   """
   def fun(name, doc, parms \\ [], opts \\ [])
 
-  @spec fun(binary | atom, binary, list(Parm.t()), list) :: Fn.t()
+  @spec fun(binary | atom, binary, parm_list_spec(), list) ::
+          Fn.t()
 
   def fun(name, doc, parms, rest) when is_binary(name),
     do: fun(String.to_atom(name), doc, parms, rest)
@@ -372,7 +377,7 @@ defmodule Kojin.Rust.Fn do
   @doc ~s"""
     Converts `return` and `return_doc` into options and calls fun/4.
   """
-  @spec fun(binary | atom, binary, list(Parm.t()), binary | atom | Type.t(), binary) ::
+  @spec fun(binary | atom, binary, parm_list_spec(), binary | atom | Type.t(), binary) ::
           Kojin.Rust.Fn.t()
   def fun(name, doc, parms, return, return_doc),
     do: fun(name, doc, parms, return: return, return_doc: return_doc)
@@ -590,7 +595,7 @@ defmodule Kojin.Rust.Fn do
 
   def pub_fun(name, doc, parms \\ [], opts \\ [])
 
-  @spec pub_fun(binary | atom, binary, list(Parm.t()), list) :: Fn.t()
+  @spec pub_fun(binary | atom, binary, parm_list_spec(), list) :: Fn.t()
 
   def pub_fun(name, doc, parms, rest) when is_binary(name),
     do: pub_fun(String.to_atom(name), doc, parms, rest)
@@ -602,7 +607,7 @@ defmodule Kojin.Rust.Fn do
     fun(name, doc, parms, Keyword.merge(opts, visibility: :pub))
   end
 
-  @spec pub_fun(binary | atom, binary, list(Parm.t()), binary | atom | Type.t(), binary) ::
+  @spec pub_fun(binary | atom, binary, parm_list_spec(), binary | atom | Type.t(), binary) ::
           Kojin.Rust.Fn.t()
   def pub_fun(name, doc, parms, return, return_doc),
     do: pub_fun(name, doc, parms, return: return, return_doc: return_doc)

@@ -19,8 +19,11 @@ defmodule Kojin.Rust.Trait do
     field(:visibility, atom, default: :private)
     field(:associated_types, list(), default: [])
     field(:super_traits, list(Trait | binary | atom), default: [])
+    field(:path, binary, default: nil)
+    field(:uses, list(Use.t()), default: [])
   end
 
+  @spec trait(atom | binary, nil | binary, list(), keyword) :: Kojin.Rust.Trait.t()
   @doc """
   Create a `Kojin.Rust.Trait` from an _id_ or a `String`
   `name`, a `doc` comment string and its `functions`.
@@ -68,7 +71,6 @@ defmodule Kojin.Rust.Trait do
       :good
 
   """
-
   def trait(name, doc \\ nil, functions \\ [], opts \\ [])
 
   def trait(name, doc, functions, opts) when is_binary(name),
@@ -77,8 +79,16 @@ defmodule Kojin.Rust.Trait do
   def trait(name, doc, functions, opts) when is_atom(name),
     do: _trait(name, cap_camel(name), doc, functions, opts)
 
-  defp _trait(id, name, doc, functions, opts) do
-    defaults = [generic: nil, visibility: :private, associated_types: [], super_traits: []]
+  def _trait(id, name, doc, functions, opts) do
+    defaults = [
+      generic: nil,
+      visibility: :private,
+      associated_types: [],
+      super_traits: [],
+      path: nil,
+      uses: []
+    ]
+
     opts = Kojin.check_args(defaults, opts)
 
     %Trait{
@@ -100,7 +110,9 @@ defmodule Kojin.Rust.Trait do
           end
         ),
       super_traits: opts[:super_traits],
-      visibility: opts[:visibility]
+      visibility: opts[:visibility],
+      path: opts[:path],
+      uses: opts[:uses]
     }
   end
 
@@ -162,7 +174,7 @@ defmodule Kojin.Rust.Trait do
 
   defimpl ToCode do
     @spec to_code(Trait.t()) :: binary
-    def to_code(trait) do
+    def to_code(%Trait{} = trait) do
       "#{trait}"
     end
   end

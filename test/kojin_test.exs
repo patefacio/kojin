@@ -19,7 +19,10 @@ defmodule KojinTest do
   doctest Kojin.Rust.Attr
   doctest Kojin.Rust.Field
   doctest Kojin.Rust.Fn
+  doctest Kojin.Rust.Generic
   doctest Kojin.Rust.Parm
+  doctest Kojin.Rust.PopularTraits
+  doctest Kojin.Rust.Struct
   doctest Kojin.Rust.Type
   doctest Kojin.Rust.AssociatedType
   doctest Kojin.Rust.Trait
@@ -143,18 +146,6 @@ Post Lore IPSUM
 
     test "id" do
       assert Kojin.Id.id("thisIsCool") == "this_is_cool"
-    end
-
-    test "field" do
-      a = %Kojin.Rust.Field{name: :bam_bam, doc: "This is a field", type: "goo"}
-      assert a == a
-      assert Vex.errors(a) == []
-    end
-
-    test "Field" do
-      alias Kojin.Rust.Field, as: Field
-
-      assert %Field{name: :foo, type: :goo} == %Field{name: :foo, type: :goo}
     end
 
     test "merge file with `announce`" do

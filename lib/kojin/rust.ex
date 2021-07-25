@@ -165,6 +165,23 @@ defmodule Kojin.Rust do
   def allowed_visibilities(), do: @allowed_visibilities
 
   @doc """
+  Returns true if visibility is valid
+
+  ## Examples
+
+      iex> Kojin.Rust.is_valid_visibility(:pub)
+      true
+
+      iex> Kojin.Rust.is_valid_visibility(:pub_crate)
+      true
+
+      iex> Kojin.Rust.is_valid_visibility(:foobar)
+      false
+
+  """
+  def is_valid_visibility(visibility), do: Enum.member?(@allowed_visibilities, visibility)
+
+  @doc """
   Returns true if name is valid.
 
   Requires the name to be snake case.

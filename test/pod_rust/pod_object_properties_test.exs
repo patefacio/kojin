@@ -3,6 +3,7 @@ defmodule PodObjectPropertiesTest do
 
   import Kojin.Pod.PodObject
   import Kojin.PodRust.ObjectProperties
+  import Kojin.Rust.Parm
 
   test "add properties" do
     po = pod_object(:foo, "Foo object", [])
@@ -23,14 +24,14 @@ defmodule PodObjectPropertiesTest do
   test "plus properties" do
     po = pod_object(:foo, "Foo object", [])
     assert po.properties == %{}
-    po = plus_rust_derivables(po, [:queryable])
+    po = rust_plus_derivables(po, [:queryable])
     assert Enum.member?(po.properties.rust.derivables, :queryable)
   end
 
   test "minus properties" do
     po = pod_object(:foo, "Foo object", [])
     assert po.properties == %{}
-    po = minus_rust_derivables(po, [:debug])
+    po = rust_minus_derivables(po, [:debug])
     assert !Enum.member?(po.properties.rust.derivables, :debug)
   end
 
@@ -42,4 +43,13 @@ defmodule PodObjectPropertiesTest do
     assert Enum.member?(po.properties.rust.derivables, :debug)
   end
 
+  test "field visibility properties" do
+    po =
+      pod_object(:foo, "Foo object", [
+        [:foo, "Foo field", :f64]
+      ])
+      |> rust_field_visibility(:private)
+
+    assert po.properties == %{rust: %{field_visibility: :private}}
+  end
 end

@@ -19,6 +19,7 @@ defmodule Kojin.Pod.PodField do
     field(:type, PodType.t() | PodTypeRef.t() | PodArray.t() | PodMap.t())
     field(:optional?, boolean())
     field(:default_value, any())
+    field(:properties, map(), defaults: %{})
   end
 
   @doc """
@@ -37,7 +38,8 @@ defmodule Kojin.Pod.PodField do
         doc: "A field",
         type: pod_type(:int32),
         default_value: nil,
-        optional?: false
+        optional?: false,
+        properties: %{}
       }
 
     When provided list [id, doc] that looks like field parameters, defaulting to string.
@@ -51,7 +53,8 @@ defmodule Kojin.Pod.PodField do
         doc: "A field",
         type: pod_type(:string),
         default_value: nil,
-        optional?: false
+        optional?: false,
+        properties: %{}
       }
 
     When provided list [id, doc, array of type] that looks like field parameters.
@@ -65,7 +68,8 @@ defmodule Kojin.Pod.PodField do
         doc: "Int array",
         type: array_of(:int32),
         default_value: nil,
-        optional?: false
+        optional?: false,
+        properties: %{}
       }
 
   """
@@ -90,7 +94,8 @@ defmodule Kojin.Pod.PodField do
         doc: "A field",
         type: pod_type(:int64),
         default_value: nil,
-        optional?: false
+        optional?: false,
+        properties: %{}
       }
 
       iex> Kojin.Pod.PodField.pod_field(:f_1, "A field")
@@ -99,7 +104,8 @@ defmodule Kojin.Pod.PodField do
         doc: "A field",
         type: pod_type(:string),
         default_value: nil,
-        optional?: false
+        optional?: false,
+        properties: %{}
       }
 
   """
@@ -113,7 +119,8 @@ defmodule Kojin.Pod.PodField do
       doc: doc,
       type: :string,
       default_value: nil,
-      optional?: false
+      optional?: false,
+      properties: %{}
     ]
 
     opts = Kojin.check_args(defaults, opts)
@@ -123,7 +130,8 @@ defmodule Kojin.Pod.PodField do
       doc: doc,
       type: PodTypes.pod_type(opts[:type]),
       optional?: opts[:optional?],
-      default_value: opts[:default_value]
+      default_value: opts[:default_value],
+      properties: opts[:properties]
     }
   end
 

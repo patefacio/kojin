@@ -3,7 +3,7 @@ require Logger
 defmodule Kojin.PodRust.PodPackageToModule do
   use TypedStruct
   alias Kojin.Pod.{PodPackageSet, PodPackage, PodType, PodTypeRef, PodTypes, PodArray, PodMap}
-  alias Kojin.Rust.{SimpleEnum, Struct, Module, Field, Type, TypeAlias, Use}
+  alias Kojin.Rust.{SimpleEnum, Struct, Module, Field, PopularTraits, Type, TypeAlias, Use}
   alias Kojin.PodRust.PodPackageToModule
 
   @pod_string PodTypes.pod_type(:string)
@@ -40,18 +40,6 @@ defmodule Kojin.PodRust.PodPackageToModule do
   def pod_package_to_module(%PodPackageSet{} = pod_package_set, %PodPackage{} = pod_package) do
     alias Kojin.Id
 
-    default_fun =
-      Kojin.Rust.Fn.fun(
-        :default,
-        "Function to provide default value of type",
-        [],
-        return: "Self",
-        return_doc: "Returns the default, which is the first value in the enum"
-      )
-
-    default_trait =
-      Kojin.Rust.Trait.trait(:default, "Trait to provide default value", [default_fun])
-
     rs_enums =
       pod_package.pod_enums
       |> Enum.map(fn pe ->
@@ -68,7 +56,7 @@ defmodule Kojin.PodRust.PodPackageToModule do
           derivables: Kojin.Rust.enum_common_derivables(),
           trait_impls: [
             Kojin.Rust.TraitImpl.trait_impl(
-              default_trait,
+              PopularTraits.default(),
               enum_type_name,
               bodies: %{
                 default: body
@@ -82,17 +70,11 @@ defmodule Kojin.PodRust.PodPackageToModule do
     rs_structs =
       pod_package.pod_objects
       |> Enum.map(fn po ->
-        modeled_derivables =
-          get_in(
-            po,
-            [
-              Access.key(:properties, %{}),
-              Access.key(:rust, %{}),
-              Access.key(:derivables, [])
-            ]
-          )
+        modeled_derivables = get_rust_property(po, :derivables, [])
+        modeled_field_visibility = get_rust_property(po, :field_visibility, :pub)
+        modeled_field_access = get_rust_property(po, :field_access, nil)
 
-        IO.puts("#{po.id} MODELED DERIVABLES -> #{inspect(modeled_derivables)}")
+        custom_traits = get_rust_property(po, :custom_traits, [])
 
         derivables =
           if Enum.empty?(modeled_derivables) do
@@ -105,21 +87,37 @@ defmodule Kojin.PodRust.PodPackageToModule do
           po.id,
           po.doc,
           po.fields
-          |> Enum.map(fn f ->
+          |> Enum.map(fn field ->
+            core_type = pod_type_to_rust_type(field.type)
+
             rust_type =
-              if(f.optional?) do
-                "Option<#{pod_type_to_rust_type(f.type)}>"
+              if(get_rust_property(field, :boxed, nil)) do
+                "Box<#{core_type}>"
               else
-                pod_type_to_rust_type(f.type)
+                core_type
               end
 
-            Field.field(f.id, rust_type, f.doc, visibility: :pub)
+            rust_type =
+              if(field.optional?) do
+                "Option<#{rust_type}>"
+              else
+                rust_type
+              end
+
+            modeled_access = modeled_field_access || get_rust_property(field, :access, nil)
+
+            Field.field(field.id, rust_type, field.doc,
+              access: modeled_access,
+              visibility: modeled_field_visibility
+            )
           end),
           visibility: :pub,
           derivables:
             derivables
             |> MapSet.new()
-            |> Enum.to_list()
+            |> Enum.to_list(),
+          with_new?: get_rust_property(po, :with_new?, false),
+          custom_traits: custom_traits
         )
       end)
 
@@ -237,6 +235,17 @@ defmodule Kojin.PodRust.PodPackageToModule do
       uses: pod_package_to_module.rs_uses,
       type_aliases: pod_package_to_module.type_aliases,
       visibility: :pub
+    )
+  end
+
+  defp get_rust_property(item, property, default) do
+    get_in(
+      item,
+      [
+        Access.key(:properties, %{}),
+        Access.key(:rust, %{}),
+        Access.key(property, default)
+      ]
     )
   end
 end

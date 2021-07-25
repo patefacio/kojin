@@ -120,7 +120,7 @@ defmodule Kojin do
   - :updated if `file_path` existed and updated `content` were written to it
 
   """
-  @spec check_write_file(any, binary, binary | nil) :: :none
+  @spec check_write_file(any, binary, binary | nil) :: :no_change | :updated | :wrote_new
   def check_write_file(file_path, content, previous_content \\ nil) do
     status =
       if File.exists?(file_path) do
@@ -139,8 +139,11 @@ defmodule Kojin do
       end
 
     IO.puts(announce_file(status, file_path, nil))
+
+    status
   end
 
+  @spec require_snake(atom | binary) :: binary
   @doc ~s"""
   Ensures the name is snake case, raises `ArgumentError` if not.
 
@@ -150,12 +153,14 @@ defmodule Kojin do
       %ArgumentError{message: "Name must be snake: `FooBar`"}
 
       iex> Kojin.require_snake(:foo_bar)
-      nil
+      "foo_bar"
   """
   def require_snake(name) when is_binary(name) do
     if !Kojin.Id.is_snake(name) do
       raise ArgumentError, "Name must be snake: `#{name}`"
     end
+
+    name
   end
 
   def require_snake(name) when is_atom(name), do: require_snake(Atom.to_string(name))
