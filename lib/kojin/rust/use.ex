@@ -7,7 +7,7 @@ defmodule Kojin.Rust.Use do
   @moduledoc "Models a `use ...` rust statement"
 
   use TypedStruct
-  alias Rust.Use
+  alias Rust.{Use, Attr}
 
   @typedoc """
   Models details of a `use ...` rust statement
@@ -24,11 +24,11 @@ defmodule Kojin.Rust.Use do
 
   ## Examples
 
-      iex> Kojin.Rust.Use.use_("std::opts::Add") 
+      iex> Kojin.Rust.Use.use_("std::opts::Add")
       ...> |> String.Chars.to_string()
       "use std::opts::Add;"
 
-      iex> Kojin.Rust.Use.use_("SomeClass", attrs: ["cfg(test)"]) 
+      iex> Kojin.Rust.Use.use_("SomeClass", attrs: ["cfg(test)"])
       ...> |> String.Chars.to_string() |> String.trim()
       ~s'''
       #[cfg(test)]
@@ -76,6 +76,7 @@ defmodule Kojin.Rust.Uses do
   @moduledoc "Models a collection of `use ...` rust statements"
 
   use TypedStruct
+  alias Kojin.Rust.Use
 
   @typedoc """
   Models a collection of `use ...` statements
@@ -89,7 +90,7 @@ defmodule Kojin.Rust.Uses do
 
   ## Examples
 
-      iex> alias Kojin.Rust; 
+      iex> alias Kojin.Rust;
       ...> import Rust.{Uses}
       ...> uses(["std::ops::Add", "std::ops::Sub"])
       ...> |> String.Chars.to_string

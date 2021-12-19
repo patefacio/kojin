@@ -33,11 +33,7 @@ defmodule Kojin.Rust do
 
   Values:
 
-  \n#{
-    @allowed_derivables
-    |> Enum.map(fn d -> "  - `:#{d}`" end)
-    |> Enum.join("\n")
-  }
+  \n#{@allowed_derivables |> Enum.map(fn d -> "  - `:#{d}`" end) |> Enum.join("\n")}
   """
   def allowed_derivables(), do: @allowed_derivables
 
@@ -73,11 +69,7 @@ defmodule Kojin.Rust do
 
   Values:
 
-  \n#{
-    @struct_common_derivables
-    |> Enum.map(fn d -> "  - `:#{d}`" end)
-    |> Enum.join("\n")
-  }
+  \n#{@struct_common_derivables |> Enum.map(fn d -> "  - `:#{d}`" end) |> Enum.join("\n")}
   """
   def struct_common_derivables(), do: @struct_common_derivables
 
@@ -89,11 +81,7 @@ defmodule Kojin.Rust do
 
   Values:
 
-  \n#{
-    @enum_common_derivables
-    |> Enum.map(fn d -> "  - `:#{d}`" end)
-    |> Enum.join("\n")
-  }
+  \n#{@enum_common_derivables |> Enum.map(fn d -> "  - `:#{d}`" end) |> Enum.join("\n")}
   """
   def enum_common_derivables(), do: @enum_common_derivables
 
@@ -156,11 +144,7 @@ defmodule Kojin.Rust do
 
   Values:
 
-  \n#{
-    @allowed_visibilities
-    |> Enum.map(fn d -> "  - `:#{d}`" end)
-    |> Enum.join("\n")
-  }
+  \n#{@allowed_visibilities |> Enum.map(fn d -> "  - `:#{d}`" end) |> Enum.join("\n")}
   """
   def allowed_visibilities(), do: @allowed_visibilities
 

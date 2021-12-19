@@ -5,7 +5,7 @@ defmodule Kojin.Rust.SimpleEnum do
   A `SimpleEnum` corresponds to a C++ style enum that simply enumerates a set of values.
   """
 
-  alias Kojin.Rust.{SimpleEnum, TypeImpl, Fn}
+  alias Kojin.Rust.{SimpleEnum, TypeImpl, TraitImpl, Fn}
   alias Kojin.Utils
   import Utils
   import Kojin.Rust.{Utils, Type}
@@ -128,7 +128,7 @@ defmodule Kojin.Rust.SimpleEnum do
               [
                 "match self {",
                 enum.values
-                |> Enum.map(fn {variant, doc} ->
+                |> Enum.map(fn {variant, _doc} ->
                   ~s(#{enum.type_name}::#{cap_camel("#{variant}")} => "#{variant}")
                 end)
                 |> Enum.join(",\n"),
@@ -149,7 +149,7 @@ defmodule Kojin.Rust.SimpleEnum do
                 [
                   Enum.map(
                     enum.values,
-                    fn {variant, doc} ->
+                    fn {variant, _doc} ->
                       ~s("#{variant}" => #{enum.type_name}::#{cap_camel("#{variant}")})
                     end
                   ),

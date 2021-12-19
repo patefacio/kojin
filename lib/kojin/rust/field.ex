@@ -38,7 +38,7 @@ defmodule Kojin.Rust.Field do
   end
 
   validates(:name,
-    by: [function: &Kojin.Rust.Field.valid_name?/1, message: "Field.name must be snake case"]
+    by: [function: &Field.valid_name?/1, message: "Field.name must be snake case"]
   )
 
   @doc ~s"""
@@ -64,11 +64,10 @@ defmodule Kojin.Rust.Field do
       } |> String.trim
 
   """
-  @spec field(atom | binary, atom | Type.t(), binary, list) :: Field.t()
+  # @spec field(atom | binary, atom | binary | Type.t(), binary, any()) :: Field.t()
+  @spec field(atom | binary, atom | binary | Type.t(), binary, Keyword.t()) :: Field.t()
   def field(name, type, doc \\ "TODO: Comment field", opts \\ [])
       when (is_binary(name) or is_atom(name)) and is_binary(doc) do
-    alias Kojin.Rust.Type
-
     name = Kojin.require_snake(name)
     defaults = [visibility: :pub, access: nil]
     merged_opts = Kojin.check_args(defaults, opts)
@@ -122,6 +121,7 @@ defmodule Kojin.Rust.Field do
   def field([name, type, doc]), do: Field.field(name, type, doc)
   def field([name, type]), do: Field.field(name, type)
 
+  @spec id_field(atom | binary, binary, keyword) :: any()
   @doc ~S"""
   Given an `id` creates a field with same type as id name.
 
@@ -144,6 +144,7 @@ defmodule Kojin.Rust.Field do
   def id_field(id, doc, opts \\ [])
 
   def id_field(id, doc, opts), do: field(id, id, doc, opts)
+  @spec id_field([atom | binary | keyword, ...]) :: any()
   def id_field([id, doc, opts]), do: field(id, id, doc, opts)
   def id_field([id, doc]), do: field(id, id, doc, [])
 

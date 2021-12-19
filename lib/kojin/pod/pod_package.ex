@@ -8,7 +8,7 @@ defmodule Kojin.Pod.PodPackage do
 
   use TypedStruct
 
-  alias Kojin.Pod.{PodPackage, PodTypeRef, PodObject}
+  alias Kojin.Pod.{PodPackage, PodTypeRef, PodObject, PodEnum}
 
   @typedoc """
   Models a package of related `Kojin.Pod.PodObject` and

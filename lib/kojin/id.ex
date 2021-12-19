@@ -201,14 +201,6 @@ defmodule Kojin.Id do
       iex> Kojin.Id.is_snake("foo Bar Goo")
       false
 
-  """
-  def is_snake(text) when is_binary(text), do: Regex.match?(@snake_re, text)
-
-  @doc """
-  Returns true if string is snake case.
-
-  ## Examples
-
       iex> Kojin.Id.is_snake(:foo_bar_goo)
       true
 
@@ -219,6 +211,8 @@ defmodule Kojin.Id do
       false
 
   """
+  def is_snake(text) when is_binary(text), do: Regex.match?(@snake_re, text)
+
   def is_snake(text) when is_atom(text), do: is_snake(Atom.to_string(text))
 
   @doc """

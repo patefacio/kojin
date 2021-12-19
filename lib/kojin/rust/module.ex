@@ -154,7 +154,7 @@ defmodule Kojin.Rust.Module do
         end)
       ]
       |> List.flatten()
-      |> Enum.group_by(fn {module_name, function_name} -> module_name end)
+      |> Enum.group_by(fn {module_name, _function_name} -> module_name end)
 
     submodules =
       if(Enum.empty?(functions_with_unit_tests)) do
@@ -168,7 +168,7 @@ defmodule Kojin.Rust.Module do
             type: :inline,
             modules:
               functions_with_unit_tests
-              |> Enum.filter(fn {module_name, functions} -> module_name != nil end)
+              |> Enum.filter(fn {module_name, _functions} -> module_name != nil end)
               |> Enum.map(fn {module_name, functions} ->
                 module(
                   module_name,

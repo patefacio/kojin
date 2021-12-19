@@ -28,7 +28,7 @@ defmodule ModuleTest do
     trait_impl = trait_impl(t, :i64, doc: "impl of trait", unit_tests: [:t_f])
     type_impl = type_impl(:foo, [], unit_tests: [:foo])
 
-    m =
+    _m =
       content(
         module(
           :m,

@@ -10,7 +10,7 @@ defmodule TestHelper do
   # This allows tests to access module with sample data
   # https://stackoverflow.com/questions/30652439/importing-test-code-in-elixir-unit-test
   #######################################################################################
-  Code.load_file("test/sample_data/pod_samples.ex")
+  Code.require_file("test/sample_data/pod_samples.ex")
 
   @doc "
   Remove whitespace from `under_test` and `expected`,

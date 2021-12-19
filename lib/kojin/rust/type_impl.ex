@@ -34,23 +34,23 @@ defmodule Kojin.Rust.TypeImpl do
     defaults = [
       doc: "Implementation for #{type}",
       generic: nil,
-      generic_args: [],
+      generic_args: nil,
       unit_tests: [],
       test_module_name: make_module_name("type_impl_test_#{type_name}")
     ]
 
     opts = Kojin.check_args(defaults, opts)
 
+    generic_args =
+      if opts[:generic_args] != nil, do: Generic.generic(opts[:generic_args]), else: nil
+
+    generic = if opts[:generic] != nil, do: Generic.generic(opts[:generic]), else: generic_args
+
     %TypeImpl{
       type: type,
       type_name: type_name,
-      generic:
-        if(opts[:generic] != nil) do
-          Generic.generic(opts[:generic])
-        else
-          nil
-        end,
-      generic_args: opts[:generic_args],
+      generic: generic,
+      generic_args: generic_args,
       functions:
         functions
         |> Enum.map(fn f ->
@@ -71,7 +71,7 @@ defmodule Kojin.Rust.TypeImpl do
       iex> import Kojin.Rust.{Fn, TypeImpl}
       ...> import Kojin
       ...> Kojin.Rust.TypeImpl.code(type_impl(:my_struct, [ fun(:f, "Function does f") ],
-      ...>  generic: [ lifetimes: [:b]], generic_args: [ "X", :Y ]))
+      ...>  generic: [ lifetimes: [:b]], generic_args: [ type_parms: ["X", :Y ]]))
       ...> |> dark_matter()
       import Kojin
       ~s[
@@ -100,16 +100,7 @@ defmodule Kojin.Rust.TypeImpl do
         {"", ""}
       end
 
-    generic_args =
-      impl.generic_args
-      |> Enum.join(", ")
-
-    generic_args =
-      if("" == generic_args) do
-        ""
-      else
-        "<#{generic_args}>"
-      end
+    generic_args = if impl.generic_args, do: "#{impl.generic_args}", else: ""
 
     tname =
       impl.type.base

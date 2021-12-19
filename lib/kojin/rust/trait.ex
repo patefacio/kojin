@@ -3,7 +3,7 @@ defmodule Kojin.Rust.Trait do
   Rust _trait_ definition.
   """
 
-  alias Kojin.Rust.{Fn, Trait, ToCode, Generic}
+  alias Kojin.Rust.{Fn, Trait, ToCode, Generic, Use}
   import Kojin.{Id, Utils, Rust.Utils}
   use TypedStruct
 
@@ -126,7 +126,7 @@ defmodule Kojin.Rust.Trait do
       |> cap_camel
 
   def super_trait(t) when is_binary(t), do: t
-  def super_trait(%Trait{} = t) when is_binary(t), do: t.name
+  def super_trait(%Trait{} = t), do: t.name
   def super_trait(t) when is_atom(t), do: cap_camel(t)
 
   @spec code(Trait.t()) :: binary

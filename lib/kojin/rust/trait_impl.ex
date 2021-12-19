@@ -121,7 +121,12 @@ defmodule Kojin.Rust.TraitImpl do
           {"", ""}
         end
 
-      generic_args = trait_impl.generic_args
+      Logger.debug(
+        "#{trait.name} ->  generic(#{generic}) #{bounds_decl} for #{type} with bounds #{bounds_decl}"
+      )
+
+      generic_args =
+        trait_impl.generic_args
         |> Enum.map(fn generic_arg ->
           case generic_arg do
             :a -> "'a"

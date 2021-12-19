@@ -35,7 +35,7 @@ defmodule Kojin.Rust.PopularTraits do
     iex> import Kojin.Rust.PopularTraits
     ...> debug()
     ...> |> String.Chars.to_string()
-    ...> |> String.contains?("fn fmt(self: & Self, f: & mut fmt::Formatter<'_>) -> fmt::Result;")
+    ...> |> String.contains?("fn fmt(self: & Self, f: & mut Formatter<'_>) -> std::fmt::Result;")
     true
   """
   def debug() do
@@ -54,16 +54,15 @@ defmodule Kojin.Rust.PopularTraits do
           """,
           [
             :self_ref,
-            parm(:f, mref("fmt::Formatter<'_>"), "Formatter")
+            parm(:f, mref("Formatter<'_>"), "Formatter")
           ],
-          return: {"fmt::Result", "The formatted representation of object"}
+          return: {"std::fmt::Result", "The formatted representation of object"}
         )
       ],
       path: "std::fmt",
       uses: [
         use_("std::fmt::Debug"),
-        use_("std::fmt::Formatter"),
-        use_("std::fmt::result")
+        use_("std::fmt::Formatter")
       ]
     )
   end

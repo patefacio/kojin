@@ -3,7 +3,6 @@ defmodule PodObjectPropertiesTest do
 
   import Kojin.Pod.PodObject
   import Kojin.PodRust.ObjectProperties
-  import Kojin.Rust.Parm
 
   test "add properties" do
     po = pod_object(:foo, "Foo object", [])

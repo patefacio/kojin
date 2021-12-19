@@ -26,6 +26,8 @@ defmodule Kojin.Rust.TypeParm do
 
   def type_parm(id, opts \\ [])
 
+  def type_parm(id, opts) when is_binary(id), do: type_parm(String.to_atom(id), opts)
+
   def type_parm(id, opts) when is_atom(id) do
     Logger.debug("type parm name -> #{id} opts -> #{inspect(opts)}")
 

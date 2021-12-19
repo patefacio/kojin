@@ -100,6 +100,14 @@ defmodule Kojin.Pod.PodTypeRef do
        type_id: :child_type,
        type_path: [ :root, :grandparent, :parent ]
      }
+
+     iex> alias Kojin.Pod.PodTypeRef
+     ...> PodTypeRef.pod_type_ref(:some_type)
+     alias Kojin.Pod.PodTypeRef
+     %PodTypeRef{
+       type_id: :some_type,
+       type_path: []
+     }
   """
   def pod_type_ref(qualified_name) when is_binary(qualified_name) do
     parts = String.split(qualified_name, ".")
@@ -115,20 +123,6 @@ defmodule Kojin.Pod.PodTypeRef do
     }
   end
 
-  @doc """
-  Create a `Kojin.Pod.PodTypeRef` from a *snake case* atom.
-  Dots are not permitted and the path is assumed empty.
-
-  ## Examples
-
-     iex> alias Kojin.Pod.PodTypeRef
-     ...> PodTypeRef.pod_type_ref(:some_type)
-     alias Kojin.Pod.PodTypeRef
-     %PodTypeRef{
-       type_id: :some_type,
-       type_path: []
-     }
-  """
   def pod_type_ref(name) when is_atom(name) do
     %PodTypeRef{
       type_id: name,

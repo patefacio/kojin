@@ -48,16 +48,18 @@ defmodule Kojin.Rust.Type do
   def type(:bool), do: %Type{base: "bool", primitive?: true}
 
   def type(:char), do: %Type{base: "char", primitive?: true}
+  def type(%Type{} = type), do: type
+
+  def type(type, lifetime \\ nil)
 
   @doc """
   Returns rust type corresponding to type.
   """
-  def type(type) when is_binary(type),
-    do: %Type{base: type, primitive?: false}
+  def type(type, lifetime) when is_binary(type),
+    do: %Type{base: type, primitive?: false, lifetime: lifetime}
 
-  def type(%Type{} = type), do: type
-
-  def type(type) when is_atom(type), do: type(Kojin.Id.cap_camel(Atom.to_string(type)))
+  def type(type, lifetime) when is_atom(type),
+    do: type(Kojin.Id.cap_camel(Atom.to_string(type)), lifetime)
 
   @doc ~S"""
   Creates a reference to provided type `t`.
@@ -67,7 +69,7 @@ defmodule Kojin.Rust.Type do
       iex> Kojin.Rust.Type.ref(:i32)
       ...> |> String.Chars.to_string()
       "& i32"
-      
+
   """
   def ref(t, lifetime \\ nil),
     do: %Type{primitive?: false, referrent: type(t), ref?: true, lifetime: lifetime}
@@ -80,7 +82,7 @@ defmodule Kojin.Rust.Type do
       iex> Kojin.Rust.Type.mref(:i32)
       ...> |> String.Chars.to_string()
       "& mut i32"
-      
+
   """
   def mref(t, lifetime \\ nil),
     do: %Type{primitive?: false, referrent: type(t), mref?: true, lifetime: lifetime}

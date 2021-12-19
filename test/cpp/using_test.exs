@@ -3,7 +3,6 @@ defmodule UsingTest do
 
   alias Kojin.Cpp.{UsingDeclaration, UsingDirective, Using}
   import UsingDeclaration
-  import UsingDirective
   import Using
 
   test "using declaration" do

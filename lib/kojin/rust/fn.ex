@@ -147,7 +147,8 @@ defmodule Kojin.Rust.Parm do
 
   ## Examples
 
-      iex> ref_parm(:some_type, doc: "Reference to some type", mut: false)
+      iex> import Kojin.Rust.Parm
+      ...> ref_parm(:some_type, doc: "Reference to some type", mut: false)
       import Kojin.Rust.{Parm, Type}
       parm(:some_type, ref(:some_type), doc: "Reference to some type", mut: false)
   """
@@ -158,7 +159,8 @@ defmodule Kojin.Rust.Parm do
 
   ## Examples
 
-      iex> mref_parm(:some_type, "Reference to some type")
+      iex> import Kojin.Rust.Parm
+      ...> mref_parm(:some_type, "Reference to some type")
       import Kojin.Rust.{Parm, Type}
       parm(:some_type, mref(:some_type), "Reference to some type")
   """
@@ -184,7 +186,7 @@ defmodule Kojin.Rust.Fn do
   alias Kojin.CodeBlock
   alias Kojin.Rust.{Fn, Generic, Parm, ToCode, Type, Attr}
 
-  @type parm_list_spec() :: list(Parm.t() | :self | :self_ref | :self_mref)
+  @type parm_list_spec() :: list(Parm.t() | :self | :self_ref | :self_mref | list(any()))
 
   @typedoc """
   A rust function.

@@ -31,6 +31,7 @@ defmodule Kojin.Rust.Struct do
   typedstruct enforce: true do
     field(:name, String.t())
     field(:type_name, String.t())
+    field(:type_name_with_generic, String.t())
     field(:doc, String.t())
     field(:fields, list(Field.t()), default: [])
     field(:derivables, list(atom), default: [])
@@ -77,6 +78,30 @@ defmodule Kojin.Rust.Struct do
       \"\"\"
       ///  Implementation for S
       impl S {
+        // α <impl S>
+        // ω <impl S>
+        ////////////////////////////////////////////////////////////////////////////////////
+        // --- pub functions ---
+        ////////////////////////////////////////////////////////////////////////////////////
+        ///  Getter for x
+        ///
+        ///  * _return_ - Value of x
+        #[inline]
+        pub fn x(self: & Self) -> i32 {
+          self.x
+        }
+      }
+      \"\"\" |> Kojin.dark_matter()
+
+    Access generics are carried forward
+
+      iex> import Kojin.Rust.{Struct, Field}
+      ...> struct(:s, "An S", [ field(:x, :i32, "An x", access: :ro)], generic: [lifetimes: [:a]]).impl
+      ...> |> String.Chars.to_string()
+      ...> |> Kojin.dark_matter()
+      \"\"\"
+      ///  Implementation for S
+      impl<'a> S<'a> {
         // α <impl S>
         // ω <impl S>
         ////////////////////////////////////////////////////////////////////////////////////
@@ -214,15 +239,12 @@ defmodule Kojin.Rust.Struct do
     ]
 
     name = Kojin.require_snake(name)
-
+    type_name = cap_camel(name)
     struct_name = cap_camel(name)
-
     opts = Kojin.check_args(defaults, opts)
-
     fields = Enum.map(fields, &Struct._make_field/1)
-
     generic = if(opts[:generic] != nil, do: Generic.generic(opts[:generic]))
-
+    type_name_with_generic = "#{type_name}#{generic}"
     accessors = accessors(fields)
 
     custom_traits =
@@ -232,12 +254,12 @@ defmodule Kojin.Rust.Struct do
           Logger.warn("Skipping custom trait #{custom_trait} for struct(#{name})")
         else
           case custom_trait do
-            :custom_debug -> custom_fun_debug(struct_name, generic)
-            :custom_default -> custom_fun_default(struct_name, generic)
-            :custom_add -> custom_fun_add(struct_name, generic)
-            :custom_add_assign -> custom_fun_add_assign(struct_name, generic)
-            :custom_mult -> custom_fun_mult(struct_name, generic)
-            :custom_mult_assign -> custom_fun_mult_assign(struct_name, generic)
+            :custom_debug -> custom_fun_debug(type_name_with_generic, generic)
+            :custom_default -> custom_fun_default(type_name_with_generic, generic)
+            :custom_add -> custom_fun_add(type_name_with_generic, generic)
+            :custom_add_assign -> custom_fun_add_assign(type_name_with_generic, generic)
+            :custom_mult -> custom_fun_mult(type_name_with_generic, generic)
+            :custom_mult_assign -> custom_fun_mult_assign(type_name_with_generic, generic)
           end
         end
       end)
@@ -254,22 +276,28 @@ defmodule Kojin.Rust.Struct do
         TypeImpl.type_impl(opts[:impl])
       else
         if(Keyword.get(opts, :impl?) || !Enum.empty?(accessors) || fn_new) do
-          TypeImpl.type_impl(struct_name)
+          TypeImpl.type_impl(struct_name, [], generic_args: generic)
         else
           nil
         end
       end
 
     impl =
-      if(impl) do
-        %{impl | functions: impl.functions ++ accessors ++ (fn_new || [])}
+      if(impl || !Enum.empty?(accessors)) do
+        %{
+          impl
+          | functions:
+              if(impl && impl.functions, do: impl.functions, else: []) ++
+                accessors ++ (fn_new || [])
+        }
       else
         impl
       end
 
     result = %Struct{
       name: name,
-      type_name: cap_camel(name),
+      type_name: type_name,
+      type_name_with_generic: type_name_with_generic,
       doc: doc,
       fields: fields,
       visibility: opts[:visibility],
@@ -458,6 +486,8 @@ defmodule Kojin.Rust.Struct do
 
   @spec custom_fun_debug(atom | binary | Kojin.Rust.Type.t(), any) :: Kojin.Rust.TraitImpl.t()
   def custom_fun_debug(struct_name, generic) do
+    IO.puts("debug for #{struct_name} fun #{generic}")
+
     TraitImpl.trait_impl(PopularTraits.debug(), struct_name,
       generic: generic,
       generic_args: []
