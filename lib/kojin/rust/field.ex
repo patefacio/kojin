@@ -21,7 +21,7 @@ defmodule Kojin.Rust.Field do
   * :visibility - The visibility for the field (eg :pub, :pub(crate), etc)
   """
   typedstruct enforce: true do
-    field(:name, atom)
+    field(:name, atom | binary)
     field(:doc, String.t(), enforce: false)
     field(:type, Type.t())
     field(:access, atom | nil)
@@ -64,7 +64,6 @@ defmodule Kojin.Rust.Field do
       } |> String.trim
 
   """
-  # @spec field(atom | binary, atom | binary | Type.t(), binary, any()) :: Field.t()
   @spec field(atom | binary, atom | binary | Type.t(), binary, Keyword.t()) :: Field.t()
   def field(name, type, doc \\ "TODO: Comment field", opts \\ [])
       when (is_binary(name) or is_atom(name)) and is_binary(doc) do

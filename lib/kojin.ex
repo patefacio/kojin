@@ -143,7 +143,7 @@ defmodule Kojin do
     status
   end
 
-  @spec require_snake(atom | binary) :: binary
+  @spec require_snake(atom | binary) :: atom | binary
   @doc ~s"""
   Ensures the name is snake case, raises `ArgumentError` if not.
 
