@@ -20,8 +20,7 @@ defmodule Kojin.Rust.Const do
 
   * :name - The field name in _snake case_
   * :type - The rust type of the field
-  * :pub - Specifies field should be `pub`
-  * :pub_crate - Specifies field should be `pub(crate)`
+  * :visibility - Specifies field should be `pub`, `pub(crate)`, `private` *default*
   """
   typedstruct do
     field(:name, atom, enforce: true)

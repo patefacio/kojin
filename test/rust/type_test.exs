@@ -40,7 +40,10 @@ defmodule TypeTest do
       assert code(mref) == "& mut #{t_code}"
 
       mref = mref(t_atom, :a)
-      assert %Type{referrent: _t, primitive?: false, ref?: false, mref?: true, lifetime: :a} = mref
+
+      assert %Type{referrent: _t, primitive?: false, ref?: false, mref?: true, lifetime: :a} =
+               mref
+
       assert code(mref) == "& 'a mut #{t_code}"
     end)
 

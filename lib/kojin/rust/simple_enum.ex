@@ -103,33 +103,33 @@ defmodule Kojin.Rust.SimpleEnum do
     result
   end
 
-  def decl(%SimpleEnum{} = enum) do
+  def decl(%SimpleEnum{} = simple_enum) do
     import Kojin.Id
     import Kojin.Rust
 
     values =
-      enum.values
+      simple_enum.values
       |> Enum.map(fn {e, doc} ->
         Kojin.Utils.join_content([triple_slash_comment(doc), cap_camel("#{e}")])
       end)
       |> Enum.join(",\n")
 
-    derivables_decl = derivables_decl(enum.derivables)
-    visibility_decl = visibility_decl(enum.visibility)
+    derivables_decl = derivables_decl(simple_enum.derivables)
+    visibility_decl = visibility_decl(simple_enum.visibility)
 
     impl =
-      if(enum.has_snake_conversions) do
+      if(simple_enum.has_snake_conversions) do
         snake_functions = [
           Fn.pub_fun(
             :to_snake,
-            "Convert #{enum.name} to snake case string",
+            "Convert #{simple_enum.name} to snake case string",
             [:self_ref],
             body:
               [
                 "match self {",
-                enum.values
+                simple_enum.values
                 |> Enum.map(fn {variant, _doc} ->
-                  ~s(#{enum.type_name}::#{cap_camel("#{variant}")} => "#{variant}")
+                  ~s(#{simple_enum.type_name}::#{cap_camel("#{variant}")} => "#{variant}")
                 end)
                 |> Enum.join(",\n"),
                 "}"
@@ -141,21 +141,21 @@ defmodule Kojin.Rust.SimpleEnum do
           ),
           Fn.pub_fun(
             :from_snake,
-            "Create #{enum.type_name} from snake case string",
-            [[:snake_str, ref(:str), "Snake case name for #{enum.type_name} value"]],
+            "Create #{simple_enum.type_name} from snake case string",
+            [[:snake_str, ref(:str), "Snake case name for #{simple_enum.type_name} value"]],
             body:
               [
                 "match snake_str {",
                 [
                   Enum.map(
-                    enum.values,
+                    simple_enum.values,
                     fn {variant, _doc} ->
-                      ~s("#{variant}" => #{enum.type_name}::#{cap_camel("#{variant}")})
+                      ~s("#{variant}" => #{simple_enum.type_name}::#{cap_camel("#{variant}")})
                     end
                   ),
                   """
                   _ => panic!(
-                  "Invalid snake conversion on {} into `#{enum.type_name}`", snake_str)
+                  "Invalid snake conversion on {} into `#{simple_enum.type_name}`", snake_str)
                   """
                 ]
                 |> List.flatten()
@@ -164,21 +164,21 @@ defmodule Kojin.Rust.SimpleEnum do
               ]
               |> List.flatten()
               |> Kojin.Utils.join_content(),
-            return: enum.type_name,
+            return: simple_enum.type_name,
             return_doc: "Enum variant corresponding to string literal"
           )
         ]
 
-        if(enum.impl) do
-          %{enum.impl | functions: snake_functions ++ enum.functions}
+        if(simple_enum.impl) do
+          simple_enum.impl |> TypeImpl.add_functions(snake_functions)
         else
-          TypeImpl.type_impl(enum.name, snake_functions)
+          TypeImpl.type_impl(simple_enum.name, snake_functions)
         end
       end
 
     Kojin.Utils.join_content([
       derivables_decl,
-      "#{visibility_decl}enum #{enum.type_name} {",
+      "#{visibility_decl}enum #{simple_enum.type_name} {",
       indent_block(values),
       "}",
       announce_section("enum impl", impl)

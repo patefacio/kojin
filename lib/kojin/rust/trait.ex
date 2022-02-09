@@ -116,6 +116,9 @@ defmodule Kojin.Rust.Trait do
     }
   end
 
+  @doc """
+  Creates a _public_ trait with specified _doc_ and _functions_.
+  """
   def pub_trait(name, doc \\ nil, functions \\ [], opts \\ []) do
     trait(name, doc, functions, Keyword.merge(opts, visibility: :pub))
   end
@@ -130,6 +133,9 @@ defmodule Kojin.Rust.Trait do
   def super_trait(t) when is_atom(t), do: cap_camel(t)
 
   @spec code(Trait.t()) :: binary
+  @doc """
+  Converts the trait to its corresponding code.
+  """
   def code(%Trait{} = trait) do
     visibility = Kojin.Rust.visibility_decl(trait.visibility)
 

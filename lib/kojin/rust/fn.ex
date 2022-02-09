@@ -227,18 +227,6 @@ defmodule Kojin.Rust.Fn do
   defp return({t, doc}), do: {type(t), doc}
   defp return(t), do: return({t, nil})
 
-  @doc ~s{
-    Returns `f` if it is already a `Fn`
-
-    ## Examples
-
-        iex> import Kojin.Rust.Fn
-        ...> fun(fun(:f, "This is function f", []))
-        import Kojin.Rust.Fn; fun(:f, "This is function f", [])
-  }
-  @spec fun(Fn.t()) :: Fn.t()
-  def fun(%Fn{} = f), do: f
-
   @doc ~s"""
   Support passing list of arguments to fun/4.
 
@@ -264,6 +252,15 @@ defmodule Kojin.Rust.Fn do
       ...> fun([:foo, "foo docs", [[:parm1, :i32]], :i64])
       import Kojin.Rust.Fn
       fun(:foo, "foo docs", [[:parm1, :i32]], :i64)
+
+
+    Returns `f` if it is already a `Fn`
+
+      iex> import Kojin.Rust.Fn
+      ...> fun(fun(:f, "This is function f", []))
+      import Kojin.Rust.Fn
+      fun(:f, "This is function f", [])
+
   """
   @spec fun(list) :: Fn.t()
   def fun([name, doc, parms, return, return_doc]), do: fun(name, doc, parms, return, return_doc)
@@ -271,6 +268,10 @@ defmodule Kojin.Rust.Fn do
   def fun([name, doc, parms, opts]) when is_list(opts), do: fun(name, doc, parms, opts)
 
   def fun([name, doc, parms, return]), do: fun(name, doc, parms, return)
+
+  @spec fun(Fn.t()) :: Fn.t()
+  def fun(%Fn{} = f), do: f
+
 
   @doc ~s"""
   Create `Fn` instance.

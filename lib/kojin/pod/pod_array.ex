@@ -14,9 +14,11 @@ defmodule Kojin.Pod.PodArray do
   end
 
   @doc """
-  Returns a `Kojin.Pod.PodArray` with type of items specified by `item_type`
+  Returns a `Kojin.Pod.PodArray` of items
 
   ## Examples
+
+    Array with type of items specified by `item_type`
 
       iex> alias Kojin.Pod.{PodArray, PodTypes}
       ...> PodArray.array_of(PodTypes.pod_type(:int32))
@@ -29,16 +31,7 @@ defmodule Kojin.Pod.PodArray do
         }
       }
 
-  """
-  @spec array_of(PodType.t()) :: PodArray.t()
-  def array_of(%PodType{} = item_type) do
-    %Kojin.Pod.PodArray{item_type: item_type}
-  end
-
-  @doc """
-  Returns a `Kojin.Pod.PodArray` with type specified by the standard type
-
-  ## Examples
+    Returns a `Kojin.Pod.PodArray` with type specified by the standard type
 
       iex> alias Kojin.Pod.{PodArray}
       ...> PodArray.array_of(:int64)
@@ -52,6 +45,11 @@ defmodule Kojin.Pod.PodArray do
       }
 
   """
+  @spec array_of(PodType.t()) :: PodArray.t()
+  def array_of(%PodType{} = item_type) do
+    %Kojin.Pod.PodArray{item_type: item_type}
+  end
+
   @spec array_of(atom) :: PodArray.t()
   def array_of(item_type) when is_atom(item_type), do: array_of(PodTypes.pod_type(item_type))
 

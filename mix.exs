@@ -24,12 +24,13 @@ defmodule Kojin.MixProject do
       {:typed_struct, "~> 0.1.4"},
       {:porcelain, ">= 2.0.3"},
       {:vex, "~> 0.8.0"},
-      {:ex_doc, "~> 0.19.2"},
+      {:ex_doc, "~> 0.26.0"},
       {:jason, "~> 1.1"},
       {:nimble_parsec, "~> 0.5.0"},
       {:number, "~> 1.0"},
       {:temp, "~> 0.4.7"},
-      {:dialyxir, "~> 1.0", only: [:dev], runtime: false}
+      {:dialyxir, "~> 1.0", only: [:dev], runtime: false},
+      {:enum_type, "~> 1.1.0"}
 
       # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"},
     ]

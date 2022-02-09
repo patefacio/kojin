@@ -17,6 +17,7 @@ defmodule KojinTest do
   doctest Kojin.Id
   doctest Kojin.Rust
   doctest Kojin.Rust.Attr
+  doctest Kojin.Rust.Clap.Arg
   doctest Kojin.Rust.Field
   doctest Kojin.Rust.Fn
   doctest Kojin.Rust.Generic

@@ -63,6 +63,10 @@ defmodule Kojin.Rust.TypeImpl do
     }
   end
 
+  def add_functions(%TypeImpl{} = impl, functions) when is_list(functions) do
+    impl |> struct(%{functions: impl.functions ++ functions})
+  end
+
   @doc ~s"""
   Returns the code for the TypeImpl.
 

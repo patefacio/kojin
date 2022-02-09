@@ -21,7 +21,7 @@ defmodule Kojin.Rust.Field do
   * :visibility - The visibility for the field (eg :pub, :pub(crate), etc)
   """
   typedstruct enforce: true do
-    field(:name, atom | binary)
+    field(:name, binary)
     field(:doc, String.t(), enforce: false)
     field(:type, Type.t())
     field(:access, atom | nil)
