@@ -27,7 +27,7 @@ defmodule Kojin.Rust.Module do
   A rust _module_.
   """
   typedstruct enforce: true do
-    field(:name, atom, enforce: true)
+    field(:name, String.t(), enforce: true)
     field(:type_name, String.t(), enforce: true)
     field(:visibility, atom, default: :private)
     field(:doc, String.t())
@@ -47,9 +47,15 @@ defmodule Kojin.Rust.Module do
     field(:macro_uses, list(binary | atom), default: [])
     field(:test_macro_uses, list(binary | atom), default: [])
     field(:attrs, list(Attr.t()))
+    field(:is_binary, boolean)
   end
 
-  def module(name, doc, opts \\ []) when is_binary(doc) do
+  def module(name, doc, opts \\ [])
+
+
+  def module(name, doc, opts) when is_atom(name), do: module(Atom.to_string(name), doc, opts)
+
+  def module(name, doc, opts) when is_binary(name) and is_binary(doc) do
     require_snake(name)
 
     submodules = Keyword.get(opts, :modules, [])
@@ -80,10 +86,15 @@ defmodule Kojin.Rust.Module do
       macro_uses: [],
       test_macro_uses: [],
       code_block: code_block("mod-def #{snake(name)}"),
-      attrs: []
+      attrs: [],
+      is_binary: false
     ]
 
     opts = Kojin.check_args(defaults, opts)
+
+    uses = opts[:uses] ++ (opts[:structs]
+      |> Enum.map(fn s -> s.uses end)
+      |> List.flatten)
 
     %Module{
       name: name,
@@ -99,14 +110,15 @@ defmodule Kojin.Rust.Module do
       modules: submodules,
       file_name: "#{name}.rs",
       visibility: opts[:visibility],
-      uses: Uses.uses(opts[:uses]),
+      uses: Uses.uses(uses),
       type_aliases:
         Enum.map(opts[:type_aliases], fn type_alias -> TypeAlias.type_alias(type_alias) end),
       has_non_inline_submodules: has_non_inline_submodules,
       macro_uses: opts[:macro_uses],
       test_macro_uses: opts[:test_macro_uses],
       code_block: opts[:code_block],
-      attrs: opts[:attrs]
+      attrs: opts[:attrs],
+      is_binary: opts[:is_binary]
     }
   end
 

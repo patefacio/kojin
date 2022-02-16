@@ -73,14 +73,25 @@ defmodule Kojin.Rust.CrateGenerator do
         []
       end
 
+    all_modules =
+      [crate.root_module] ++
+        (crate.binaries
+         |> Enum.map(fn binary -> binary.module end))
+
     generated_modules =
-      crate_generate_spec
-      |> module_generate_specs(crate.root_module)
-      |> Enum.map(&Task.async(fn -> generate_module(&1) end))
-      |> Enum.map(&Task.await/1)
+      all_modules
+      |> Enum.map(fn module ->
+        crate_generate_spec
+        |> module_generate_specs(module)
+        |> Enum.map(&Task.async(fn -> generate_module(&1) end))
+        |> Enum.map(&Task.await/1)
+        |> List.flatten()
+      end)
       |> List.flatten()
 
-    generated_files = written_toml ++ generated_modules
+    generated_files =
+      (written_toml ++ generated_modules)
+      |> IO.inspect()
 
     # Generate the cargo
     fmt_dir = if is_using_tmp, do: tmp_path, else: crate_path

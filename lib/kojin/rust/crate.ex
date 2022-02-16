@@ -71,6 +71,12 @@ defmodule Kojin.Rust.Crate do
         opts
       )
 
+    root_module = if(root_module.name != "lib") do
+      raise "Root module must be named `lib` not #{root_module.name}"
+    else
+      root_module
+    end
+
     %Crate{
       name: name,
       doc: doc,

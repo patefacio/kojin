@@ -17,10 +17,16 @@ defmodule Kojin.Rust.ModuleGenerateSpec do
         %Module{} = module,
         parent_module_generate_spec \\ nil
       ) do
-    module_relative_path =
-      if(parent_module_generate_spec) do
-        parent_dir = Path.dirname(parent_module_generate_spec.module_relative_path)
 
+    parent_dir = cond do
+      parent_module_generate_spec -> Path.dirname(parent_module_generate_spec.module_relative_path)
+      module.is_binary -> "src/bin"
+      true -> "src"
+    end
+
+    IO.puts "Module with parent #{module.file_name} : #{parent_dir} -> type #{module.type}"
+
+    module_relative_path =
         case module.type do
           :file ->
             Path.join([parent_dir, "#{module.file_name}"])
@@ -34,9 +40,6 @@ defmodule Kojin.Rust.ModuleGenerateSpec do
           :inline ->
             Path.join([parent_dir, "#{module.name}", "inline"])
         end
-      else
-        "src/lib.rs"
-      end
 
     mgs = %ModuleGenerateSpec{
       crate_generate_spec: crate_generate_spec,

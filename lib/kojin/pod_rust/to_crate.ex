@@ -15,12 +15,13 @@ defmodule Kojin.PodRust.ToCrate do
     crate(
       crate_name,
       pod_package_set.doc,
-      module(:top_module, "Top module",
+      module(:lib, "Top module for `#{crate_name}`",
         macro_uses: ["serde_derive"],
         modules:
           Enum.map(pod_package_set.packages, fn pod_package ->
             to_module(pod_package_to_module(pod_package_set, pod_package))
-          end)
+          end),
+        type: :file
       ),
       dependencies:
         [

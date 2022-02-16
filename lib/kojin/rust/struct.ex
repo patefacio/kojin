@@ -41,6 +41,7 @@ defmodule Kojin.Rust.Struct do
     field(:impl, TypeImpl.t() | nil, default: nil)
     field(:trait_impls, list(TraitImpl.t()), default: [])
     field(:custom_traits, list(atom), default: [])
+    field(:uses, Uses.t(), default: nil)
   end
 
   validates(:visibility, inclusion: Kojin.Rust.allowed_visibilities())
@@ -235,7 +236,8 @@ defmodule Kojin.Rust.Struct do
       impl?: false,
       generic: nil,
       with_new?: false,
-      custom_traits: []
+      custom_traits: [],
+      uses: []
     ]
 
     name = Kojin.require_snake(name)
@@ -304,7 +306,8 @@ defmodule Kojin.Rust.Struct do
       derivables: opts[:derivables],
       generic: generic,
       impl: impl,
-      trait_impls: custom_traits
+      trait_impls: custom_traits,
+      uses: opts[:uses]
     }
 
     if(!Vex.valid?(result)) do
