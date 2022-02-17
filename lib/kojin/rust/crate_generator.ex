@@ -55,7 +55,12 @@ defmodule Kojin.Rust.CrateGenerator do
     is_using_tmp = tmp_path != nil
 
     toml_path = Path.join([crate_path, "Cargo.toml"])
-    toml_content = cargo_toml_content(crate.cargo_toml)
+
+    toml_content =
+      cargo_toml_content(crate.cargo_toml,
+        uses_clap: Enum.any?(crate.binaries, fn binary -> binary.clap end)
+      )
+
     delims = Kojin.CodeBlock.script_delimiters()
 
     Kojin.merge_generated_with_file(
@@ -91,7 +96,6 @@ defmodule Kojin.Rust.CrateGenerator do
 
     generated_files =
       (written_toml ++ generated_modules)
-      |> IO.inspect()
 
     # Generate the cargo
     fmt_dir = if is_using_tmp, do: tmp_path, else: crate_path

@@ -8,6 +8,7 @@ defmodule Kojin.Rust.Field do
 
   alias Kojin.Rust.{Field, Type}
   alias Kojin.Utils
+  import Kojin.Rust.Attr
   import Utils
 
   @valid_accesses [:ro, :ro_ref, :rw, :rw_ref, :ia]
@@ -26,6 +27,7 @@ defmodule Kojin.Rust.Field do
     field(:type, Type.t())
     field(:access, atom | nil)
     field(:visibility, atom, default: :pub)
+    field(:attrs, list(Attr.t()))
   end
 
   validates(:visibility, inclusion: Kojin.Rust.allowed_visibilities())
@@ -68,7 +70,7 @@ defmodule Kojin.Rust.Field do
   def field(name, type, doc \\ "TODO: Comment field", opts \\ [])
       when (is_binary(name) or is_atom(name)) and is_binary(doc) do
     name = Kojin.require_snake(name)
-    defaults = [visibility: :pub, access: nil]
+    defaults = [visibility: :pub, access: nil, attrs: []]
     merged_opts = Kojin.check_args(defaults, opts)
 
     visibility =
@@ -92,7 +94,8 @@ defmodule Kojin.Rust.Field do
       doc: doc,
       type: Type.type(type),
       access: merged_opts[:access],
-      visibility: visibility
+      visibility: visibility,
+      attrs: merged_opts[:attrs]
     }
   end
 
@@ -139,6 +142,17 @@ defmodule Kojin.Rust.Field do
       ///  The Bank Account
       pub bank_account: BankAccount
       } |> String.trim
+
+      iex> import Kojin.Rust.{Field, Attr}
+      ...> id_field([:bank_account, "The Bank Account", [attrs: [attr("clap(long)")]]]) |> String.Chars.to_string
+      ~s{
+      ///  The Bank Account
+      #[clap(long)]
+      pub bank_account: BankAccount
+      } |> String.trim
+
+
+
   """
   def id_field(id, doc, opts \\ [])
 
@@ -149,13 +163,21 @@ defmodule Kojin.Rust.Field do
 
   defimpl String.Chars do
     def to_string(field) do
-      triple_slash_comment(
-        if String.length(field.doc) > 0 do
-          "#{field.doc}"
-        else
-          "TODO: document #{field.name}"
-        end
-      ) <> "\n" <> Field.decl(field)
+      [
+        triple_slash_comment(
+          if String.length(field.doc) > 0 do
+            "#{field.doc}"
+          else
+            "TODO: document #{field.name}"
+          end
+        ),
+        field.attrs
+        |> Enum.map(fn attr -> external(attr) end)
+        |> Enum.join("\n"),
+        Field.decl(field)
+      ]
+      |> Enum.filter(fn item -> item != "" end)
+      |> Enum.join("\n")
     end
   end
 

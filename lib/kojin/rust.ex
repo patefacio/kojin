@@ -23,7 +23,12 @@ defmodule Kojin.Rust do
     :fail,
 
     # Diesel
-    :queryable
+    :queryable,
+
+    # Clap
+    :parser,
+
+    :arg_enum
   ]
 
   @doc """

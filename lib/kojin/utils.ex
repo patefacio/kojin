@@ -176,4 +176,10 @@ defmodule Kojin.Utils do
 
     value
   end
+
+
+  @doc """
+  Returns the string in double quotes
+  """
+  def double_quote(s), do: ~s("#{s}")
 end

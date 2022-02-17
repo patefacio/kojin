@@ -93,7 +93,7 @@ defmodule Kojin.Rust.SimpleEnum do
         Invalid `enum` args:
         name: #{name}
         doc: #{doc}
-        values: #{values}
+        values: #{inspect(values)}
         visibility: #{opts[:visibility]}
         ------- Struct Validations ---
         #{inspect(Vex.results(result), pretty: true)}

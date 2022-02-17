@@ -217,6 +217,8 @@ defmodule Kojin.Rust.Fn do
     field(:tag_prefix, String.t(), default: nil)
     field(:visibility, atom)
     field(:body, String.t())
+    field(:pre_block, String.t())
+    field(:post_block, String.t())
     field(:attrs, list(Attr.t()))
     field(:is_test, boolean)
     field(:include_unit_test, boolean)
@@ -272,7 +274,6 @@ defmodule Kojin.Rust.Fn do
   @spec fun(Fn.t()) :: Fn.t()
   def fun(%Fn{} = f), do: f
 
-
   @doc ~s"""
   Create `Fn` instance.
 
@@ -323,6 +324,8 @@ defmodule Kojin.Rust.Fn do
       consts: [],
       tag_prefix: nil,
       body: nil,
+      pre_block: nil,
+      post_block: nil,
       visibility: :private,
       attrs: [],
       is_test: false,
@@ -359,6 +362,8 @@ defmodule Kojin.Rust.Fn do
       tag_prefix: opts[:tag_prefix],
       visibility: opts[:visibility],
       body: opts[:body],
+      pre_block: opts[:pre_block],
+      post_block: opts[:post_block],
       attrs: attrs,
       is_test: opts[:is_test],
       include_unit_test: opts[:include_unit_test]
@@ -455,13 +460,16 @@ defmodule Kojin.Rust.Fn do
       fun.attrs
       |> Enum.map(fn attr -> Attr.external(attr) end),
       "#{signature(fun)} {",
-      if(fun.body) do
-        indent_block(fun.body)
-      else
-        indent_block(
-          text(CodeBlock.code_block("fn #{snake(fun.name)}", tag_prefix: fun.tag_prefix))
-        )
-      end
+      [
+        if(fun.pre_block, do: fun.pre_block),
+        if(fun.body,
+          do: fun.body,
+          else: text(CodeBlock.code_block("fn #{snake(fun.name)}", tag_prefix: fun.tag_prefix))
+        ),
+        if(fun.post_block, do: fun.post_block)
+      ]
+      |> Enum.reject(&is_nil/1)
+      |> Enum.join("\n")
       |> String.trim_trailing(),
       "}"
     ]

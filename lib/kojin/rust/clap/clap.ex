@@ -2,57 +2,57 @@ defmodule Kojin.Rust.Clap do
   use EnumType
   use TypedStruct
 
-  alias Kojin.Rust.{Clap, Field}
+  alias Kojin.Rust.{Clap, Clap.Arg, Field, Attr, Type, SimpleEnum}
   import Kojin.Rust.{Struct, Type, TypeImpl, Parm}
+  import Kojin.Id
 
   @typedoc """
   Defines Clap argument set
   """
   typedstruct enforce: true do
-    field(:doc, String.t())
     field(:args, list(Arg.t()))
-    field(:use_struct, boolean())
   end
 
-  def clap(doc, args, opts \\ []) do
-    defaults = [
-      use_struct: false
-    ]
-
-    opts = Kojin.check_args(defaults, opts)
-
+  def clap(args, opts \\ []) do
     %Clap{
-      doc: doc,
-      args: args,
-      use_struct: opts[:use_struct]
+      args: args
     }
   end
 
-  def clap_struct(%Clap{} = clap, clap_struct_id \\ :clap_options) do
-    clap_struct =
-      struct(
-        clap_struct_id,
-        clap.doc,
-        clap.args
-        |> Enum.map(fn arg ->
-          Field.field(arg.id, (if arg.type == :str, do: ref(arg.type, :a), else: arg.type), arg.doc)
-         end),
-        impl:
-          type_impl(
-            clap_struct_id,
-            [
-              Kojin.Rust.Fn.fun(:from_matches, "Create #{clap_struct_id} from arguments", [
-                parm(:matches, ref("clap::ArgMatches", :a), "This is an a")
-                  ],
-                return: "ClapOptions<'a>",
-                return_doc: "Struct with options pulled from arguments"
-              )
-            ]
-          ),
-        generic: [ lifetimes: [:a] ],
-        uses: ["clap::Parser"]
-      )
+  def has_enum(%Arg{} = arg), do: !Enum.empty?(arg.enum_values)
+  def has_enums(%Clap{} = clap), do: Enum.any?(clap.args, fn arg -> has_enum(arg) end)
 
-    clap_struct
+  def clap_enums(%Clap{} = clap) do
+    clap.args
+    |> Enum.filter(&has_enum/1)
+    |> Enum.map(fn arg ->
+      SimpleEnum.enum(arg.id, arg.doc, arg.enum_values, derivables: [:debug, :arg_enum, :clone ])
+    end)
+  end
+
+  def clap_struct(%Clap{} = clap, clap_struct_id \\ :clap_options) do
+    struct(
+      clap_struct_id,
+      "Command line arguments for binary",
+      clap.args
+      |> Enum.map(fn arg ->
+        type =
+          cond do
+            !Enum.empty?(arg.enum_values) -> cap_camel(arg.id)
+            arg.is_multiple -> "Vec<#{Type.type(arg.type)}>"
+            arg.is_optional -> "Option<#{Type.type(arg.type)}>"
+            true -> arg.type
+          end
+
+        Field.field(
+          arg.id,
+          type,
+          arg.doc,
+          attrs: Arg.attributes(arg)
+        )
+      end),
+      derivables: [:parser, :debug],
+      uses: ["clap::Parser", (if has_enums(clap), do: "clap::ArgEnum")] |> Enum.reject(&is_nil/1)
+    )
   end
 end

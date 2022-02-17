@@ -13,8 +13,15 @@ defmodule Kojin.Rust.CargoToml do
     field(:dependencies, String.t(), default: [])
   end
 
-  @spec cargo_toml_content(Kojin.Rust.CargoToml.t()) :: binary
-  def cargo_toml_content(%CargoToml{} = cargo_toml) do
+  @spec cargo_toml_content(Kojin.Rust.CargoToml.t(), list) :: binary
+  def cargo_toml_content(%CargoToml{} = cargo_toml, opts \\ []) do
+    defaults = [
+      uses_clap: false
+    ]
+
+    opts = Keyword.merge(defaults, opts)
+    clap_dependency = if opts[:uses_clap], do: ~s(\nclap = { version = "~3", features = ["derive"] }), else: ""
+
     ~s"""
     [package]
     edition = "2018"
@@ -25,7 +32,7 @@ defmodule Kojin.Rust.CargoToml do
     keywords = []
     license = "#{cargo_toml.license}"
 
-    [dependencies]
+    [dependencies]#{clap_dependency}
     itertools = "^0.7.6"
     #{Enum.join(cargo_toml.dependencies, "\n")}
     #{Kojin.CodeBlock.script_block("dependencies")}
@@ -71,11 +78,12 @@ defmodule Kojin.Rust.Crate do
         opts
       )
 
-    root_module = if(root_module.name != "lib") do
-      raise "Root module must be named `lib` not #{root_module.name}"
-    else
-      root_module
-    end
+    root_module =
+      if(root_module.name != "lib") do
+        raise "Root module must be named `lib` not #{root_module.name}"
+      else
+        root_module
+      end
 
     %Crate{
       name: name,

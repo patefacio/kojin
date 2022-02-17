@@ -24,8 +24,6 @@ defmodule Kojin.Rust.ModuleGenerateSpec do
       true -> "src"
     end
 
-    IO.puts "Module with parent #{module.file_name} : #{parent_dir} -> type #{module.type}"
-
     module_relative_path =
         case module.type do
           :file ->
