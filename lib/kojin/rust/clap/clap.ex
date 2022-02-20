@@ -11,11 +11,39 @@ defmodule Kojin.Rust.Clap do
   """
   typedstruct enforce: true do
     field(:args, list(Arg.t()))
+    field(:include_log_level, bool)
   end
 
   def clap(args, opts \\ []) do
+    defaults = [include_log_level: false]
+
+    opts = Kojin.check_args(defaults, opts)
+
+    args =
+      if opts[:include_log_level] do
+        [
+          Arg.arg(
+            :log_level,
+            "Set level {none, error, warn, info, debug, trace}",
+            enum_values: [
+              {:none, "No logging"},
+              {:error, "Log Errors"},
+              {:warn, "Log Warnings"},
+              {:info, "Log Info"},
+              {:debug, "Log Debug"},
+              {:trace, "Log Trace"}
+            ],
+            default_value: "info"
+          )
+          | args
+        ]
+      else
+        args
+      end
+
     %Clap{
-      args: args
+      args: args,
+      include_log_level: opts[:include_log_level]
     }
   end
 
@@ -26,7 +54,7 @@ defmodule Kojin.Rust.Clap do
     clap.args
     |> Enum.filter(&has_enum/1)
     |> Enum.map(fn arg ->
-      SimpleEnum.enum(arg.id, arg.doc, arg.enum_values, derivables: [:debug, :arg_enum, :clone ])
+      SimpleEnum.enum(arg.id, arg.doc, arg.enum_values, derivables: [:debug, :arg_enum, :clone])
     end)
   end
 
@@ -52,7 +80,7 @@ defmodule Kojin.Rust.Clap do
         )
       end),
       derivables: [:parser, :debug],
-      uses: ["clap::Parser", (if has_enums(clap), do: "clap::ArgEnum")] |> Enum.reject(&is_nil/1)
+      uses: ["clap::Parser", if(has_enums(clap), do: "clap::ArgEnum")] |> Enum.reject(&is_nil/1)
     )
   end
 end

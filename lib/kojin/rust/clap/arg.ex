@@ -56,7 +56,7 @@ defmodule Kojin.Rust.Clap.Arg do
 
       iex> import Kojin.Rust.Clap.Arg
       ...> import Kojin.Rust.Type
-      ...> arg(:file_name, "Name of file", is_optional: true, short: "-f", default_value: "foo.out")
+      ...> arg(:file_name, "Name of file", is_optional: true, short: "first_char_only", default_value: "foo.out")
       %Kojin.Rust.Clap.Arg{
         type: :string,
         as_argument: "--file-name",
@@ -65,7 +65,7 @@ defmodule Kojin.Rust.Clap.Arg do
         id: "file_name",
         is_multiple: false,
         is_optional: true,
-        short: "-f",
+        short: "f",
         enum_values: []
       }
 
@@ -108,11 +108,17 @@ defmodule Kojin.Rust.Clap.Arg do
 
     opts = Kojin.check_args(defaults, opts)
 
+    short = case opts[:short] do
+      nil -> nil
+      true -> String.first(id)
+      _ -> String.first(require_snake(opts[:short]))
+    end
+
     %Arg{
       id: id,
       doc: doc,
       as_argument: "--" <> Kojin.Id.emacs(id),
-      short: opts[:short],
+      short: short,
       is_optional: opts[:is_optional],
       is_multiple: opts[:is_multiple],
       default_value: opts[:default_value],
@@ -131,13 +137,16 @@ defmodule Kojin.Rust.Clap.Arg do
       iex> import Kojin.Rust.Clap.Arg
       ...> arg(:user_name, "Names of users", is_multiple: true, short: "n")
       ...> |> attributes
-      [%Kojin.Rust.Attr{id: "clap(long)", value: nil}]
+      [%Kojin.Rust.Attr{id: ~s<clap(long, short = 'n')>, value: nil}]
   """
 
   def attributes(%Arg{} = arg) do
     [
       [
         "long",
+        if arg.short do
+          ~s<short = '#{arg.short}'>
+        end,
         if arg.default_value do
           "default_value = #{double_quote(arg.default_value)}"
         end,
